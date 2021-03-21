@@ -4,7 +4,7 @@
 
 #include "board.h"
 
-class Fen
+class Fens
 {
 	//static Piece TryParsePiece(char ch);
 public:

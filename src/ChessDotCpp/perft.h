@@ -9,10 +9,10 @@ class MoveAndNodes
 {
 public:
     std::string MovePos;
-    int Nodes;
+    size_t Nodes;
     Move EngineMove;
 
-    MoveAndNodes(std::string move, int nodes, Move engineMove = Move(0))
+    MoveAndNodes(std::string move, size_t nodes, Move engineMove = Move(0))
     {
         MovePos = move;
         Nodes = nodes;
@@ -26,9 +26,16 @@ public:
 };
 
 using MoveAndNodeArray = std::array<MoveAndNodes, Constants::MaxMoves>;
+using MoveStack = std::array<MoveArray, 7>;
 
 class InternalPerftClient
 {
 public:
-    static size_t GetMovesAndNodes(Board& board, Ply depth, MoveAndNodeArray& movesAndNodes, size_t& moveAndNodeCount);
+    static size_t GetMovesAndNodes(Board& board, Ply depth, MoveStack& moveStack,  MoveAndNodeArray& movesAndNodes, size_t& moveAndNodeCount);
+};
+
+class PerftRunner
+{
+public:
+    static void Run(std::string fen, Ply depth);
 };

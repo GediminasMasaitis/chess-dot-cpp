@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 using Position = uint8_t;
 using Piece = uint8_t;
@@ -14,3 +15,4 @@ using MoveValue = uint64_t;
 using Score = int32_t;
 using ZobristKey = uint64_t;
 
+using Fen = std::string;

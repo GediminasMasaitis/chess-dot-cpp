@@ -3,44 +3,6 @@
 #include "common.h"
 #include "zobrist.h"
 
-constexpr std::array<CastlingPermission, 64> Board::GenerateRevocationTable()
-{
-	std::array<CastlingPermission, 64> table {};
-	for (Position i = 0; i < 64; i++)
-	{
-		CastlingPermission permission = ChessCastlingPermissions::All;
-		switch (i)
-		{
-		case 0:
-			permission &= ~ChessCastlingPermissions::WhiteQueen;
-			break;
-		case 4:
-			permission &= ~ChessCastlingPermissions::WhiteQueen;
-			permission &= ~ChessCastlingPermissions::WhiteKing;
-			break;
-		case 7:
-			permission &= ~ChessCastlingPermissions::WhiteKing;
-			break;
-		case 56:
-			permission &= ~ChessCastlingPermissions::BlackQueen;
-			break;
-		case 60:
-			permission &= ~ChessCastlingPermissions::BlackQueen;
-			permission &= ~ChessCastlingPermissions::BlackKing;
-			break;
-		case 63:
-			permission &= ~ChessCastlingPermissions::BlackKing;
-			break;
-		default:
-			break;
-		}
-
-		table[i] = permission;
-	}
-
-	return table;
-}
-
 void Board::SyncExtraBitBoards()
 {
 	WhitePieces = BitBoard[ChessPiece::WhitePawn]
@@ -279,8 +241,8 @@ void Board::DoMove(const Move move)
 		break;
 	}
 
-	CastlingPermissions &= CastleRevocationTable[move.GetFrom()];
-	CastlingPermissions &= CastleRevocationTable[move.GetTo()];
+	CastlingPermissions &= CastleRevocation.Table[move.GetFrom()];
+	CastlingPermissions &= CastleRevocation.Table[move.GetTo()];
 
 	//SyncCastleTo1();
 	SyncExtraBitBoards();

@@ -46,9 +46,47 @@ public:
 	void SyncExtraBitBoards();
 	void DoMove(const Move move);
 	void UndoMove();
-
-private:
-	static constexpr std::array<CastlingPermission, 64> GenerateRevocationTable();
-	
-	inline static const std::array<CastlingPermission, 64> CastleRevocationTable = GenerateRevocationTable();
 };
+
+class CastleRevocationClass
+{
+public:
+	std::array<CastlingPermission, 64> Table{};
+
+	constexpr CastleRevocationClass()
+	{
+		for (Position i = 0; i < 64; i++)
+		{
+			CastlingPermission permission = ChessCastlingPermissions::All;
+			switch (i)
+			{
+			case 0:
+				permission &= ~ChessCastlingPermissions::WhiteQueen;
+				break;
+			case 4:
+				permission &= ~ChessCastlingPermissions::WhiteQueen;
+				permission &= ~ChessCastlingPermissions::WhiteKing;
+				break;
+			case 7:
+				permission &= ~ChessCastlingPermissions::WhiteKing;
+				break;
+			case 56:
+				permission &= ~ChessCastlingPermissions::BlackQueen;
+				break;
+			case 60:
+				permission &= ~ChessCastlingPermissions::BlackQueen;
+				permission &= ~ChessCastlingPermissions::BlackKing;
+				break;
+			case 63:
+				permission &= ~ChessCastlingPermissions::BlackKing;
+				break;
+			default:
+				break;
+			}
+
+			Table[i] = permission;
+		}
+	}
+};
+
+constexpr CastleRevocationClass CastleRevocation = CastleRevocationClass();

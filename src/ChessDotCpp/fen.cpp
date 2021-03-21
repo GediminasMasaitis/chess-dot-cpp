@@ -41,7 +41,7 @@ void SyncMaterial(Board& board)
     }
 }
 
-void Fen::Parse(Board& board, std::string fen)
+void Fens::Parse(Board& board, std::string fen)
 {
     fen = std::regex_replace(fen, std::regex("/"), "");
     //board.ArrayBoard = new Piece[64];

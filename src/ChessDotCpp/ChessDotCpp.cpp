@@ -10,9 +10,10 @@ using namespace std;
 
 int main()
 {
+	Fen fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	//auto board = std::make_unique<Board>();
-	auto board = Board();
-	Fen::Parse(board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+	//auto board = Board();
+	//Fens::Parse(board, fen);
 
 	
 
@@ -20,14 +21,12 @@ int main()
 	//board.DoMove(move);
 	//board.UndoMove();
 
-	auto moves = MoveArray();
-	size_t moveCount = 0;
-	MoveGenerator::GetAllPossibleMoves(board, moves, moveCount);
+	//auto moves = MoveArray();
+	//size_t moveCount = 0;
+	//MoveGenerator::GetAllPossibleMoves(board, moves, moveCount);
 
-	auto movesAndNodes = MoveAndNodeArray();
-	size_t moveAndNodeCount = 0;
-	auto nodes = InternalPerftClient::GetMovesAndNodes(board, 5, movesAndNodes, moveAndNodeCount);
+	PerftRunner::Run(fen, 5);
 	
-	cout << nodes << endl;
+	//cout << nodes << endl;
 	return 0;
 }
