@@ -10,6 +10,24 @@ constexpr Bitboard GetBitboard(const Position position)
 	return 1ULL << position;
 }
 
+#if defined(__GNUC__)
+
+constexpr Position BitScanForward(const Bitboard bitboard)
+{
+	return static_cast<Position>(__builtin_ctzll(bitboard));
+}
+
+//#elif defined(_MSC_VER)
+//
+//constexpr Position BitScanForward(const Bitboard bitboard)
+//{
+//	unsigned long result;
+//	_BitScanForward64(&result, bitboard);
+//	return static_cast<Position>(result);
+//}
+
+#else
+
 constexpr std::array<uint8_t, 64> BitScanTable = {
 	0, 47,  1, 56, 48, 27,  2, 60,
 	57, 49, 41, 37, 28, 16,  3, 61,
@@ -28,9 +46,11 @@ constexpr Position BitScanForward(const Bitboard bitboard)
 	{
 		return 64;
 	}
-	
+
 	return BitScanTable[((bitboard ^ (bitboard - 1)) * debruijn64) >> 58];
 }
+
+#endif
 
 constexpr Bitboard ReverseBits(Bitboard bitboard)
 {

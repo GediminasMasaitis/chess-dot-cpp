@@ -1,5 +1,3 @@
-#pragma once
-
 #include "fen.h"
 
 #include <regex>

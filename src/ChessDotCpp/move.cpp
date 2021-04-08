@@ -1,5 +1,9 @@
 #include "move.h"
 
+
+#include <iostream>
+#include <sstream>
+
 std::string PositionToText(const Position position)
 {
 	const Rank rank = position / 8;
@@ -42,4 +46,21 @@ std::string Move::ToPositionString() const
 		text += promotionLetter;
 	}
 	return text;
+}
+
+std::string Move::ToDebugString() const
+{
+	std::stringstream stream = std::stringstream();
+	std::cout << ToPositionString();
+	stream << "From:" << GetFrom();
+	stream << ", To:" << GetTo();
+	stream << ", Piece: " << GetPiece();
+	stream << ", TakesPiece: " << GetTakesPiece();
+	stream << ", PawnPromoteTo: " << GetPawnPromoteTo();
+	stream << ", EnPassant: " << GetEnPassant();
+	stream << ", Castle: " << GetCastle();
+	stream << ", NullMove: " << GetNullMove();
+	stream << ", White: " << GetWhiteToMove();
+
+	return stream.str();
 }

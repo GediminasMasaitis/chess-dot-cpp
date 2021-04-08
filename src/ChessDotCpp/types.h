@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <string>
 
-using Position = uint8_t;
 using Piece = uint8_t;
+using Position = uint8_t;
 using Bitboard = uint64_t;
 using File = int8_t;
 using Rank = int8_t;

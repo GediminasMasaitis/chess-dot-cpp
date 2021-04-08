@@ -35,21 +35,39 @@ private:
 class ChessPiece
 {
 public:
+	static constexpr Piece White = 0;
+	static constexpr Piece Black = 1;
+
 	static constexpr Piece Empty = 0;
+	
+	static constexpr Piece Pawn = 2 << 1;
+	static constexpr Piece Knight = 3 << 1;
+	static constexpr Piece Bishop = 4 << 1;
+	static constexpr Piece Rook = 5 << 1;
+	static constexpr Piece Queen = 6 << 1;
+	static constexpr Piece King = 7 << 1;
 
-	static constexpr Piece WhitePawn = 1;
-	static constexpr Piece WhiteKnight = 2;
-	static constexpr Piece WhiteBishop = 3;
-	static constexpr Piece WhiteRook = 4;
-	static constexpr Piece WhiteQueen = 5;
-	static constexpr Piece WhiteKing = 6;
+	static constexpr Piece WhitePawn = White | Pawn;
+	static constexpr Piece WhiteKnight = White | Knight;
+	static constexpr Piece WhiteBishop = White | Bishop;
+	static constexpr Piece WhiteRook = White | Rook;
+	static constexpr Piece WhiteQueen = White | Queen;
+	static constexpr Piece WhiteKing = White | King;
 
-	static constexpr Piece BlackPawn = 7;
-	static constexpr Piece BlackKnight = 8;
-	static constexpr Piece BlackBishop = 9;
-	static constexpr Piece BlackRook = 10;
-	static constexpr Piece BlackQueen = 11;
-	static constexpr Piece BlackKing = 12;
+	static constexpr Piece BlackPawn = Black | Pawn;
+	static constexpr Piece BlackKnight = Black | Knight;
+	static constexpr Piece BlackBishop = Black | Bishop;
+	static constexpr Piece BlackRook = Black | Rook;
+	static constexpr Piece BlackQueen = Black | Queen;
+	static constexpr Piece BlackKing = Black | King;
+
+	static constexpr Piece ColorMask = 1;
+	
+	static constexpr Piece NextColor = 1;
+	static constexpr Piece NextPiece = 1 << 1;
+	
+	static constexpr size_t Count = 16;
+	
 
 private:
 	ChessPiece() = default;

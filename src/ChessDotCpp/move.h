@@ -100,6 +100,7 @@ public:
 	}
 
 	std::string ToPositionString() const;
+	std::string ToDebugString() const;
 };
 
 using MoveArray = std::array<Move, Constants::MaxMoves>;

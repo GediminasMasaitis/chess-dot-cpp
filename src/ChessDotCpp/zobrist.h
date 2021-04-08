@@ -38,7 +38,7 @@ public:
         ZWhiteToMove = static_cast<ZobristKey>(rng());
     }
 
-    ZobristKey CalculateKey(Board board)
+    ZobristKey CalculateKey(Board& board)
     {
         ZobristKey key = 0;
         for (Position i = 0; i < 64; i++)

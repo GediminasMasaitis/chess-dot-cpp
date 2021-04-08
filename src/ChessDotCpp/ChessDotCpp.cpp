@@ -25,7 +25,7 @@ int main()
 	//size_t moveCount = 0;
 	//MoveGenerator::GetAllPossibleMoves(board, moves, moveCount);
 
-	PerftRunner::Run(fen, 5);
+	PerftRunner::Run(fen, 6);
 	
 	//cout << nodes << endl;
 	return 0;
