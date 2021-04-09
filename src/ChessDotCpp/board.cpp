@@ -1,25 +1,24 @@
 #include "board.h"
 
-#include "common.h"
 #include "zobrist.h"
 
 void Board::SyncExtraBitBoards()
 {
-	WhitePieces = BitBoard[ChessPiece::WhitePawn]
+	BitBoard[ChessPiece::White] = BitBoard[ChessPiece::WhitePawn]
 		| BitBoard[ChessPiece::WhiteKnight]
 		| BitBoard[ChessPiece::WhiteBishop]
 		| BitBoard[ChessPiece::WhiteRook]
 		| BitBoard[ChessPiece::WhiteQueen]
 		| BitBoard[ChessPiece::WhiteKing];
 
-	BlackPieces = BitBoard[ChessPiece::BlackPawn]
+	BitBoard[ChessPiece::Black] = BitBoard[ChessPiece::BlackPawn]
 		| BitBoard[ChessPiece::BlackKnight]
 		| BitBoard[ChessPiece::BlackBishop]
 		| BitBoard[ChessPiece::BlackRook]
 		| BitBoard[ChessPiece::BlackQueen]
 		| BitBoard[ChessPiece::BlackKing];
 
-	AllPieces = WhitePieces | BlackPieces;
+	AllPieces = BitBoard[ChessPiece::White] | BitBoard[ChessPiece::Black];
 	EmptySquares = ~AllPieces;
 }
 
@@ -33,9 +32,11 @@ void Board::DoMove(const Move move)
 	History[HistoryDepth].FiftyMoveRule = LastTookPieceHistoryIndex;
 	HistoryDepth++;
 
-	const auto whiteToMove = WhiteToMove;
+	const auto originalWhiteToMove = WhiteToMove;
+	const auto originalColorToMove = ColorToMove;
 
-	WhiteToMove = !whiteToMove;
+	WhiteToMove = !originalWhiteToMove;
+	ColorToMove = ColorToMove ^ 1;
 	Key ^= ZobristKeys.ZWhiteToMove;
 
 	if (EnPassantFile != 0)
@@ -67,7 +68,7 @@ void Board::DoMove(const Move move)
 		promotedPiece = move.GetPawnPromoteTo();
 		PieceCounts[move.GetPiece()]--;
 		PieceCounts[promotedPiece]++;
-		if (whiteToMove)
+		if (originalWhiteToMove)
 		{
 			WhiteMaterial -= EvaluationConstants::Weights[ChessPiece::WhitePawn];
 			WhiteMaterial += EvaluationConstants::Weights[promotedPiece];
@@ -101,7 +102,7 @@ void Board::DoMove(const Move move)
 		}
 		LastTookPieceHistoryIndex = HistoryDepth - 1;
 		PieceCounts[move.GetTakesPiece()]--;
-		if (whiteToMove)
+		if (originalWhiteToMove)
 		{
 			BlackMaterial -= EvaluationConstants::Weights[move.GetTakesPiece()];
 		}
@@ -110,12 +111,18 @@ void Board::DoMove(const Move move)
 			WhiteMaterial -= EvaluationConstants::Weights[move.GetTakesPiece()];
 		}
 	}
+	
+	// KING POS
+	if (move.GetPiece() == (ChessPiece::King | originalColorToMove))
+	{
+		KingPositions[originalColorToMove] = move.GetTo();
+	}
 
 	// EN PASSANT
 	if (move.GetEnPassant())
 	{
 		int killedPawnPos;
-		if (whiteToMove) // TODO: whitetomove
+		if (originalWhiteToMove) // TODO: whitetomove
 		{
 			killedPawnPos = move.GetTo() - 8;
 		}
@@ -135,7 +142,7 @@ void Board::DoMove(const Move move)
 	if ((move.GetPiece() == ChessPiece::WhitePawn && move.GetFrom() + 16 == move.GetTo()) || (move.GetPiece() == ChessPiece::BlackPawn && move.GetFrom() - 16 == move.GetTo()))
 	{
 		File fileIndex = move.GetFrom() % 8;
-		Rank rankIndex = (move.GetTo() >> 3) + (whiteToMove ? -1 : 1);
+		Rank rankIndex = (move.GetTo() >> 3) + (originalWhiteToMove ? -1 : 1);
 		EnPassantFile = BitboardConstants::Files[fileIndex];
 		EnPassantFileIndex = fileIndex;
 		EnPassantRankIndex = rankIndex;
@@ -152,9 +159,9 @@ void Board::DoMove(const Move move)
 	if (move.GetCastle())
 	{
 		auto kingSide = move.GetTo() % 8 > 3;
-		Position castlingRookPos = (kingSide ? 7 : 0) + (whiteToMove ? 0 : 56);
+		Position castlingRookPos = (kingSide ? 7 : 0) + (originalWhiteToMove ? 0 : 56);
 		Position castlingRookNewPos = (move.GetFrom() + move.GetTo()) / 2;
-		Piece rookPiece = whiteToMove ? ChessPiece::WhiteRook : ChessPiece::BlackRook;
+		Piece rookPiece = originalWhiteToMove ? ChessPiece::WhiteRook : ChessPiece::BlackRook;
 
 		ArrayBoard[castlingRookPos] = ChessPiece::Empty;
 		ArrayBoard[castlingRookNewPos] = rookPiece;
@@ -263,6 +270,7 @@ void Board::UndoMove()
 
 	//var whiteToMove = WhiteToMove;
 	WhiteToMove = !WhiteToMove;
+	ColorToMove = ColorToMove ^ 1;
 
 
 	if (move.GetNullMove())
@@ -312,6 +320,12 @@ void Board::UndoMove()
 		ArrayBoard[move.GetTo()] = move.GetTakesPiece();
 	}
 
+	// KING POS
+	if (move.GetPiece() == ChessPiece::King + ColorToMove)
+	{
+		KingPositions[ColorToMove] = move.GetFrom();
+	}
+	
 	// TAKES
 	if (move.GetTakesPiece() > 0)
 	{

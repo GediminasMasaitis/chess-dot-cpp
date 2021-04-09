@@ -52,27 +52,43 @@ constexpr Bitboard GetAttackedByJumpingPiece(Position position, const Bitboard j
 	return jumps;
 }
 
-constexpr Bitboard GetAttackedByJumpingPieces(Bitboard jumpingPieces, const Bitboard jumpMask, const Position jumpMaskCenter)
+//constexpr Bitboard GetAttackedByJumpingPieces(Bitboard jumpingPieces, const Bitboard jumpMask, const Position jumpMaskCenter)
+//{
+//	Bitboard allJumps = 0;
+//	while (jumpingPieces != 0)
+//	{
+//		const Position i = BitScanForward(jumpingPieces);
+//		const Bitboard jumps = GetAttackedByJumpingPiece(i, jumpMask, jumpMaskCenter);
+//		allJumps |= jumps;
+//		jumpingPieces &= ~GetBitboard(i);
+//	}
+//	return allJumps;
+//}
+
+constexpr Bitboard GetAttackedByKings(Bitboard kings)
 {
 	Bitboard allJumps = 0;
-	while (jumpingPieces != 0)
+	while (kings != 0)
 	{
-		const Position i = BitScanForward(jumpingPieces);
-		const Bitboard jumps = GetAttackedByJumpingPiece(i, jumpMask, jumpMaskCenter);
+		const Position i = BitScanForward(kings);
+		const Bitboard jumps = BitboardJumps.KingJumps[i];
 		allJumps |= jumps;
-		jumpingPieces &= ~GetBitboard(i);
+		kings &= kings - 1;
 	}
 	return allJumps;
 }
 
-constexpr Bitboard GetAttackedByKings(Bitboard kings)
-{
-	return GetAttackedByJumpingPieces(kings, BitboardConstants::KingSpan, BitboardConstants::KingSpanPosition);
-}
-
 constexpr Bitboard GetAttackedByKnights(Bitboard knights)
 {
-	return GetAttackedByJumpingPieces(knights, BitboardConstants::KnightSpan, BitboardConstants::KnightSpanPosition);
+	Bitboard allJumps = 0;
+	while (knights != 0)
+	{
+		const Position i = BitScanForward(knights);
+		const Bitboard jumps = BitboardJumps.KnightJumps[i];
+		allJumps |= jumps;
+		knights &= knights - 1;
+	}
+	return allJumps;
 }
 
 Bitboard AttacksGenerator::GetAllAttacked(const Board& board, const bool whiteToMove, const Bitboard allPieces, const Bitboard canAttackFrom)
@@ -117,6 +133,50 @@ Bitboard AttacksGenerator::GetAllAttacked(const Board& board, const bool whiteTo
 	return allAttacked;
 }
 
+Bitboard DiagonalAntidiagonalXray(const Bitboard allPieces, Bitboard ownPieces, const Position position)
+{
+	const auto attacks = SlideMoveGenerator::DiagonalAntidiagonalSlide(allPieces, position);
+	ownPieces &= attacks;
+	const auto xrayAttacks = attacks ^ SlideMoveGenerator::DiagonalAntidiagonalSlide(allPieces ^ ownPieces, position);
+	return xrayAttacks;
+}
+
+Bitboard HorizontalVerticalXray(const Bitboard allPieces, Bitboard ownPieces, const Position position)
+{
+	const auto attacks = SlideMoveGenerator::HorizontalVerticalSlide(allPieces, position);
+	ownPieces &= attacks;
+	const auto xrayAttacks = attacks ^ SlideMoveGenerator::HorizontalVerticalSlide(allPieces ^ ownPieces, position);
+	return xrayAttacks;
+}
+
+Bitboard PinDetector::GetPinned(const Board& board, Piece color, Position pos)
+{
+	const Piece opponentColor = static_cast<Piece>(color ^ 1);
+	Bitboard pinned = 0ULL;
+	const Bitboard ownPieces = board.BitBoard[board.ColorToMove];
+
+	Bitboard xrays = DiagonalAntidiagonalXray(board.AllPieces, ownPieces, pos);
+	Bitboard pinners = xrays & (board.BitBoard[ChessPiece::Bishop | opponentColor] | board.BitBoard[ChessPiece::Queen | opponentColor]);
+
+	while (pinners != 0)
+	{
+		const Position pinner = BitScanForward(pinners);
+		pinned |= BetweenBitboards.Between[pinner][pos] & ownPieces;
+		pinners &= pinners - 1;
+	}
+
+	xrays = HorizontalVerticalXray(board.AllPieces, ownPieces, pos);
+	pinners = xrays & (board.BitBoard[ChessPiece::Rook | opponentColor] | board.BitBoard[ChessPiece::Queen | opponentColor]);
+
+	while (pinners != 0)
+	{
+		const Position pinner = BitScanForward(pinners);
+		pinned |= BetweenBitboards.Between[pinner][pos] & ownPieces;
+		pinners &= pinners - 1;
+	}
+	return pinned;
+}
+
 void GeneratePromotionMoves
 (
 	const Position from,
@@ -135,9 +195,10 @@ void GeneratePromotionMoves
 	moves[moveCount++] = Move(from, to, piece, takesPiece, false, false, forWhite ? ChessPiece::WhiteQueen : ChessPiece::BlackQueen);
 }
 
-void GetPotentialWhitePawnCaptures(const Board& board, MoveArray& moves, size_t& moveCount)
+void GetPotentialWhitePawnCaptures(const Board& board, Bitboard allowedFrom, Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
 {
-	Bitboard takeLeft = (board.BitBoard[ChessPiece::WhitePawn] << 7) & ~BitboardConstants::Files[7] & board.BlackPieces;
+	const Bitboard pawns = board.BitBoard[ChessPiece::WhitePawn] & allowedFrom;
+	Bitboard takeLeft = (pawns << 7) & ~BitboardConstants::Files[7] & board.BitBoard[ChessPiece::Black] & allowedTo;
 	while (takeLeft != 0)
 	{
 		const Position i = BitScanForward(takeLeft);
@@ -150,10 +211,10 @@ void GetPotentialWhitePawnCaptures(const Board& board, MoveArray& moves, size_t&
 			const auto move = Move(i - 7, i, ChessPiece::WhitePawn, board.ArrayBoard[i]);
 			moves[moveCount++] = move;
 		}
-		takeLeft &= ~GetBitboard(i);
+		takeLeft &= takeLeft - 1;
 	}
 
-	Bitboard takeRight = (board.BitBoard[ChessPiece::WhitePawn] << 9) & ~BitboardConstants::Files[0] & board.BlackPieces;
+	Bitboard takeRight = (pawns << 9) & ~BitboardConstants::Files[0] & board.BitBoard[ChessPiece::Black] & allowedTo;
 	while (takeRight != 0)
 	{
 		const Position i = BitScanForward(takeRight);
@@ -166,32 +227,33 @@ void GetPotentialWhitePawnCaptures(const Board& board, MoveArray& moves, size_t&
 			const auto move = Move(i - 9, i, ChessPiece::WhitePawn, board.ArrayBoard[i]);
 			moves[moveCount++] = move;
 		}
-		takeRight &= ~GetBitboard(i);
+		takeRight &= takeRight - 1;
 	}
 
-	Bitboard enPassantLeft = (board.BitBoard[ChessPiece::WhitePawn] << 7) & ~BitboardConstants::Files[7] & board.EnPassantFile & BitboardConstants::Ranks[5] & board.BitBoard[ChessPiece::BlackPawn] << 8;
+	Bitboard enPassantLeft = (pawns << 7) & ~BitboardConstants::Files[7] & board.EnPassantFile & BitboardConstants::Ranks[5] & board.BitBoard[ChessPiece::BlackPawn] << 8;
 	while (enPassantLeft != 0)
 	{
 		const Position i = BitScanForward(enPassantLeft);
 		const auto move = Move(i - 7, i, ChessPiece::WhitePawn, board.ArrayBoard[i - 8], true);
 		moves[moveCount++] = move;
-		enPassantLeft &= ~GetBitboard(i);
+		enPassantLeft &= enPassantLeft - 1;
 	}
 
 
-	Bitboard enPassantRight = (board.BitBoard[ChessPiece::WhitePawn] << 9) & ~BitboardConstants::Files[0] & board.EnPassantFile & BitboardConstants::Ranks[5] & board.BitBoard[ChessPiece::BlackPawn] << 8;
+	Bitboard enPassantRight = (pawns << 9) & ~BitboardConstants::Files[0] & board.EnPassantFile & BitboardConstants::Ranks[5] & board.BitBoard[ChessPiece::BlackPawn] << 8;
 	while (enPassantRight != 0)
 	{
 		const Position i = BitScanForward(enPassantRight);
 		const auto move = Move(i - 9, i, ChessPiece::WhitePawn, board.ArrayBoard[i - 8], true);
 		moves[moveCount++] = move;
-		enPassantRight &= ~GetBitboard(i);
+		enPassantRight &= enPassantRight - 1;
 	}
 }
 
-void GetPotentialWhitePawnMoves(const Board& board, MoveArray& moves, size_t& moveCount)
+void GetPotentialWhitePawnMoves(const Board& board, Bitboard allowedFrom, Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
 {
-	Bitboard moveOne = (board.BitBoard[ChessPiece::WhitePawn] << 8) & board.EmptySquares;
+	const Bitboard pawns = board.BitBoard[ChessPiece::WhitePawn] & allowedFrom;
+	Bitboard moveOne = allowedTo & (pawns << 8) & board.EmptySquares;
 	while (moveOne != 0)
 	{
 		const Position i = BitScanForward(moveOne);
@@ -204,22 +266,23 @@ void GetPotentialWhitePawnMoves(const Board& board, MoveArray& moves, size_t& mo
 			const auto move = Move(i - 8, i, ChessPiece::WhitePawn);
 			moves[moveCount++] = move;
 		}
-		moveOne &= ~GetBitboard(i);
+		moveOne &= moveOne - 1;
 	}
 
-	Bitboard moveTwo = (board.BitBoard[ChessPiece::WhitePawn] << 16) & board.EmptySquares & board.EmptySquares << 8 & BitboardConstants::Ranks[3];
+	Bitboard moveTwo = allowedTo & (pawns << 16) & board.EmptySquares & board.EmptySquares << 8 & BitboardConstants::Ranks[3];
 	while (moveTwo != 0)
 	{
 		const Position i = BitScanForward(moveTwo);
 		const auto move = Move(i - 16, i, ChessPiece::WhitePawn);
 		moves[moveCount++] = move;
-		moveTwo &= ~GetBitboard(i);
+		moveTwo &= moveTwo - 1;
 	}
 }
 
-void GetPotentialBlackPawnCaptures(const Board& board, MoveArray& moves, size_t& moveCount)
+void GetPotentialBlackPawnCaptures(const Board& board, Bitboard allowedFrom, Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
 {
-	Bitboard takeLeft = (board.BitBoard[ChessPiece::BlackPawn] >> 7) & ~BitboardConstants::Files[0] & board.WhitePieces;
+	const Bitboard pawns = board.BitBoard[ChessPiece::BlackPawn] & allowedFrom;
+	Bitboard takeLeft = (pawns >> 7) & ~BitboardConstants::Files[0] & board.BitBoard[ChessPiece::White] & allowedTo;
 	while (takeLeft != 0)
 	{
 		const Position i = BitScanForward(takeLeft);
@@ -232,10 +295,10 @@ void GetPotentialBlackPawnCaptures(const Board& board, MoveArray& moves, size_t&
 			const auto move = Move(i + 7, i, ChessPiece::BlackPawn, board.ArrayBoard[i]);
 			moves[moveCount++] = move;
 		}
-		takeLeft &= ~GetBitboard(i);
+		takeLeft &= takeLeft - 1;
 	}
 
-	Bitboard takeRight = (board.BitBoard[ChessPiece::BlackPawn] >> 9) & ~BitboardConstants::Files[7] & board.WhitePieces;
+	Bitboard takeRight = (pawns >> 9) & ~BitboardConstants::Files[7] & board.BitBoard[ChessPiece::White] & allowedTo;
 	while (takeRight != 0)
 	{
 		const Position i = BitScanForward(takeRight);
@@ -248,32 +311,33 @@ void GetPotentialBlackPawnCaptures(const Board& board, MoveArray& moves, size_t&
 			const auto move = Move(i + 9, i, ChessPiece::BlackPawn, board.ArrayBoard[i]);
 			moves[moveCount++] = move;
 		}
-		takeRight &= ~GetBitboard(i);
+		takeRight &= takeRight - 1;
 	}
 
-	Bitboard enPassantLeft = (board.BitBoard[ChessPiece::BlackPawn] >> 7) & ~BitboardConstants::Files[0] & board.EnPassantFile & BitboardConstants::Ranks[2] & board.BitBoard[ChessPiece::WhitePawn] >> 8;
+	Bitboard enPassantLeft = (pawns >> 7) & ~BitboardConstants::Files[0] & board.EnPassantFile & BitboardConstants::Ranks[2] & board.BitBoard[ChessPiece::WhitePawn] >> 8;
 	while (enPassantLeft != 0)
 	{
 		const Position i = BitScanForward(enPassantLeft);
 		const auto move = Move(i + 7, i, ChessPiece::BlackPawn, board.ArrayBoard[i + 8], true);
 		moves[moveCount++] = move;
-		enPassantLeft &= ~GetBitboard(i);
+		enPassantLeft &= enPassantLeft - 1;
 	}
 
 
-	Bitboard enPassantRight = (board.BitBoard[ChessPiece::BlackPawn] >> 9) & ~BitboardConstants::Files[7] & board.EnPassantFile & BitboardConstants::Ranks[2] & board.BitBoard[ChessPiece::WhitePawn] >> 8;
+	Bitboard enPassantRight = (pawns >> 9) & ~BitboardConstants::Files[7] & board.EnPassantFile & BitboardConstants::Ranks[2] & board.BitBoard[ChessPiece::WhitePawn] >> 8;
 	while (enPassantRight != 0)
 	{
 		const Position i = BitScanForward(enPassantRight);
 		const auto move = Move(i + 9, i, ChessPiece::BlackPawn, board.ArrayBoard[i + 8], true);
 		moves[moveCount++] = move;
-		enPassantRight &= ~GetBitboard(i);
+		enPassantRight &= enPassantRight - 1;
 	}
 }
 
-void GetPotentialBlackPawnMoves(const Board& board, MoveArray& moves, size_t& moveCount)
+void GetPotentialBlackPawnMoves(const Board& board, Bitboard allowedFrom, Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
 {
-	Bitboard moveOne = (board.BitBoard[ChessPiece::BlackPawn] >> 8) & board.EmptySquares;
+	const Bitboard pawns = board.BitBoard[ChessPiece::BlackPawn] & allowedFrom;
+	Bitboard moveOne = allowedTo & (pawns >> 8) & board.EmptySquares;
 	while (moveOne != 0)
 	{
 		const Position i = BitScanForward(moveOne);
@@ -286,16 +350,16 @@ void GetPotentialBlackPawnMoves(const Board& board, MoveArray& moves, size_t& mo
 			const auto move = Move(i + 8, i, ChessPiece::BlackPawn);
 			moves[moveCount++] = move;
 		}
-		moveOne &= ~GetBitboard(i);
+		moveOne &= moveOne - 1;
 	}
 
-	Bitboard moveTwo = (board.BitBoard[ChessPiece::BlackPawn] >> 16) & board.EmptySquares & board.EmptySquares >> 8 & BitboardConstants::Ranks[4];
+	Bitboard moveTwo = allowedTo & (pawns >> 16) & board.EmptySquares & board.EmptySquares >> 8 & BitboardConstants::Ranks[4];
 	while (moveTwo != 0)
 	{
 		const Position i = BitScanForward(moveTwo);
 		const auto move = Move(i + 16, i, ChessPiece::BlackPawn);
 		moves[moveCount++] = move;
-		moveTwo &= ~GetBitboard(i);
+		moveTwo &= moveTwo - 1;
 	}
 }
 
@@ -314,58 +378,45 @@ void BitmaskToMoves
 		const auto i = BitScanForward(bitmask);
 		const auto move = Move(positionFrom, i, piece, board.ArrayBoard[i]);
 		moves[moveCount++] = move;
-		bitmask &= ~GetBitboard(i);
+		bitmask &= bitmask - 1;
 	}
 }
 
 void GetPotentialJumpingMoves
 (
 	const Board& board,
-	const Bitboard allowedSquareMask,
+	const Bitboard allowedTo,
 	Bitboard jumpingPieces,
-	const Bitboard jumpMask,
-	const Position jumpMaskCenter,
+	const JumpArray& jumpTable,
 	const Piece piece,
 	MoveArray& moves,
 	size_t& moveCount
 )
 {
-	const Bitboard ownPieces = board.WhiteToMove ? board.WhitePieces : board.BlackPieces;
+	const Bitboard ownPieces = board.BitBoard[board.ColorToMove];
 	while (jumpingPieces != 0)
 	{
 		const Position i = BitScanForward(jumpingPieces);
-		Bitboard jumps;
-		if (i > jumpMaskCenter)
-		{
-			jumps = jumpMask << (i - jumpMaskCenter);
-		}
-		else
-		{
-			jumps = jumpMask >> (jumpMaskCenter - i);
-		}
-
-		jumps &= ~(i % 8 < 4 ? BitboardConstants::Files[6] | BitboardConstants::Files[7] : BitboardConstants::Files[0] | BitboardConstants::Files[1]);
+		Bitboard jumps = jumpTable[i];
 		jumps &= ~ownPieces;
-		jumps &= allowedSquareMask;
-
+		jumps &= allowedTo;
 		BitmaskToMoves(board, jumps, i, piece, moves, moveCount);
-
-		jumpingPieces &= ~GetBitboard(i);
+		jumpingPieces &= jumpingPieces - 1;
 	}
 }
 
-void GetPotentialKnightMoves(const Board& board, Bitboard allowedSquareMask, MoveArray& moves, size_t& moveCount)
+void GetPotentialKnightMoves(const Board& board, Bitboard allowedFrom, Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
 {
 	const Bitboard knights = board.WhiteToMove ? board.BitBoard[ChessPiece::WhiteKnight] : board.BitBoard[ChessPiece::BlackKnight];
 	const Piece chessPiece = board.WhiteToMove ? ChessPiece::WhiteKnight : ChessPiece::BlackKnight;
-	GetPotentialJumpingMoves(board, allowedSquareMask, knights, BitboardConstants::KnightSpan, BitboardConstants::KnightSpanPosition, chessPiece, moves, moveCount);
+	GetPotentialJumpingMoves(board, allowedTo, knights, BitboardJumps.KnightJumps, chessPiece, moves, moveCount);
 }
 
-void GetPotentialKingCaptures(const Board& board, Bitboard allowedSquareMask, MoveArray& moves, size_t& moveCount)
+void GetPotentialKingCaptures(const Board& board, Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
 {
 	const Bitboard kings = board.WhiteToMove ? board.BitBoard[ChessPiece::WhiteKing] : board.BitBoard[ChessPiece::BlackKing];
 	const Piece chessPiece = board.WhiteToMove ? ChessPiece::WhiteKing : ChessPiece::BlackKing;
-	GetPotentialJumpingMoves(board, allowedSquareMask, kings, BitboardConstants::KingSpan, BitboardConstants::KingSpanPosition, chessPiece, moves, moveCount);
+	GetPotentialJumpingMoves(board, allowedTo, kings, BitboardJumps.KingJumps, chessPiece, moves, moveCount);
 }
 
 void GetPotentialCastlingMoves(const Board& board, MoveArray& moves, size_t& moveCount)
@@ -420,12 +471,11 @@ void GetPotentialCastlingMoves(const Board& board, MoveArray& moves, size_t& mov
 	}
 }
 
-void GetPotentialKingMoves(const Board& board, Bitboard allowedSquareMask, MoveArray& moves, size_t& moveCount)
+void GetPotentialKingMoves(const Board& board, MoveArray& moves, size_t& moveCount)
 {
 	const Bitboard kings = board.WhiteToMove ? board.BitBoard[ChessPiece::WhiteKing] : board.BitBoard[ChessPiece::BlackKing];
 	const Piece chessPiece = board.WhiteToMove ? ChessPiece::WhiteKing : ChessPiece::BlackKing;
-	GetPotentialJumpingMoves(board, allowedSquareMask, kings, BitboardConstants::KingSpan, BitboardConstants::KingSpanPosition, chessPiece, moves, moveCount);
-	GetPotentialCastlingMoves(board, moves, moveCount);
+	GetPotentialJumpingMoves(board, ~0ULL, kings, BitboardJumps.KingJumps, chessPiece, moves, moveCount);
 }
 
 void GetPotentialSlidingPieceMoves
@@ -438,7 +488,7 @@ void GetPotentialSlidingPieceMoves
 	size_t& moveCount
 )
 {
-	const Bitboard ownPieces = board.WhiteToMove ? board.WhitePieces : board.BlackPieces;
+	const Bitboard ownPieces = board.BitBoard[board.ColorToMove];
 	while (slidingPieces != 0)
 	{
 		const Position i = BitScanForward(slidingPieces);
@@ -468,97 +518,158 @@ void GetPotentialSlidingPieceMoves
 	}
 }
 
-void GetPotentialRookMoves(const Board& board, const Bitboard allowedSquareMask, MoveArray& moves, size_t& moveCount)
+void GetPotentialRookMoves(const Board& board, const Bitboard allowedFrom, const Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
 {
-	const Bitboard rooks = board.WhiteToMove ? board.BitBoard[ChessPiece::WhiteRook] : board.BitBoard[ChessPiece::BlackRook];
-	const Piece chessPiece = board.WhiteToMove ? ChessPiece::WhiteRook : ChessPiece::BlackRook;
-	GetPotentialSlidingPieceMoves(board, rooks, chessPiece, allowedSquareMask, moves, moveCount);
-}
-
-void GetPotentialBishopMoves(const Board& board, const Bitboard allowedSquareMask, MoveArray& moves, size_t& moveCount)
-{
-	const Bitboard bishops = board.WhiteToMove ? board.BitBoard[ChessPiece::WhiteBishop] : board.BitBoard[ChessPiece::BlackBishop];
-	const Piece chessPiece = board.WhiteToMove ? ChessPiece::WhiteBishop : ChessPiece::BlackBishop;
-	GetPotentialSlidingPieceMoves(board, bishops, chessPiece, allowedSquareMask, moves, moveCount);
-}
-
-void GetPotentialQueenMoves(const Board& board, const Bitboard allowedSquareMask, MoveArray& moves, size_t& moveCount)
-{
-	const Bitboard bishops = board.WhiteToMove ? board.BitBoard[ChessPiece::WhiteQueen] : board.BitBoard[ChessPiece::BlackQueen];
-	const Piece chessPiece = board.WhiteToMove ? ChessPiece::WhiteQueen : ChessPiece::BlackQueen;
-	GetPotentialSlidingPieceMoves(board, bishops, chessPiece, allowedSquareMask, moves, moveCount);
-}
-
-void MoveGenerator::GetAllPotentialMoves(const Board& board, MoveArray& moves, size_t& moveCount)
-{
-	constexpr Bitboard allowedSquareMask = ~0ULL;
-	moveCount = 0;
-	
-	if (board.WhiteToMove)
+	const Piece piece = static_cast<Piece>(ChessPiece::Rook | board.ColorToMove);
+	Bitboard piecesBitmask = board.BitBoard[piece] & allowedFrom;
+	const Bitboard ownPieces = board.BitBoard[board.ColorToMove];
+	while (piecesBitmask != 0)
 	{
-		GetPotentialWhitePawnCaptures(board, moves, moveCount);
-		GetPotentialWhitePawnMoves(board, moves, moveCount);
+		const Position position = BitScanForward(piecesBitmask);
+		Bitboard slide = SlideMoveGenerator::HorizontalVerticalSlide(board.AllPieces, position);
+		slide &= ~ownPieces;
+		slide &= allowedTo;
+		BitmaskToMoves(board, slide, position, piece, moves, moveCount);
+		piecesBitmask &= piecesBitmask - 1;
+	}
+}
+
+void GetPotentialBishopMoves(const Board& board, const Bitboard allowedFrom, const Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
+{
+	const Piece piece = static_cast<Piece>(ChessPiece::Bishop | board.ColorToMove);
+	Bitboard piecesBitmask = board.BitBoard[piece] & allowedFrom;
+	const Bitboard ownPieces = board.BitBoard[board.ColorToMove];
+	while (piecesBitmask != 0)
+	{
+		const Position position = BitScanForward(piecesBitmask);
+		Bitboard slide = SlideMoveGenerator::DiagonalAntidiagonalSlide(board.AllPieces, position);
+		slide &= ~ownPieces;
+		slide &= allowedTo;
+		BitmaskToMoves(board, slide, position, piece, moves, moveCount);
+		piecesBitmask &= piecesBitmask - 1;
+	}
+}
+
+void GetPotentialQueenMoves(const Board& board, const Bitboard allowedFrom, const Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
+{
+	const Piece piece = static_cast<Piece>(ChessPiece::Queen | board.ColorToMove);
+	Bitboard piecesBitmask = board.BitBoard[piece] & allowedFrom;
+	const Bitboard ownPieces = board.BitBoard[board.ColorToMove];
+	while (piecesBitmask != 0)
+	{
+		const Position position = BitScanForward(piecesBitmask);
+		Bitboard slide = SlideMoveGenerator::AllSlide(board.AllPieces, position);
+		slide &= ~ownPieces;
+		slide &= allowedTo;
+		BitmaskToMoves(board, slide, position, piece, moves, moveCount);
+		piecesBitmask &= piecesBitmask - 1;
+	}
+}
+
+void MoveGenerator::GetAllPotentialMoves(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, size_t& moveCount)
+{
+	const auto checkCount = PopCount(checkers);
+	if (checkCount > 1)
+	{
+		GetPotentialKingMoves(board, moves, moveCount);
+		return;
+	}
+
+	Bitboard allowedFrom = ~0ULL;
+	Bitboard allowedTo = ~0ULL;
+
+	if (checkCount == 1)
+	{
+		allowedFrom = ~pinned;
+
+		const Position checkerPos = BitScanForward(checkers);
+		allowedTo = BetweenBitboards.Between[board.KingPositions[board.ColorToMove]][checkerPos] | checkers;
 	}
 	else
 	{
-		GetPotentialBlackPawnCaptures(board, moves, moveCount);
-		GetPotentialBlackPawnMoves(board, moves, moveCount);
+		GetPotentialCastlingMoves(board, moves, moveCount);
 	}
 
-	GetPotentialKnightMoves(board, allowedSquareMask, moves, moveCount);
-	GetPotentialBishopMoves(board, allowedSquareMask, moves, moveCount);
-	GetPotentialRookMoves(board, allowedSquareMask, moves, moveCount);
-	GetPotentialQueenMoves(board, allowedSquareMask, moves, moveCount);
-	GetPotentialKingMoves(board, allowedSquareMask, moves, moveCount);
-}
-
-void MoveGenerator::GetAllPotentialCaptures(const Board& board, MoveArray& moves, size_t& moveCount)
-{
-	const Bitboard allowedSquareMask = board.WhiteToMove ? board.BlackPieces : board.WhitePieces;
+	GetPotentialKnightMoves(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialBishopMoves(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialRookMoves(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialQueenMoves(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialKingMoves(board, moves, moveCount);
 
 	if (board.WhiteToMove)
 	{
-		GetPotentialWhitePawnCaptures(board, moves, moveCount);
+		GetPotentialWhitePawnCaptures(board, allowedFrom, allowedTo, moves, moveCount);
+		GetPotentialWhitePawnMoves(board, allowedFrom, allowedTo, moves, moveCount);
 	}
 	else
 	{
-		GetPotentialBlackPawnCaptures(board, moves, moveCount);
+		GetPotentialBlackPawnCaptures(board, allowedFrom, allowedTo, moves, moveCount);
+		GetPotentialBlackPawnMoves(board, allowedFrom, allowedTo, moves, moveCount);
 	}
-
-	GetPotentialKnightMoves(board, allowedSquareMask, moves, moveCount);
-	GetPotentialBishopMoves(board, allowedSquareMask, moves, moveCount);
-	GetPotentialRookMoves(board, allowedSquareMask, moves, moveCount);
-	GetPotentialQueenMoves(board, allowedSquareMask, moves, moveCount);
-	GetPotentialKingCaptures(board, allowedSquareMask, moves, moveCount);
 }
 
-bool IsKingSafeAfterMoveOld(const Board& board, const Move move)
+void MoveGenerator::GetAllPotentialCaptures(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, size_t& moveCount)
 {
-	Bitboard allPieces = board.AllPieces;
-	const Bitboard inverseFromBitboard = ~GetBitboard(move.GetFrom());
-	const Bitboard toBitboard = GetBitboard(move.GetTo());
-	allPieces &= inverseFromBitboard;
-	allPieces |= toBitboard;
-	if (move.GetEnPassant())
-	{
-		const Bitboard enPassantedBitboard = board.WhiteToMove ? toBitboard >> 8 : toBitboard << 8;
-		allPieces &= ~enPassantedBitboard;
-	}
-	
-	const auto enemyAttackedAfterMove = AttacksGenerator::GetAllAttacked(board, !board.WhiteToMove, allPieces, ~toBitboard);
+	Bitboard allowedFrom = ~0ULL;
+	Bitboard allowedToKing = board.BitBoard[board.ColorToMove ^ 1];
+	Bitboard allowedTo = allowedToKing;
 
-	auto myKings = board.WhiteToMove ? board.BitBoard[ChessPiece::WhiteKing] : board.BitBoard[ChessPiece::BlackKing];
-	if ((board.WhiteToMove && move.GetPiece() == ChessPiece::WhiteKing) || (!board.WhiteToMove && move.GetPiece() == ChessPiece::BlackKing))
+	const auto checkCount = PopCount(checkers);
+	if (checkCount > 1)
 	{
-		myKings &= inverseFromBitboard;
-		myKings |= toBitboard;
+		GetPotentialKingCaptures(board, allowedToKing, moves, moveCount);
+		return;
 	}
 
-	const bool isSafe = (enemyAttackedAfterMove & myKings) == 0;
-	return isSafe;
+	if (checkCount == 1)
+	{
+		allowedFrom = ~pinned;
+		allowedTo = checkers;
+	}
+
+	GetPotentialKnightMoves(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialBishopMoves(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialRookMoves(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialQueenMoves(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialKingCaptures(board, allowedToKing, moves, moveCount);
+
+	if (board.WhiteToMove)
+	{
+		GetPotentialWhitePawnCaptures(board, allowedFrom, allowedTo, moves, moveCount);
+	}
+	else
+	{
+		GetPotentialBlackPawnCaptures(board, allowedFrom, allowedTo, moves, moveCount);
+	}
 }
 
-bool MoveGenerator::IsKingSafeAfterMove(const Board& board, const Move move)
+//bool IsKingSafeAfterMoveOld(const Board& board, const Move move)
+//{
+//	Bitboard allPieces = board.AllPieces;
+//	const Bitboard inverseFromBitboard = ~GetBitboard(move.GetFrom());
+//	const Bitboard toBitboard = GetBitboard(move.GetTo());
+//	allPieces &= inverseFromBitboard;
+//	allPieces |= toBitboard;
+//	if (move.GetEnPassant())
+//	{
+//		const Bitboard enPassantedBitboard = board.WhiteToMove ? toBitboard >> 8 : toBitboard << 8;
+//		allPieces &= ~enPassantedBitboard;
+//	}
+//	
+//	const auto enemyAttackedAfterMove = AttacksGenerator::GetAllAttacked(board, !board.WhiteToMove, allPieces, ~toBitboard);
+//
+//	auto myKings = board.WhiteToMove ? board.BitBoard[ChessPiece::WhiteKing] : board.BitBoard[ChessPiece::BlackKing];
+//	if ((board.WhiteToMove && move.GetPiece() == ChessPiece::WhiteKing) || (!board.WhiteToMove && move.GetPiece() == ChessPiece::BlackKing))
+//	{
+//		myKings &= inverseFromBitboard;
+//		myKings |= toBitboard;
+//	}
+//
+//	const bool isSafe = (enemyAttackedAfterMove & myKings) == 0;
+//	return isSafe;
+//}
+
+bool MoveValidator::IsKingSafeAfterMove(const Board& board, const Move move)
 {
 	Bitboard allPieces = board.AllPieces;
 	const Bitboard fromBitboard = GetBitboard(move.GetFrom());
@@ -575,19 +686,8 @@ bool MoveGenerator::IsKingSafeAfterMove(const Board& board, const Move move)
 		takesBitboard |= enPassantedBitboard;
 	}
 
-	bool kingMove = (move.GetPiece() == ChessPiece::WhiteKing) || (move.GetPiece() == ChessPiece::BlackKing);
-	Bitboard myKings = board.WhiteToMove ? board.BitBoard[ChessPiece::WhiteKing] : board.BitBoard[ChessPiece::BlackKing];
-	Position myKingPos;
-	if (kingMove)
-	{
-		myKings &= ~fromBitboard;
-		myKings |= toBitboard;
-		myKingPos = move.GetTo();
-	}
-	else
-	{
-		myKingPos = BitScanForward(myKings);
-	}
+	const bool kingMove = move.GetPiece() == ChessPiece::WhiteKing || move.GetPiece() == ChessPiece::BlackKing;
+	const Position myKingPos = kingMove ? move.GetTo() : board.KingPositions[board.ColorToMove];
 
 	const Bitboard invTakes = ~takesBitboard;
 
@@ -616,40 +716,32 @@ bool MoveGenerator::IsKingSafeAfterMove(const Board& board, const Move move)
 		kings = board.BitBoard[ChessPiece::WhiteKing] & invTakes;
 	}
 
-	const Bitboard diagonalAttack = SlideMoveGenerator::DiagonalAntidiagonalSlide(allPieces, myKingPos);
-	if ((diagonalAttack & bishops) != 0)
-	{
-		return false;
-	}
-	if ((diagonalAttack & queens) != 0)
-	{
-		return false;
-	}
-
-	const Bitboard verticalAttack = SlideMoveGenerator::HorizontalVerticalSlide(allPieces, myKingPos);
-	if ((verticalAttack & rooks) != 0)
-	{
-		return false;
-	}
-	if ((verticalAttack & queens) != 0)
-	{
-		return false;
-	}
-
-	const Bitboard pawnAttack = GetAttackedByPawns(myKings, board.WhiteToMove);
-	if ((pawnAttack & pawns) != 0)
-	{
-		return false;
-	}
-
-	const Bitboard knightAttack = GetAttackedByJumpingPiece(myKingPos, BitboardConstants::KnightSpan, BitboardConstants::KnightSpanPosition);
+	const Bitboard knightAttack = BitboardJumps.KnightJumps[myKingPos];
 	if ((knightAttack & knights) != 0)
 	{
 		return false;
 	}
 
-	const Bitboard kingAttack = GetAttackedByJumpingPiece(myKingPos, BitboardConstants::KingSpan, BitboardConstants::KingSpanPosition);
+	const Bitboard kingAttack = BitboardJumps.KingJumps[myKingPos];
 	if ((kingAttack & kings) != 0)
+	{
+		return false;
+	}
+
+	const Bitboard pawnAttack = BitboardJumps.PawnJumps[move.GetColorToMove()][myKingPos]; //AttacksService.GetAttackedByPawns(myKings, board.WhiteToMove);
+	if ((pawnAttack & pawns) != 0)
+	{
+		return false;
+	}
+	
+	const Bitboard diagonalAttack = SlideMoveGenerator::DiagonalAntidiagonalSlide(allPieces, myKingPos);
+	if ((diagonalAttack & (bishops | queens)) != 0)
+	{
+		return false;
+	}
+
+	const Bitboard verticalAttack = SlideMoveGenerator::HorizontalVerticalSlide(allPieces, myKingPos);
+	if ((verticalAttack & (rooks | queens)) != 0)
 	{
 		return false;
 	}
@@ -657,13 +749,61 @@ bool MoveGenerator::IsKingSafeAfterMove(const Board& board, const Move move)
 	return true;
 }
 
-void MoveGenerator::FilterMovesByKingSafety(const Board& board, MoveArray& moves, size_t& moveCount)
+bool MoveValidator::IsKingSafeAfterMove2(const Board& board, Move move, Bitboard checkers, Bitboard pinnedPieces)
+{
+	const bool kingMove = move.GetPiece() == ChessPiece::King + board.ColorToMove;
+	const bool isPinned = (pinnedPieces & GetBitboard(move.GetFrom())) != 0;
+
+	//auto checkCount = PopCount(checkers);
+	//if (checkCount == 1 && !kingMove)
+	//{
+	//    if (isPinned)
+	//    {
+	//        return false;
+	//    }
+
+	//	auto toBitboard = GetBitboard(move.GetTo());
+	//    auto checkerPos = BitScanForward(checkers);
+	//    auto canMoveTo = BetweenBitboards.Between[board.KingPositions[board.ColorToMove]][checkerPos] | checkers;
+
+	//    if ((canMoveTo & toBitboard) == 0)
+	//    {
+	//        return false;
+	//    }
+
+	//    return true;
+	//}
+	
+	//if (isPinned)
+	//{
+	//	auto toBitboard = GetBitboard(move.GetTo());
+	//    auto canMoveTo = BetweenBitboards.Between[board.KingPositions[board.ColorToMove]][move.GetFrom()];
+	//    if ((canMoveTo & toBitboard) != 0)
+	//    {
+	//        return true;
+	//    }
+	//}
+	
+	if
+	(
+		move.GetEnPassant()
+		|| kingMove
+		|| isPinned
+	)
+	{
+		return IsKingSafeAfterMove(board, move);
+	}
+
+	return true;
+}
+
+void MoveValidator::FilterMovesByKingSafety(const Board& board, Bitboard checkers, Bitboard pinnedPieces, MoveArray& moves, size_t& moveCount)
 {
 	size_t toRemove = 0;
 	for (size_t i = 0; i < moveCount; i++)
 	{
 		auto move = moves[i];
-		bool safe = IsKingSafeAfterMove(board, move);
+		bool safe = IsKingSafeAfterMove2(board, move, checkers, pinnedPieces);
 		if (safe)
 		{
 			if (toRemove > 0)
@@ -679,8 +819,66 @@ void MoveGenerator::FilterMovesByKingSafety(const Board& board, MoveArray& moves
 	moveCount -= toRemove;
 }
 
+Bitboard GetAttackersOfSide(const Board& board, Position position, bool byWhite, Bitboard allPieces)
+{
+	Bitboard result = 0UL;
+
+	Bitboard pawns;
+	Bitboard knights;
+	Bitboard bishops;
+	Bitboard rooks;
+	Bitboard queens;
+	Bitboard kings;
+	if (byWhite)
+	{
+		pawns = board.BitBoard[ChessPiece::WhitePawn];
+		knights = board.BitBoard[ChessPiece::WhiteKnight];
+		bishops = board.BitBoard[ChessPiece::WhiteBishop];
+		rooks = board.BitBoard[ChessPiece::WhiteRook];
+		queens = board.BitBoard[ChessPiece::WhiteQueen];
+		kings = board.BitBoard[ChessPiece::WhiteKing];
+	}
+	else
+	{
+		pawns = board.BitBoard[ChessPiece::BlackPawn];
+		knights = board.BitBoard[ChessPiece::BlackKnight];
+		bishops = board.BitBoard[ChessPiece::BlackBishop];
+		rooks = board.BitBoard[ChessPiece::BlackRook];
+		queens = board.BitBoard[ChessPiece::BlackQueen];
+		kings = board.BitBoard[ChessPiece::BlackKing];
+	}
+
+	const Bitboard knightAttack = BitboardJumps.KnightJumps[position];
+	result |= knightAttack & knights;
+
+	const Bitboard kingAttack = BitboardJumps.KingJumps[position];
+	result |= kingAttack & kings;
+
+	const Piece pawnIndex = byWhite ? ChessPiece::Black : ChessPiece::White;
+	const Bitboard pawnAttack = BitboardJumps.PawnJumps[pawnIndex][position];
+	result |= pawnAttack & pawns;
+
+	const Bitboard diagonalAttack = SlideMoveGenerator::DiagonalAntidiagonalSlide(allPieces, position);
+	result |= diagonalAttack & bishops;
+	result |= diagonalAttack & queens;
+
+	const Bitboard verticalAttack = SlideMoveGenerator::HorizontalVerticalSlide(allPieces, position);
+	result |= verticalAttack & rooks;
+	result |= verticalAttack & queens;
+
+	return result;
+}
+
+Bitboard GetCheckers(const Board& board)
+{
+	const Bitboard checkers = GetAttackersOfSide(board, board.KingPositions[board.ColorToMove], !board.WhiteToMove, board.AllPieces);
+	return checkers;
+}
+
 void MoveGenerator::GetAllPossibleMoves(const Board& board, MoveArray& moves, size_t& moveCount)
 {
-	GetAllPotentialMoves(board, moves, moveCount);
-	FilterMovesByKingSafety(board, moves, moveCount);
+	const Bitboard checkers = GetCheckers(board);
+	const Bitboard pinned = PinDetector::GetPinned(board, board.ColorToMove, board.KingPositions[board.ColorToMove]);
+	GetAllPotentialMoves(board, checkers, pinned, moves, moveCount);
+	MoveValidator::FilterMovesByKingSafety(board, checkers, pinned, moves, moveCount);
 }

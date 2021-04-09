@@ -27,16 +27,17 @@ Piece TryParsePiece(char ch)
 
 void SyncMaterial(Board& board)
 {
-    board.WhiteMaterial = 0;
+	// TODO
+    /*board.WhiteMaterial = 0;
     board.BlackMaterial = 0;
     for (auto i = 1; i < 7; i++)
     {
         board.WhiteMaterial += board.PieceCounts[i] * EvaluationConstants::Weights[i];
     }
-    for (auto i = 7; i < 13; i++)
+    for (auto i = 7; i < ChessPiece::Count; i++)
     {
         board.BlackMaterial += board.PieceCounts[i] * EvaluationConstants::Weights[i];
-    }
+    }*/
 }
 
 void Fens::Parse(Board& board, std::string fen)
@@ -56,7 +57,7 @@ void Fens::Parse(Board& board, std::string fen)
         const Piece piece = TryParsePiece(ch);
         if (piece != ChessPiece::Empty)
         {
-            auto pieceBitBoard = GetBitboard(fixedBoardPosition);
+	        const auto pieceBitBoard = GetBitboard(fixedBoardPosition);
             board.BitBoard[piece] |= pieceBitBoard;
             board.ArrayBoard[fixedBoardPosition] = piece;
             board.PieceCounts[piece]++;
@@ -79,17 +80,29 @@ void Fens::Parse(Board& board, std::string fen)
     }
 
     fenPosition++;
-    if (fen[fenPosition] == 'w')
+    switch (fen[fenPosition])
     {
-        board.WhiteToMove = true;
+    case 'w':
+        board.ColorToMove = ChessPiece::White;
+        board.ColorToMove = true;
+    	break;
+    case 'b':
+        board.ColorToMove = ChessPiece::Black;
+        board.WhiteToMove = false;
+        break;
+    default:
+        throw std::exception("Unknown color");
     }
-
+    
     fenPosition += 2;
 
     for (auto i = 0; i < 4; i++)
     {
         if (fenPosition >= fen.size())
+        {
             break;
+        }
+    	
         bool done = false;
         switch (fen[fenPosition])
         {

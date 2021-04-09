@@ -1,7 +1,7 @@
 #pragma once
 
+#include "common.h"
 #include "move.h"
-#include "constants.h"
 
 #include <array>
 
@@ -19,6 +19,7 @@ public:
 class Board
 {
 public:
+	Piece ColorToMove;
 	bool WhiteToMove;
 	CastlingPermission CastlingPermissions;
 	
@@ -26,12 +27,12 @@ public:
 	Ply HistoryDepth;
 	Ply LastTookPieceHistoryIndex;
 
-	Bitboard WhitePieces;
-	Bitboard BlackPieces;
+	//Bitboard WhitePieces;
+	//Bitboard BlackPieces;
 	Bitboard EmptySquares;
 	Bitboard AllPieces;
 
-	std::array<Bitboard, 13> BitBoard;
+	std::array<Bitboard, ChessPiece::Count> BitBoard;
 	std::array<Piece, 64> ArrayBoard;
 
 	File EnPassantFileIndex;
@@ -39,7 +40,8 @@ public:
 	Bitboard EnPassantFile;
 	ZobristKey Key;
 
-	std::array<uint8_t, 13> PieceCounts;
+	std::array<Piece, ChessPiece::Count> PieceCounts;
+	std::array<Position, 2> KingPositions;
 	Material WhiteMaterial;
 	Material BlackMaterial;
 

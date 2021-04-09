@@ -1,8 +1,10 @@
 #pragma once
 
 #include <array>
+#include <vector>
 
 #include "types.h"
+#include "bits.h"
 
 class Constants
 {
@@ -10,8 +12,6 @@ public:
 	static constexpr Ply MaxDepth = 256;
 	static constexpr Ply MaxHistory = 20;
 	static constexpr size_t MaxMoves = 218;
-
-	static constexpr size_t PieceCount = 13;
 private:
 	Constants() = default;
 };
@@ -61,7 +61,7 @@ public:
 	static constexpr Piece BlackQueen = Black | Queen;
 	static constexpr Piece BlackKing = Black | King;
 
-	static constexpr Piece ColorMask = 1;
+	static constexpr Piece Color = 1;
 	
 	static constexpr Piece NextColor = 1;
 	static constexpr Piece NextPiece = 1 << 1;
@@ -77,12 +77,7 @@ private:
 class BitboardConstants
 {
 public:
-	static constexpr Bitboard AllBoard = ~0ULL;
-	static constexpr Bitboard KnightSpan = 43234889994ULL;
-	static constexpr Position KnightSpanPosition = 18ULL;
-	static constexpr Bitboard KingSpan = 460039ULL;
-	static constexpr Position KingSpanPosition = 9ULL;
-	
+	static constexpr Bitboard AllBoard = ~0ULL;	
 	static constexpr std::array<Bitboard, 8> Files =
 	{
 		0x101010101010101ULL,
@@ -165,5 +160,120 @@ private:
 class EvaluationConstants
 {
 public:
-	static constexpr std::array<Score, Constants::PieceCount> Weights = { 0, 100, 325, 325, 550, 1000, 50000, 100, 325, 325, 550, 1000, 50000 };
+	static constexpr std::array<Score, ChessPiece::Count> Weights = { /*0, 100, 325, 325, 550, 1000, 50000, 100, 325, 325, 550, 1000, 50000*/ }; // TODO
 };
+
+using JumpArray = std::array<Bitboard, 64>;
+using ColoredJumpArray = std::array<JumpArray, 2>;
+class BitboardJumpsClass
+{
+private:
+	static constexpr Bitboard GetAttackedByJumpingPiece(const Position position, const Bitboard jumpMask, const Position jumpMaskCenter)
+	{
+		Bitboard jumps;
+		if (position > jumpMaskCenter)
+		{
+			jumps = jumpMask << (position - jumpMaskCenter);
+		}
+		else
+		{
+			jumps = jumpMask >> (jumpMaskCenter - position);
+		}
+
+		jumps &= ~(position % 8 < 4 ? BitboardConstants::Files[6] | BitboardConstants::Files[7] : BitboardConstants::Files[0] | BitboardConstants::Files[1]);
+		jumps &= ~((position >> 3) < 4 ? BitboardConstants::Ranks[6] | BitboardConstants::Ranks[7] : BitboardConstants::Ranks[0] | BitboardConstants::Ranks[1]);
+		return jumps;
+	}
+
+public:
+	JumpArray KnightJumps{};
+	JumpArray KingJumps{};
+	ColoredJumpArray PawnJumps{};
+	
+	constexpr BitboardJumpsClass()
+	{
+		constexpr Bitboard KnightSpan = 43234889994ULL;
+		constexpr Position KnightPosition = 18ULL;
+
+		constexpr Bitboard KingSpan = 460039ULL;
+		constexpr Position KingPosition = 9ULL;
+		
+		constexpr std::array<Bitboard, 2> pawnSpans{ 1280, 5 };
+		constexpr std::array<Position, 2> pawnPositions{ 1, 9 };
+
+		/*pawnSpans[ChessPiece::White] = 1280;
+		pawnPositions[ChessPiece::White] = 1;
+		pawnSpans[ChessPiece::Black] = 5;
+		pawnPositions[ChessPiece::Black] = 9;*/
+
+		for (Position i = 0; i < 64; i++)
+		{
+			KnightJumps[i] = GetAttackedByJumpingPiece(i, KnightSpan, KnightPosition);
+			KingJumps[i] = GetAttackedByJumpingPiece(i, KingSpan, KingPosition);
+			for (int j = 0; j < 2; j++)
+			{
+				const auto pawnSpan = pawnSpans[j];
+				const auto pawnPosition = pawnPositions[j];
+				PawnJumps[j][i] = GetAttackedByJumpingPiece(i, pawnSpan, pawnPosition);
+			}	
+		}
+	}
+};
+
+static constexpr BitboardJumpsClass BitboardJumps = BitboardJumpsClass();
+
+class BetweenBitboardsClass
+{
+public:
+	using BetweenArray = std::array<std::array<Bitboard, 64>, 64>;
+
+	BetweenArray Between{};
+	
+	BetweenBitboardsClass()
+	{
+		std::vector<Bitboard> slides{};
+		slides.insert(std::end(slides), std::begin(BitboardConstants::Ranks), std::end(BitboardConstants::Ranks));
+		slides.insert(std::end(slides), std::begin(BitboardConstants::Files), std::end(BitboardConstants::Files));
+		slides.insert(std::end(slides), std::begin(BitboardConstants::Diagonals), std::end(BitboardConstants::Diagonals));
+		slides.insert(std::end(slides), std::begin(BitboardConstants::Antidiagonals), std::end(BitboardConstants::Antidiagonals));
+		
+		for (Position i = 0; i < 64; i++)
+		{
+			Bitboard from = GetBitboard(i);
+			for (Position j = 0; j < 64; j++)
+			{
+				if (i == j)
+				{
+					continue;
+				}
+
+				Bitboard to = GetBitboard(j);
+				Position min = std::min(i, j);
+				Position max = std::max(i, j);
+
+				Bitboard slide = 0ULL;
+				for (auto s : slides)
+				{
+					if((s & from) != 0 && (s & to) != 0)
+					{
+						slide = s;
+					}
+				}
+				
+				Bitboard result = 0ULL;
+				while (slide != 0)
+				{
+					Position pos = BitScanForward(slide);
+					if (pos > min && pos < max)
+					{
+						result |= GetBitboard(pos);
+					}
+					slide &= slide - 1;
+				}
+				Between[i][j] = result;
+			}
+		}
+	}
+};
+
+inline static BetweenBitboardsClass BetweenBitboards = BetweenBitboardsClass();

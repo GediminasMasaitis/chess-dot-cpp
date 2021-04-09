@@ -22,21 +22,21 @@ public:
 	{
 		assert(from >= 0 && from < 64);
 		assert(to >= 0 && to < 64);
-		assert(piece >= 0 && piece < Constants::PieceCount);
-		assert(takesPiece >= 0 && takesPiece < Constants::PieceCount);
-		assert(pawnPromoteTo >= 0 && pawnPromoteTo < Constants::PieceCount);
+		assert(piece >= 0 && piece < ChessPiece::Count);
+		assert(takesPiece >= 0 && takesPiece < ChessPiece::Count);
+		assert(pawnPromoteTo >= 0 && pawnPromoteTo < ChessPiece::Count);
 		
 		MoveValue value = 0;
 		value |= static_cast<MoveValue>(from);
 		value |= static_cast<MoveValue>(to) << 8;
 		value |= static_cast<MoveValue>(piece) << 16;
-		value |= static_cast<MoveValue>(takesPiece) << 24;
-		value |= static_cast<MoveValue>(pawnPromoteTo) << 32;
-		value |= static_cast<MoveValue>(enPassant) << 40;
+		value |= static_cast<MoveValue>(takesPiece) << 20;
+		value |= static_cast<MoveValue>(pawnPromoteTo) << 24;
+		value |= static_cast<MoveValue>(enPassant) << 28;
 		//value |= static_cast<MoveValue>((piece == ChessPiece::WhiteKing || piece == ChessPiece::BlackKing) && Math.Abs(from - to) == 2) << 41;
-		value |= static_cast<MoveValue>(castle) << 41;
-		value |= static_cast<MoveValue>(piece == 0) << 42;
-		value |= static_cast<MoveValue>(piece <= 6) << 43;
+		value |= static_cast<MoveValue>(castle) << 29;
+		value |= static_cast<MoveValue>(piece == ChessPiece::Empty) << 30;
+		value |= static_cast<MoveValue>(piece & ChessPiece::Color) << 31;
 		Value = value;
 	}
 
@@ -62,41 +62,41 @@ public:
 
 	Piece GetPiece() const
 	{
-		return static_cast<Position>((Value >> 16) & 0xFF);
+		return static_cast<Position>((Value >> 16) & 0x0F);
 	}
 
 	Piece GetTakesPiece() const
 	{
-		return static_cast<Position>((Value >> 24) & 0xFF);
+		return static_cast<Position>((Value >> 20) & 0x0F);
 	}
 
 	Piece GetPawnPromoteTo() const
 	{
-		return static_cast<Position>((Value >> 32) & 0xFF);
+		return static_cast<Position>((Value >> 24) & 0x0F);
 	}
 
 	bool GetEnPassant() const
 	{
-		return ((Value >> 40) & 0x01) == 1;
+		return ((Value >> 28) & 0x01) == 1;
 	}
 
 	bool GetCastle() const
 	{
-		return ((Value >> 41) & 0x01) == 1;
+		return ((Value >> 29) & 0x01) == 1;
 	}
 
 	bool GetNullMove() const
 	{
-		return ((Value >> 42) & 0x01) == 1;
+		return ((Value >> 30) & 0x01) == 1;
 	}
 	bool GetWhiteToMove() const
 	{
-		return ((Value >> 43) & 0x01) == 1;
+		return ((Value >> 31) & 0x01) == 1;
 	}
 
-	MoveValue GetWhiteToMoveNum() const
+	MoveValue GetColorToMove() const
 	{
-		return (Value >> 43) & 0x01;
+		return (Value >> 31) & 0x01;
 	}
 
 	std::string ToPositionString() const;

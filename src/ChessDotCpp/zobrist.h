@@ -8,7 +8,7 @@
 class ZobristKeysClass
 {
 public:
-    std::array<std::array<ZobristKey, 13>, 64> ZPieces {};
+    std::array<std::array<ZobristKey, ChessPiece::Count>, 64> ZPieces {};
     std::array<ZobristKey, 8> ZEnPassant {};
     std::array<ZobristKey, ChessCastlingPermissions::All + 1> ZCastle {};
     ZobristKey ZWhiteToMove {};
@@ -17,7 +17,7 @@ public:
     {
         auto rng = std::mt19937_64(0);
 
-        for (auto i = 1; i < 64; i++)
+        for (auto i = 0; i < 64; i++)
         {
             for (auto j = 0; j < 13; j++)
             {
@@ -30,9 +30,35 @@ public:
             ZEnPassant[i] = static_cast<ZobristKey>(rng());
         }
 
-        for (auto i = 0; i < ChessCastlingPermissions::All + 1; i++)
+        constexpr auto castleLength = ChessCastlingPermissions::All + 1;
+        ZCastle[ChessCastlingPermissions::WhiteQueen] = static_cast<ZobristKey>(rng());
+        ZCastle[ChessCastlingPermissions::WhiteKing] = static_cast<ZobristKey>(rng());
+        ZCastle[ChessCastlingPermissions::BlackQueen] = static_cast<ZobristKey>(rng());
+        ZCastle[ChessCastlingPermissions::BlackKing] = static_cast<ZobristKey>(rng());
+        for (int i = 1; i < castleLength; i++)
         {
-            ZCastle[i] = static_cast<ZobristKey>(rng());
+            if
+                (
+                    i == ChessCastlingPermissions::WhiteQueen
+                    || i == ChessCastlingPermissions::WhiteKing
+                    || i == ChessCastlingPermissions::BlackQueen
+                    || i == ChessCastlingPermissions::BlackKing
+                    )
+            {
+                continue;
+            }
+
+            uint64_t key = 0ULL;
+            for (int j = 0; j < 4; j++)
+            {
+                const auto existingCastleIndex = 1 << j;
+                const auto bitSet = (i & existingCastleIndex) != 0;
+                if (bitSet)
+                {
+                    key ^= ZCastle[existingCastleIndex];
+                }
+            }
+            ZCastle[i] = key;
         }
 
         ZWhiteToMove = static_cast<ZobristKey>(rng());

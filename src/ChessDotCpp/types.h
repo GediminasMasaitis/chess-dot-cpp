@@ -11,7 +11,7 @@ using Rank = int8_t;
 using Ply = int16_t;
 using Material = int32_t;
 using CastlingPermission = uint8_t;
-using MoveValue = uint64_t;
+using MoveValue = uint32_t;
 using Score = int32_t;
 using ZobristKey = uint64_t;
 
