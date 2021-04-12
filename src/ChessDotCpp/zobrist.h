@@ -4,6 +4,7 @@
 #include <random>
 
 #include "constants.h"
+#include "random.h"
 
 class ZobristKeysClass
 {
@@ -13,28 +14,29 @@ public:
     std::array<ZobristKey, ChessCastlingPermissions::All + 1> ZCastle {};
     ZobristKey ZWhiteToMove {};
 
-    ZobristKeysClass()
+    constexpr ZobristKeysClass()
     {
-        auto rng = std::mt19937_64(0);
+        //auto rng = std::mt19937_64(0);
+        auto rng = PRNG();
 
         for (auto i = 0; i < 64; i++)
         {
             for (auto j = 0; j < 13; j++)
             {
-                ZPieces[i][j] = static_cast<ZobristKey>(rng());
+                ZPieces[i][j] = static_cast<ZobristKey>(rng.rand64());
             }
         }
 
         for (auto i = 0; i < 8; i++)
         {
-            ZEnPassant[i] = static_cast<ZobristKey>(rng());
+            ZEnPassant[i] = static_cast<ZobristKey>(rng.rand64());
         }
 
         constexpr auto castleLength = ChessCastlingPermissions::All + 1;
-        ZCastle[ChessCastlingPermissions::WhiteQueen] = static_cast<ZobristKey>(rng());
-        ZCastle[ChessCastlingPermissions::WhiteKing] = static_cast<ZobristKey>(rng());
-        ZCastle[ChessCastlingPermissions::BlackQueen] = static_cast<ZobristKey>(rng());
-        ZCastle[ChessCastlingPermissions::BlackKing] = static_cast<ZobristKey>(rng());
+        ZCastle[ChessCastlingPermissions::WhiteQueen] = static_cast<ZobristKey>(rng.rand64());
+        ZCastle[ChessCastlingPermissions::WhiteKing] = static_cast<ZobristKey>(rng.rand64());
+        ZCastle[ChessCastlingPermissions::BlackQueen] = static_cast<ZobristKey>(rng.rand64());
+        ZCastle[ChessCastlingPermissions::BlackKing] = static_cast<ZobristKey>(rng.rand64());
         for (int i = 1; i < castleLength; i++)
         {
             if
@@ -61,10 +63,10 @@ public:
             ZCastle[i] = key;
         }
 
-        ZWhiteToMove = static_cast<ZobristKey>(rng());
+        ZWhiteToMove = static_cast<ZobristKey>(rng.rand64());
     }
 
-    ZobristKey CalculateKey(Board& board)
+    constexpr ZobristKey CalculateKey(const Board& board) const
     {
         ZobristKey key = 0;
         for (Position i = 0; i < 64; i++)
@@ -107,4 +109,4 @@ public:
     }
 };
 
-inline ZobristKeysClass ZobristKeys = ZobristKeysClass();
+constexpr ZobristKeysClass ZobristKeys = ZobristKeysClass();

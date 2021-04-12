@@ -14,6 +14,8 @@ public:
 	static Bitboard GetPinned(const Board& board, Piece color, Position pos);
 };
 
+using PinPaths = std::array<Bitboard, 64>;
+
 class MoveGenerator
 {
 public:

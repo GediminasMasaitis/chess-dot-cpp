@@ -9,7 +9,7 @@ constexpr Bitboard MaskedSlide(const Bitboard allPieces, const Bitboard pieceBit
 	return slide;
 }
 
-Bitboard HyperbolaQuintessence::HorizontalVerticalSlide(const Bitboard allPieces, const Position position)
+constexpr Bitboard HyperbolaQuintessence::HorizontalVerticalSlide(const Bitboard allPieces, const Position position)
 {
 	const auto pieceBitboard = GetBitboard(position);
 	const auto horizontal = MaskedSlide(allPieces, pieceBitboard, BitboardConstants::Ranks[position / 8]);
@@ -17,7 +17,7 @@ Bitboard HyperbolaQuintessence::HorizontalVerticalSlide(const Bitboard allPieces
 	return horizontal | vertical;
 }
 
-Bitboard HyperbolaQuintessence::DiagonalAntidiagonalSlide(const Bitboard allPieces, const Position position)
+constexpr Bitboard HyperbolaQuintessence::DiagonalAntidiagonalSlide(const Bitboard allPieces, const Position position)
 {
 	const auto pieceBitboard = GetBitboard(position);
 	const auto horizontal = MaskedSlide(allPieces, pieceBitboard, BitboardConstants::Diagonals[position / 8 + position % 8]);
@@ -25,7 +25,7 @@ Bitboard HyperbolaQuintessence::DiagonalAntidiagonalSlide(const Bitboard allPiec
 	return horizontal | vertical;
 }
 
-Bitboard HyperbolaQuintessence::AllSlide(const Bitboard allPieces, const Position position)
+constexpr Bitboard HyperbolaQuintessence::AllSlide(const Bitboard allPieces, const Position position)
 {
 	const auto hv = HorizontalVerticalSlide(allPieces, position);
 	const auto dad = DiagonalAntidiagonalSlide(allPieces, position);

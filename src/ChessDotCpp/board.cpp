@@ -59,6 +59,7 @@ void Board::DoMove(const Move move)
 	const Position from = move.GetFrom();
 	const Position to = move.GetTo();
 	const Position piece = move.GetPiece();
+	const Piece takesPiece = move.GetTakesPiece();
 	
 	// FROM
 	const Bitboard fromPosBitBoard = GetBitboard(from);
@@ -94,24 +95,24 @@ void Board::DoMove(const Move move)
 	BitBoard[promotedPiece] |= toPosBitBoard;
 	Key ^= ZobristKeys.ZPieces[to][promotedPiece];
 
+	
 	// TAKES
-	if (move.GetTakesPiece() > 0)
+	if (takesPiece > 0)
 	{
 		if (!move.GetEnPassant())
 		{
-			auto takesPiece = move.GetTakesPiece();
 			BitBoard[takesPiece] &= ~toPosBitBoard;
-			Key ^= ZobristKeys.ZPieces[to][move.GetTakesPiece()];
+			Key ^= ZobristKeys.ZPieces[to][takesPiece];
 		}
 		LastTookPieceHistoryIndex = HistoryDepth - 1;
-		PieceCounts[move.GetTakesPiece()]--;
+		PieceCounts[takesPiece]--;
 		if (originalWhiteToMove)
 		{
-			BlackMaterial -= EvaluationConstants::Weights[move.GetTakesPiece()];
+			BlackMaterial -= EvaluationConstants::Weights[takesPiece];
 		}
 		else
 		{
-			WhiteMaterial -= EvaluationConstants::Weights[move.GetTakesPiece()];
+			WhiteMaterial -= EvaluationConstants::Weights[takesPiece];
 		}
 	}
 	
@@ -136,9 +137,9 @@ void Board::DoMove(const Move move)
 
 		Bitboard killedPawnBitBoard = GetBitboard(killedPawnPos);
 
-		BitBoard[move.GetTakesPiece()] &= ~killedPawnBitBoard;
+		BitBoard[takesPiece] &= ~killedPawnBitBoard;
 		ArrayBoard[killedPawnPos] = ChessPiece::Empty;
-		Key ^= ZobristKeys.ZPieces[killedPawnPos][move.GetTakesPiece()];
+		Key ^= ZobristKeys.ZPieces[killedPawnPos][takesPiece];
 	}
 
 	// PAWN DOUBLE MOVES
@@ -212,6 +213,7 @@ void Board::UndoMove()
 	const Position from = move.GetFrom();
 	const Position to = move.GetTo();
 	const Piece piece = move.GetPiece();
+	const Piece takesPiece = move.GetTakesPiece();
 	
 	// FROM
 	Bitboard fromPosBitBoard = GetBitboard(from);
@@ -246,13 +248,14 @@ void Board::UndoMove()
 	// TO
 	Bitboard toPosBitBoard = GetBitboard(to);
 	BitBoard[promotedPiece] &= ~toPosBitBoard;
+	
 	if (move.GetEnPassant())
 	{
 		ArrayBoard[to] = ChessPiece::Empty;
 	}
 	else
 	{
-		ArrayBoard[to] = move.GetTakesPiece();
+		ArrayBoard[to] = takesPiece;
 	}
 
 	// KING POS
@@ -262,20 +265,20 @@ void Board::UndoMove()
 	}
 	
 	// TAKES
-	if (move.GetTakesPiece() > 0)
+	if (takesPiece > 0)
 	{
 		if (!move.GetEnPassant())
 		{
-			BitBoard[move.GetTakesPiece()] |= toPosBitBoard;
+			BitBoard[takesPiece] |= toPosBitBoard;
 		}
-		PieceCounts[move.GetTakesPiece()]++;
+		PieceCounts[takesPiece]++;
 		if (WhiteToMove)
 		{
-			BlackMaterial += EvaluationConstants::Weights[move.GetTakesPiece()];
+			BlackMaterial += EvaluationConstants::Weights[takesPiece];
 		}
 		else
 		{
-			WhiteMaterial += EvaluationConstants::Weights[move.GetTakesPiece()];
+			WhiteMaterial += EvaluationConstants::Weights[takesPiece];
 		}
 	}
 
@@ -294,8 +297,8 @@ void Board::UndoMove()
 
 		Bitboard killedPawnBitBoard = GetBitboard(killedPawnPos);
 
-		BitBoard[move.GetTakesPiece()] |= killedPawnBitBoard;
-		ArrayBoard[killedPawnPos] = move.GetTakesPiece();
+		BitBoard[takesPiece] |= killedPawnBitBoard;
+		ArrayBoard[killedPawnPos] = takesPiece;
 
 		//BitBoard[move.TakesPiece] &= ~killedPawnBitBoard;
 		//ArrayBoard[killedPawnPos] = ChessPiece.Empty;

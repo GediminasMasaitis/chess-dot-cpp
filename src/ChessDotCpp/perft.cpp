@@ -30,7 +30,7 @@ size_t GetNodesInner(Board& board, Move parentMove, Ply depth, MoveStack& moveSt
 	}
 
 	size_t nodes = 0;
-	for (auto i = 0; i < possibleMoveCount; i++)
+	for (size_t i = 0; i < possibleMoveCount; i++)
 	{
 		auto& move = possibleMoves[i];
 		board.DoMove(move);
@@ -82,8 +82,10 @@ void RunIteration(Fen fen, Ply depth)
 	auto end = std::chrono::high_resolution_clock::now();
 	auto elapsed = end - start;
 	auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
+	auto elapsedNs = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
+	auto nps = static_cast<uint64_t>(static_cast<double>(nodes * 1000000000) / elapsedNs.count());
 
-	std::cout << "Depth: " << depth << ", Perft nodes: " << nodes << ", " << elapsedMs << " ms" << std::endl;
+	std::cout << "Depth: " << depth << ", Perft nodes: " << nodes << ", " << elapsedMs << " (" << ToUserFriendly(nps) << "N/s)" << std::endl;
 	std::sort(movesAndNodes.begin(), movesAndNodes.begin() + moveAndNodeCount, [](const MoveAndNodes& lhs, const MoveAndNodes& rhs) {return lhs.MovePos < rhs.MovePos; });
 	for(auto i = 0; i < moveAndNodeCount; i++)
 	{

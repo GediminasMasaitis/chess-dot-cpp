@@ -139,6 +139,59 @@ public:
 		0x201000000000000ULL,
 		0x100000000000000ULL
 	};
+
+	static constexpr std::array<Bitboard, Files.size() + Ranks.size() + Diagonals.size() + Antidiagonals.size()> AllSlides =
+	{
+		0x101010101010101ULL,
+		0x202020202020202ULL,
+		0x404040404040404ULL,
+		0x808080808080808ULL,
+		0x1010101010101010ULL,
+		0x2020202020202020ULL,
+		0x4040404040404040ULL,
+		0x8080808080808080ULL,
+
+		0xFFULL,
+		0xFF00ULL,
+		0xFF0000ULL,
+		0xFF000000ULL,
+		0xFF00000000ULL,
+		0xFF0000000000ULL,
+		0xFF000000000000ULL,
+		0xFF00000000000000ULL,
+
+		0x1ULL,
+		0x102ULL,
+		0x10204ULL,
+		0x1020408ULL,
+		0x102040810ULL,
+		0x10204081020ULL,
+		0x1020408102040ULL,
+		0x102040810204080ULL,
+		0x204081020408000ULL,
+		0x408102040800000ULL,
+		0x810204080000000ULL,
+		0x1020408000000000ULL,
+		0x2040800000000000ULL,
+		0x4080000000000000ULL,
+		0x8000000000000000ULL,
+
+		0x80ULL,
+		0x8040ULL,
+		0x804020ULL,
+		0x80402010ULL,
+		0x8040201008ULL,
+		0x804020100804ULL,
+		0x80402010080402ULL,
+		0x8040201008040201ULL,
+		0x4020100804020100ULL,
+		0x2010080402010000ULL,
+		0x1008040201000000ULL,
+		0x804020100000000ULL,
+		0x402010000000000ULL,
+		0x201000000000000ULL,
+		0x100000000000000ULL
+	};
 	
 	static constexpr Bitboard KingSide = Files[0] | Files[1] | Files[2] | Files[3];
 	static constexpr Bitboard QueenSide = ~KingSide;
@@ -186,12 +239,16 @@ private:
 	}
 
 public:
-	JumpArray KnightJumps{};
-	JumpArray KingJumps{};
-	ColoredJumpArray PawnJumps{};
+	JumpArray KnightJumps;
+	JumpArray KingJumps;
+	ColoredJumpArray PawnJumps;
 	
 	constexpr BitboardJumpsClass()
 	{
+		KnightJumps = JumpArray{};
+		KingJumps = JumpArray{};
+		PawnJumps = ColoredJumpArray{};
+		
 		constexpr Bitboard KnightSpan = 43234889994ULL;
 		constexpr Position KnightPosition = 18ULL;
 
@@ -229,17 +286,16 @@ public:
 
 	BetweenArray Between{};
 	
-	BetweenBitboardsClass()
-	{
-		std::vector<Bitboard> slides{};
-		slides.insert(std::end(slides), std::begin(BitboardConstants::Ranks), std::end(BitboardConstants::Ranks));
-		slides.insert(std::end(slides), std::begin(BitboardConstants::Files), std::end(BitboardConstants::Files));
-		slides.insert(std::end(slides), std::begin(BitboardConstants::Diagonals), std::end(BitboardConstants::Diagonals));
-		slides.insert(std::end(slides), std::begin(BitboardConstants::Antidiagonals), std::end(BitboardConstants::Antidiagonals));
-		
+	constexpr BetweenBitboardsClass()
+	{	
 		for (Position i = 0; i < 64; i++)
 		{
-			Bitboard from = GetBitboard(i);
+			const Bitboard from = GetBitboard(i);
+			const File fromFile = i & 7;
+			const Rank fromRank = i >> 3;
+			const Diagonal fromDiagonal = fromFile + fromRank;
+			const Antidialgonal fromAntidiagonal = fromRank - fromFile + 7;
+			
 			for (Position j = 0; j < 64; j++)
 			{
 				if (i == j)
@@ -247,18 +303,32 @@ public:
 					continue;
 				}
 
-				Bitboard to = GetBitboard(j);
-				Position min = std::min(i, j);
-				Position max = std::max(i, j);
+				const Bitboard to = GetBitboard(j);
+				const File toFile = j & 7;
+				const Rank toRank = j >> 3;
+				const Diagonal toDiagonal = toFile + toRank;
+				const Antidialgonal toAntidiagonal = toRank - toFile + 7;
+				
+				const Position min = std::min(i, j);
+				const Position max = std::max(i, j);
 
 				Bitboard slide = 0ULL;
-				for (auto s : slides)
+				if(fromFile == toFile)
 				{
-					if((s & from) != 0 && (s & to) != 0)
-					{
-						slide = s;
-					}
+					slide = BitboardConstants::Files[fromFile];
 				}
+				else if (fromRank == toRank)
+				{
+					slide = BitboardConstants::Ranks[fromRank];
+				}
+				else if(fromDiagonal == toDiagonal)
+				{
+					slide = BitboardConstants::Diagonals[fromDiagonal];
+				}
+				else if(fromAntidiagonal == toAntidiagonal)
+				{
+					slide = BitboardConstants::Antidiagonals[fromAntidiagonal];
+				}		
 				
 				Bitboard result = 0ULL;
 				while (slide != 0)
@@ -276,4 +346,4 @@ public:
 	}
 };
 
-inline static BetweenBitboardsClass BetweenBitboards = BetweenBitboardsClass();
+static constexpr BetweenBitboardsClass BetweenBitboards = BetweenBitboardsClass();

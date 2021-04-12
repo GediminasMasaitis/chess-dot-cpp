@@ -179,6 +179,45 @@ Bitboard PinDetector::GetPinned(const Board& board, Piece color, Position pos)
 	return pinned;
 }
 
+Bitboard GetPinnedData(const Board& board, Piece color, Position pos, PinPaths& paths)
+{
+	paths.fill(~0ULL);
+	const Piece opponentColor = static_cast<Piece>(color ^ 1);
+	Bitboard allPinned = 0ULL;
+	const Bitboard ownPieces = board.BitBoard[board.ColorToMove];
+
+	Bitboard xrays = DiagonalAntidiagonalXray(board.AllPieces, ownPieces, pos);
+	Bitboard pinners = xrays & (board.BitBoard[ChessPiece::Bishop | opponentColor] | board.BitBoard[ChessPiece::Queen | opponentColor]);
+
+	while (pinners != 0)
+	{
+		const Position pinnerPos = BitScanForward(pinners);
+		const Bitboard pinnerBitboard = GetBitboard(pinnerPos);
+		const Bitboard between = BetweenBitboards.Between[pinnerPos][pos];
+		const Bitboard pinnedBitboard = between & ownPieces;
+		const Bitboard pinnedPos = BitScanForward(pinnedBitboard);
+		paths[pinnedPos] = between | pinnerBitboard;
+		allPinned |= pinnedBitboard;
+		pinners &= pinners - 1;
+	}
+
+	xrays = HorizontalVerticalXray(board.AllPieces, ownPieces, pos);
+	pinners = xrays & (board.BitBoard[ChessPiece::Rook | opponentColor] | board.BitBoard[ChessPiece::Queen | opponentColor]);
+
+	while (pinners != 0)
+	{
+		const Position pinnerPos = BitScanForward(pinners);
+		const Bitboard pinnerBitboard = GetBitboard(pinnerPos);
+		const Bitboard between = BetweenBitboards.Between[pinnerPos][pos];
+		const Bitboard pinnedBitboard = between & ownPieces;
+		const Bitboard pinnedPos = BitScanForward(pinnedBitboard);
+		paths[pinnedPos] = between | pinnerBitboard;
+		allPinned |= pinnedBitboard;
+		pinners &= pinners - 1;
+	}
+	return allPinned;
+}
+
 void GeneratePromotionMoves
 (
 	const Position from,
@@ -480,46 +519,6 @@ void GetPotentialKingMoves(const Board& board, MoveArray& moves, size_t& moveCou
 	GetPotentialJumpingMoves(board, ~0ULL, kings, BitboardJumps.KingJumps, chessPiece, moves, moveCount);
 }
 
-void GetPotentialSlidingPieceMoves
-(
-	const Board& board,
-	Bitboard slidingPieces,
-	Piece piece,
-	Bitboard allowedSquareMask,
-	MoveArray& moves,
-	size_t& moveCount
-)
-{
-	const Bitboard ownPieces = board.BitBoard[board.ColorToMove];
-	while (slidingPieces != 0)
-	{
-		const Position i = BitScanForward(slidingPieces);
-		//var slide = slideResolutionFunc.Invoke(board.AllPieces, i);
-		Bitboard slide;
-		switch (piece)
-		{
-		case ChessPiece::WhiteRook:
-		case ChessPiece::BlackRook:
-			slide = SlideMoveGenerator::HorizontalVerticalSlide(board.AllPieces, i);
-			break;
-		case ChessPiece::WhiteBishop:
-		case ChessPiece::BlackBishop:
-			slide = SlideMoveGenerator::DiagonalAntidiagonalSlide(board.AllPieces, i);
-			break;
-		case ChessPiece::WhiteQueen:
-		case ChessPiece::BlackQueen:
-			slide = SlideMoveGenerator::AllSlide(board.AllPieces, i);
-			break;
-		default:
-			throw std::exception("Attempted to generate slide attacks for a non-sliding piece");
-		}
-		slide &= ~ownPieces;
-		slide &= allowedSquareMask;
-		BitmaskToMoves(board, slide, i, piece, moves, moveCount);
-		slidingPieces &= ~GetBitboard(i);
-	}
-}
-
 void GetPotentialRookMoves(const Board& board, const Bitboard allowedFrom, const Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
 {
 	const Piece piece = static_cast<Piece>(ChessPiece::Rook | board.ColorToMove);
@@ -679,9 +678,13 @@ void MoveGenerator::GetAllPotentialCaptures(const Board& board, const Bitboard c
 
 bool MoveValidator::IsKingSafeAfterMove(const Board& board, const Move move)
 {
+	const Position from = move.GetFrom();
+	const Position to = move.GetTo();
+	const Piece piece = move.GetPiece();
+	
 	Bitboard allPieces = board.AllPieces;
-	const Bitboard fromBitboard = GetBitboard(move.GetFrom());
-	const Bitboard toBitboard = GetBitboard(move.GetTo());
+	const Bitboard fromBitboard = GetBitboard(from);
+	const Bitboard toBitboard = GetBitboard(to);
 
 	allPieces &= ~fromBitboard;
 	allPieces |= toBitboard;
@@ -693,9 +696,9 @@ bool MoveValidator::IsKingSafeAfterMove(const Board& board, const Move move)
 		allPieces &= ~enPassantedBitboard;
 		takesBitboard |= enPassantedBitboard;
 	}
-
-	const bool kingMove = move.GetPiece() == ChessPiece::WhiteKing || move.GetPiece() == ChessPiece::BlackKing;
-	const Position myKingPos = kingMove ? move.GetTo() : board.KingPositions[board.ColorToMove];
+		
+	const bool kingMove = piece == ChessPiece::WhiteKing || piece == ChessPiece::BlackKing;
+	const Position myKingPos = kingMove ? to : board.KingPositions[board.ColorToMove];
 
 	const Bitboard invTakes = ~takesBitboard;
 
@@ -736,7 +739,7 @@ bool MoveValidator::IsKingSafeAfterMove(const Board& board, const Move move)
 		return false;
 	}
 
-	const Bitboard pawnAttack = BitboardJumps.PawnJumps[move.GetColorToMove()][myKingPos]; //AttacksService.GetAttackedByPawns(myKings, board.WhiteToMove);
+	const Bitboard pawnAttack = BitboardJumps.PawnJumps[board.ColorToMove][myKingPos]; //AttacksService.GetAttackedByPawns(myKings, board.WhiteToMove);
 	if ((pawnAttack & pawns) != 0)
 	{
 		return false;
