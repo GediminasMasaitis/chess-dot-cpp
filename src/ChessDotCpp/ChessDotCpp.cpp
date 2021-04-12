@@ -5,12 +5,15 @@
 #include "fen.h"
 #include "movegen.h"
 #include "perft.h"
+#include "magics.h"
 
 using namespace std;
 
 int main()
 {
 	Fen fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+	//Fen fen = "r1bqkbnr/pppppppp/n7/3P4/8/1N6/PPP1PPPP/R1BQKBNR b KQkq - 0 1";
+	
 	//auto board = std::make_unique<Board>();
 	//auto board = Board();
 	//Fens::Parse(board, fen);

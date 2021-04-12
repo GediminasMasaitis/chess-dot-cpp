@@ -48,6 +48,9 @@ public:
 	void SyncExtraBitBoards();
 	void DoMove(const Move move);
 	void UndoMove();
+
+	[[nodiscard]] Move FromPositionString(const MoveString& moveString) const;
+	void DoMove(const MoveString& moveString);
 };
 
 class CastleRevocationClass

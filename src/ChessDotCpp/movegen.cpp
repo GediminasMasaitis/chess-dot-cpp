@@ -6,6 +6,8 @@
 #include <exception>
 #include <iostream>
 
+#include "fen.h"
+
 constexpr Bitboard GetAttackedByPawns(const Bitboard myPawns, const bool whiteToMove)
 {
 	Bitboard pawnsLeft;
@@ -407,8 +409,8 @@ void GetPotentialJumpingMoves
 
 void GetPotentialKnightMoves(const Board& board, Bitboard allowedFrom, Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
 {
-	const Bitboard knights = board.WhiteToMove ? board.BitBoard[ChessPiece::WhiteKnight] : board.BitBoard[ChessPiece::BlackKnight];
 	const Piece chessPiece = board.WhiteToMove ? ChessPiece::WhiteKnight : ChessPiece::BlackKnight;
+	const Bitboard knights = board.BitBoard[chessPiece] & allowedFrom;
 	GetPotentialJumpingMoves(board, allowedTo, knights, BitboardJumps.KnightJumps, chessPiece, moves, moveCount);
 }
 
@@ -574,6 +576,12 @@ void MoveGenerator::GetAllPotentialMoves(const Board& board, const Bitboard chec
 		GetPotentialKingMoves(board, moves, moveCount);
 		return;
 	}
+
+	//auto boardStr = Fens::Serialize(board);
+	//if(boardStr == "rnbqkbnr/p1pppppp/8/1P6/1P6/8/2PPPPPP/RNBQKBNR b KQkq b3")
+	//{
+	//	auto a = 123;
+	//}
 
 	Bitboard allowedFrom = ~0ULL;
 	Bitboard allowedTo = ~0ULL;
@@ -751,6 +759,7 @@ bool MoveValidator::IsKingSafeAfterMove(const Board& board, const Move move)
 
 bool MoveValidator::IsKingSafeAfterMove2(const Board& board, Move move, Bitboard checkers, Bitboard pinnedPieces)
 {
+	//return IsKingSafeAfterMove(board, move);
 	const bool kingMove = move.GetPiece() == ChessPiece::King + board.ColorToMove;
 	const bool isPinned = (pinnedPieces & GetBitboard(move.GetFrom())) != 0;
 

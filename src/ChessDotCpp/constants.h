@@ -150,8 +150,8 @@ public:
 
 	static constexpr Bitboard WhiteQueenSideCastleAttackMask = (Files[2] | Files[3] | Files[4]) & Ranks[0];
 	static constexpr Bitboard WhiteKingSideCastleAttackMask = (Files[4] | Files[5] | Files[6]) & Ranks[0];
-	static constexpr Bitboard BlackKingSideCastleAttackMask = (Files[2] | Files[3] | Files[4]) & Ranks[7];
-	static constexpr Bitboard BlackQueenSideCastleAttackMask = (Files[4] | Files[5] | Files[6]) & Ranks[7];
+	static constexpr Bitboard BlackQueenSideCastleAttackMask = (Files[2] | Files[3] | Files[4]) & Ranks[7];
+	static constexpr Bitboard BlackKingSideCastleAttackMask = (Files[4] | Files[5] | Files[6]) & Ranks[7];
 
 private:
 	BitboardConstants() = default;

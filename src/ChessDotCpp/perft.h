@@ -26,7 +26,7 @@ public:
 };
 
 using MoveAndNodeArray = std::array<MoveAndNodes, Constants::MaxMoves>;
-using MoveStack = std::array<MoveArray, 7>;
+using MoveStack = std::array<MoveArray, 10>;
 
 class InternalPerftClient
 {

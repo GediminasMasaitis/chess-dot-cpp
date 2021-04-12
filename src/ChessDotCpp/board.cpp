@@ -56,17 +56,21 @@ void Board::DoMove(const Move move)
 	}
 
 
+	const Position from = move.GetFrom();
+	const Position to = move.GetTo();
+	const Position piece = move.GetPiece();
+	
 	// FROM
-	const Bitboard fromPosBitBoard = GetBitboard(move.GetFrom());
-	ArrayBoard[move.GetFrom()] = ChessPiece::Empty;
-	BitBoard[move.GetPiece()] &= ~fromPosBitBoard;
-	Key ^= ZobristKeys.ZPieces[move.GetFrom()][move.GetPiece()];
+	const Bitboard fromPosBitBoard = GetBitboard(from);
+	ArrayBoard[from] = ChessPiece::Empty;
+	BitBoard[piece] &= ~fromPosBitBoard;
+	Key ^= ZobristKeys.ZPieces[from][piece];
 
 	Piece promotedPiece;
 	if (move.GetPawnPromoteTo() != ChessPiece::Empty)
 	{
 		promotedPiece = move.GetPawnPromoteTo();
-		PieceCounts[move.GetPiece()]--;
+		PieceCounts[piece]--;
 		PieceCounts[promotedPiece]++;
 		if (originalWhiteToMove)
 		{
@@ -81,15 +85,14 @@ void Board::DoMove(const Move move)
 	}
 	else
 	{
-		promotedPiece = move.GetPiece();
+		promotedPiece = piece;
 	}
-
-
+		
 	// TO
-	Bitboard toPosBitBoard = GetBitboard(move.GetTo());
-	ArrayBoard[move.GetTo()] = promotedPiece;
+	Bitboard toPosBitBoard = GetBitboard(to);
+	ArrayBoard[to] = promotedPiece;
 	BitBoard[promotedPiece] |= toPosBitBoard;
-	Key ^= ZobristKeys.ZPieces[move.GetTo()][promotedPiece];
+	Key ^= ZobristKeys.ZPieces[to][promotedPiece];
 
 	// TAKES
 	if (move.GetTakesPiece() > 0)
@@ -98,7 +101,7 @@ void Board::DoMove(const Move move)
 		{
 			auto takesPiece = move.GetTakesPiece();
 			BitBoard[takesPiece] &= ~toPosBitBoard;
-			Key ^= ZobristKeys.ZPieces[move.GetTo()][move.GetTakesPiece()];
+			Key ^= ZobristKeys.ZPieces[to][move.GetTakesPiece()];
 		}
 		LastTookPieceHistoryIndex = HistoryDepth - 1;
 		PieceCounts[move.GetTakesPiece()]--;
@@ -113,9 +116,9 @@ void Board::DoMove(const Move move)
 	}
 	
 	// KING POS
-	if (move.GetPiece() == (ChessPiece::King | originalColorToMove))
+	if (piece == (ChessPiece::King | originalColorToMove))
 	{
-		KingPositions[originalColorToMove] = move.GetTo();
+		KingPositions[originalColorToMove] = to;
 	}
 
 	// EN PASSANT
@@ -124,11 +127,11 @@ void Board::DoMove(const Move move)
 		int killedPawnPos;
 		if (originalWhiteToMove) // TODO: whitetomove
 		{
-			killedPawnPos = move.GetTo() - 8;
+			killedPawnPos = to - 8;
 		}
 		else
 		{
-			killedPawnPos = move.GetTo() + 8;
+			killedPawnPos = to + 8;
 		}
 
 		Bitboard killedPawnBitBoard = GetBitboard(killedPawnPos);
@@ -139,10 +142,10 @@ void Board::DoMove(const Move move)
 	}
 
 	// PAWN DOUBLE MOVES
-	if ((move.GetPiece() == ChessPiece::WhitePawn && move.GetFrom() + 16 == move.GetTo()) || (move.GetPiece() == ChessPiece::BlackPawn && move.GetFrom() - 16 == move.GetTo()))
+	if ((piece == ChessPiece::WhitePawn && from + 16 == to) || (piece == ChessPiece::BlackPawn && from - 16 == to))
 	{
-		File fileIndex = move.GetFrom() % 8;
-		Rank rankIndex = (move.GetTo() >> 3) + (originalWhiteToMove ? -1 : 1);
+		File fileIndex = from % 8;
+		Rank rankIndex = (to >> 3) + (originalWhiteToMove ? -1 : 1);
 		EnPassantFile = BitboardConstants::Files[fileIndex];
 		EnPassantFileIndex = fileIndex;
 		EnPassantRankIndex = rankIndex;
@@ -158,9 +161,9 @@ void Board::DoMove(const Move move)
 	// CASTLING
 	if (move.GetCastle())
 	{
-		auto kingSide = move.GetTo() % 8 > 3;
+		auto kingSide = to % 8 > 3;
 		Position castlingRookPos = (kingSide ? 7 : 0) + (originalWhiteToMove ? 0 : 56);
-		Position castlingRookNewPos = (move.GetFrom() + move.GetTo()) / 2;
+		Position castlingRookNewPos = (from + to) / 2;
 		Piece rookPiece = originalWhiteToMove ? ChessPiece::WhiteRook : ChessPiece::BlackRook;
 
 		ArrayBoard[castlingRookPos] = ChessPiece::Empty;
@@ -171,86 +174,12 @@ void Board::DoMove(const Move move)
 		Key ^= ZobristKeys.ZPieces[castlingRookNewPos][rookPiece];
 	}
 
-	if (move.GetPiece() == ChessPiece::WhiteKing)
-	{
-		if ((CastlingPermissions & ChessCastlingPermissions::WhiteQueen) != ChessCastlingPermissions::None)
-		{
-			Key ^= ZobristKeys.ZCastle[ChessCastlingPermissions::WhiteQueen];
-		}
-
-		if ((CastlingPermissions & ChessCastlingPermissions::WhiteKing) != ChessCastlingPermissions::None)
-		{
-			Key ^= ZobristKeys.ZCastle[ChessCastlingPermissions::WhiteKing];
-		}
-	}
-	else if (move.GetPiece() == ChessPiece::WhiteRook)
-	{
-		if ((CastlingPermissions & ChessCastlingPermissions::WhiteQueen) != ChessCastlingPermissions::None && move.GetFrom() == 0)
-		{
-			Key ^= ZobristKeys.ZCastle[ChessCastlingPermissions::WhiteQueen];
-		}
-
-		if ((CastlingPermissions & ChessCastlingPermissions::WhiteKing) != ChessCastlingPermissions::None && move.GetFrom() == 7)
-		{
-			Key ^= ZobristKeys.ZCastle[ChessCastlingPermissions::WhiteKing];
-		}
-	}
-	else if (move.GetPiece() == ChessPiece::BlackKing)
-	{
-		if ((CastlingPermissions & ChessCastlingPermissions::BlackQueen) != ChessCastlingPermissions::None)
-		{
-			Key ^= ZobristKeys.ZCastle[ChessCastlingPermissions::BlackQueen];
-		}
-
-		if ((CastlingPermissions & ChessCastlingPermissions::BlackKing) != ChessCastlingPermissions::None)
-		{
-			Key ^= ZobristKeys.ZCastle[ChessCastlingPermissions::BlackKing];
-		}
-	}
-	else if (move.GetPiece() == ChessPiece::BlackRook)
-	{
-		if ((CastlingPermissions & ChessCastlingPermissions::BlackQueen) != ChessCastlingPermissions::None && move.GetFrom() == 56)
-		{
-			Key ^= ZobristKeys.ZCastle[ChessCastlingPermissions::BlackQueen];
-		}
-
-		if ((CastlingPermissions & ChessCastlingPermissions::BlackKing) != ChessCastlingPermissions::None && move.GetFrom() == 63)
-		{
-			Key ^= ZobristKeys.ZCastle[ChessCastlingPermissions::BlackKing];
-		}
-	}
-
-	switch (move.GetTo())
-	{
-	case 0:
-		if ((CastlingPermissions & ChessCastlingPermissions::WhiteQueen) != ChessCastlingPermissions::None)
-		{
-			Key ^= ZobristKeys.ZCastle[ChessCastlingPermissions::WhiteQueen];
-		}
-		break;
-	case 7:
-		if ((CastlingPermissions & ChessCastlingPermissions::WhiteKing) != ChessCastlingPermissions::None)
-		{
-			Key ^= ZobristKeys.ZCastle[ChessCastlingPermissions::WhiteKing];
-		}
-		break;
-	case 56:
-		if ((CastlingPermissions & ChessCastlingPermissions::BlackQueen) != ChessCastlingPermissions::None)
-		{
-			Key ^= ZobristKeys.ZCastle[ChessCastlingPermissions::BlackQueen];
-		}
-		break;
-	case 63:
-		if ((CastlingPermissions & ChessCastlingPermissions::BlackKing) != ChessCastlingPermissions::None)
-		{
-			Key ^= ZobristKeys.ZCastle[ChessCastlingPermissions::BlackKing];
-		}
-		break;
-	}
-
-	CastlingPermissions &= CastleRevocation.Table[move.GetFrom()];
-	CastlingPermissions &= CastleRevocation.Table[move.GetTo()];
-
+	const CastlingPermission originalPermissions = CastlingPermissions;
+	CastlingPermissions &= CastleRevocation.Table[from];
+	CastlingPermissions &= CastleRevocation.Table[to];
+	const CastlingPermission revoked = CastlingPermissions ^ originalPermissions;
+	Key ^= ZobristKeys.ZCastle[revoked];
+	
 	//SyncCastleTo1();
 	SyncExtraBitBoards();
 }
@@ -280,17 +209,22 @@ void Board::UndoMove()
 		return;
 	}
 
+	const Position from = move.GetFrom();
+	const Position to = move.GetTo();
+	const Piece piece = move.GetPiece();
+	
 	// FROM
-	Bitboard fromPosBitBoard = GetBitboard(move.GetFrom());
+	Bitboard fromPosBitBoard = GetBitboard(from);
+	
 	//Piece promotedPiece = move.PawnPromoteTo.HasValue ? move.PawnPromoteTo.Value : move.Piece;
-	ArrayBoard[move.GetFrom()] = move.GetPiece();
-	BitBoard[move.GetPiece()] |= fromPosBitBoard;
+	ArrayBoard[from] = piece;
+	BitBoard[piece] |= fromPosBitBoard;
 
 	Piece promotedPiece;
 	if (move.GetPawnPromoteTo() != ChessPiece::Empty)
 	{
 		promotedPiece = move.GetPawnPromoteTo();
-		PieceCounts[move.GetPiece()]++;
+		PieceCounts[piece]++;
 		PieceCounts[promotedPiece]--;
 		if (WhiteToMove)
 		{
@@ -305,25 +239,26 @@ void Board::UndoMove()
 	}
 	else
 	{
-		promotedPiece = move.GetPiece();
+		promotedPiece = piece;
 	}
 
+	
 	// TO
-	Bitboard toPosBitBoard = GetBitboard(move.GetTo());
+	Bitboard toPosBitBoard = GetBitboard(to);
 	BitBoard[promotedPiece] &= ~toPosBitBoard;
 	if (move.GetEnPassant())
 	{
-		ArrayBoard[move.GetTo()] = ChessPiece::Empty;
+		ArrayBoard[to] = ChessPiece::Empty;
 	}
 	else
 	{
-		ArrayBoard[move.GetTo()] = move.GetTakesPiece();
+		ArrayBoard[to] = move.GetTakesPiece();
 	}
 
 	// KING POS
-	if (move.GetPiece() == ChessPiece::King + ColorToMove)
+	if (piece == ChessPiece::King + ColorToMove)
 	{
-		KingPositions[ColorToMove] = move.GetFrom();
+		KingPositions[ColorToMove] = from;
 	}
 	
 	// TAKES
@@ -348,13 +283,13 @@ void Board::UndoMove()
 	if (move.GetEnPassant())
 	{
 		Position killedPawnPos;
-		if (WhiteMaterial)
+		if (WhiteToMove)
 		{
-			killedPawnPos = move.GetTo() - 8;
+			killedPawnPos = to - 8;
 		}
 		else
 		{
-			killedPawnPos = move.GetTo() + 8;
+			killedPawnPos = to + 8;
 		}
 
 		Bitboard killedPawnBitBoard = GetBitboard(killedPawnPos);
@@ -369,9 +304,9 @@ void Board::UndoMove()
 
 	if (move.GetCastle())
 	{
-		auto kingSide = move.GetTo() % 8 > 3;
+		auto kingSide = to % 8 > 3;
 		auto castlingRookPos = (kingSide ? 7 : 0) + (WhiteToMove ? 0 : 56);
-		auto castlingRookNewPos = (move.GetFrom() + move.GetTo()) / 2;
+		auto castlingRookNewPos = (from + to) / 2;
 		auto rookPiece = WhiteToMove ? ChessPiece::WhiteRook : ChessPiece::BlackRook;
 
 		ArrayBoard[castlingRookPos] = rookPiece;
@@ -382,4 +317,60 @@ void Board::UndoMove()
 
 	//SyncCastleTo1();
 	SyncExtraBitBoards();
+}
+
+Move Board::FromPositionString(const MoveString& moveString) const
+{
+	const Position from = Move::TextToPosition(moveString.substr(0, 2));
+	const Position to = Move::TextToPosition(moveString.substr(2, 2));
+	const Piece piece = ArrayBoard[from];
+	Piece takesPiece = ArrayBoard[to];
+	bool enPassant = false;
+	Piece pawnPromotesTo = ChessPiece::Empty;
+	if (piece == ChessPiece::WhitePawn || piece == ChessPiece::BlackPawn)
+	{
+		if (from % 8 != to % 8) // Must be take
+		{
+			if (takesPiece == ChessPiece::Empty) // Must be en-passant
+			{
+				takesPiece = static_cast<Piece>(ChessPiece::Pawn + (ColorToMove ^ 1));
+				enPassant = true;
+			}
+		}
+	}
+
+	if (moveString.length() == 5)
+	{
+		switch (moveString[4])
+		{
+		case 'q':
+		case 'Q':
+			pawnPromotesTo = static_cast<Piece>(ChessPiece::Queen + ColorToMove);
+			break;
+		case 'n':
+		case 'N':
+			pawnPromotesTo = static_cast<Piece>(ChessPiece::Knight + ColorToMove);
+			break;
+		case 'b':
+		case 'B':
+			pawnPromotesTo = static_cast<Piece>(ChessPiece::Bishop + ColorToMove);
+			break;
+		case 'r':
+		case 'R':
+			pawnPromotesTo = static_cast<Piece>(ChessPiece::Rook + ColorToMove);
+			break;
+		default: throw std::exception("Unknown promotion");
+		}
+	}
+
+	const bool castle = (piece == ChessPiece::WhiteKing || piece == ChessPiece::BlackKing) && std::abs(from - to) == 2;
+	
+	const Move move = Move(from, to, piece, takesPiece, enPassant, castle, pawnPromotesTo);
+	return move;
+}
+
+void Board::DoMove(const MoveString& moveString)
+{
+	const Move move = FromPositionString(moveString);
+	DoMove(move);
 }

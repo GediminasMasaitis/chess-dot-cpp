@@ -40,7 +40,7 @@ public:
 		Value = value;
 	}
 
-	Move(MoveValue value)
+	explicit Move(MoveValue value)
 	{
 		Value = value;
 	}
@@ -50,57 +50,59 @@ public:
 		Value = 0;
 	}
 
-	Position GetFrom() const
+	[[nodiscard]] Position GetFrom() const
 	{
 		return static_cast<Position>(Value & 0xFF);
 	}
 
-	Position GetTo() const
+	[[nodiscard]] Position GetTo() const
 	{
 		return static_cast<Position>((Value >> 8) & 0xFF);
 	}
 
-	Piece GetPiece() const
+	[[nodiscard]] Piece GetPiece() const
 	{
 		return static_cast<Position>((Value >> 16) & 0x0F);
 	}
 
-	Piece GetTakesPiece() const
+	[[nodiscard]] Piece GetTakesPiece() const
 	{
 		return static_cast<Position>((Value >> 20) & 0x0F);
 	}
 
-	Piece GetPawnPromoteTo() const
+	[[nodiscard]] Piece GetPawnPromoteTo() const
 	{
 		return static_cast<Position>((Value >> 24) & 0x0F);
 	}
 
-	bool GetEnPassant() const
+	[[nodiscard]] bool GetEnPassant() const
 	{
 		return ((Value >> 28) & 0x01) == 1;
 	}
 
-	bool GetCastle() const
+	[[nodiscard]] bool GetCastle() const
 	{
 		return ((Value >> 29) & 0x01) == 1;
 	}
 
-	bool GetNullMove() const
+	[[nodiscard]] bool GetNullMove() const
 	{
 		return ((Value >> 30) & 0x01) == 1;
 	}
-	bool GetWhiteToMove() const
+	[[nodiscard]] bool GetWhiteToMove() const
 	{
 		return ((Value >> 31) & 0x01) == 1;
 	}
 
-	MoveValue GetColorToMove() const
+	[[nodiscard]] MoveValue GetColorToMove() const
 	{
 		return (Value >> 31) & 0x01;
 	}
 
-	std::string ToPositionString() const;
-	std::string ToDebugString() const;
+	[[nodiscard]] static Position TextToPosition(const std::string& text);
+	
+	[[nodiscard]] MoveString ToPositionString() const;
+	[[nodiscard]] std::string ToDebugString() const;
 };
 
 using MoveArray = std::array<Move, Constants::MaxMoves>;

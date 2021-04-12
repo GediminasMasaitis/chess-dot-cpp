@@ -1,6 +1,7 @@
 #include "fen.h"
 
 #include <regex>
+#include <sstream>
 
 #include "common.h"
 #include "zobrist.h"
@@ -40,7 +41,7 @@ void SyncMaterial(Board& board)
     }*/
 }
 
-void Fens::Parse(Board& board, std::string fen)
+void Fens::Parse(Board& board, Fen fen)
 {
     fen = std::regex_replace(fen, std::regex("/"), "");
     //board.ArrayBoard = new Piece[64];
@@ -61,6 +62,14 @@ void Fens::Parse(Board& board, std::string fen)
             board.BitBoard[piece] |= pieceBitBoard;
             board.ArrayBoard[fixedBoardPosition] = piece;
             board.PieceCounts[piece]++;
+            if (piece == ChessPiece::WhiteKing)
+            {
+                board.KingPositions[ChessPiece::White] = fixedBoardPosition;
+            }
+            else if (piece == ChessPiece::BlackKing)
+            {
+                board.KingPositions[ChessPiece::Black] = fixedBoardPosition;
+            }
             boardPosition++;
             continue;
         }
@@ -84,7 +93,7 @@ void Fens::Parse(Board& board, std::string fen)
     {
     case 'w':
         board.ColorToMove = ChessPiece::White;
-        board.ColorToMove = true;
+        board.WhiteToMove = true;
     	break;
     case 'b':
         board.ColorToMove = ChessPiece::Black;
@@ -154,4 +163,101 @@ void Fens::Parse(Board& board, std::string fen)
     board.SyncExtraBitBoards();
     SyncMaterial(board);
     board.Key = ZobristKeys.CalculateKey(board);
+}
+
+char PieceToChar(Piece piece)
+{
+    switch (piece)
+    {
+    case ChessPiece::Empty: return '\0';
+    case ChessPiece::WhitePawn: return 'P';
+    case ChessPiece::WhiteKnight: return 'N';
+    case ChessPiece::WhiteBishop: return 'B';
+    case ChessPiece::WhiteRook: return 'R';
+    case ChessPiece::WhiteQueen: return 'Q';
+    case ChessPiece::WhiteKing: return 'K';
+    case ChessPiece::BlackPawn: return 'p';
+    case ChessPiece::BlackKnight: return 'n';
+    case ChessPiece::BlackBishop: return 'b';
+    case ChessPiece::BlackRook: return 'r';
+    case ChessPiece::BlackQueen: return 'q';
+    case ChessPiece::BlackKing: return 'k';
+    default: throw std::exception("Unknown piece while parsing FEN");
+    }
+}
+
+Fen Fens::Serialize(const Board& board)
+{
+    auto builder = std::stringstream();
+    for (int i = 7; i >= 0; i--)
+    {
+        auto pawns = 0;
+        for (int j = 0; j < 8; j++)
+        {
+            auto index = i * 8 + j;
+            Piece piece = board.ArrayBoard[index];
+            auto ch = PieceToChar(piece);
+            if (ch == '\0')
+            {
+                pawns++;
+            }
+            else
+            {
+                if (pawns != 0)
+                {
+                    builder << pawns;
+                    pawns = 0;
+                }
+                builder << ch;
+            }
+        }
+        if (pawns != 0)
+        {
+            builder << pawns;
+        }
+        if (i != 0)
+        {
+            builder << '/';
+        }
+    }
+    builder << " ";
+    builder << (board.WhiteToMove ? 'w' : 'b');
+    builder << " ";
+    if (board.CastlingPermissions == ChessCastlingPermissions::None)
+    {
+        builder << "-";
+    }
+    else
+    {
+        if ((board.CastlingPermissions & ChessCastlingPermissions::WhiteKing) != ChessCastlingPermissions::None)
+        {
+            builder << "K";
+        }
+        if ((board.CastlingPermissions & ChessCastlingPermissions::WhiteQueen) != ChessCastlingPermissions::None)
+        {
+            builder << "Q";
+        }
+        if ((board.CastlingPermissions & ChessCastlingPermissions::BlackKing) != ChessCastlingPermissions::None)
+        {
+            builder << "k";
+        }
+        if ((board.CastlingPermissions & ChessCastlingPermissions::BlackQueen) != ChessCastlingPermissions::None)
+        {
+            builder << "q";
+        }
+    }
+    builder << " ";
+    if (board.EnPassantFileIndex == -1)
+    {
+        builder << "-";
+    }
+    else
+    {
+        auto fileLetter = static_cast<char>('a' + board.EnPassantFileIndex);
+        builder << fileLetter;
+        builder << board.EnPassantRankIndex + 1;
+    }
+
+    auto fen = builder.str();
+    return fen;
 }
