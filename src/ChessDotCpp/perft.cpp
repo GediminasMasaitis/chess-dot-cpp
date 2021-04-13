@@ -70,8 +70,9 @@ void RunIteration(Fen fen, Ply depth)
 {
 	auto board = Board();
 	Fens::Parse(board, fen);
-	/*board.DoMove("b2b3");
-	board.UndoMove();
+	//board.DoMove("a2a4");
+	
+	/*board.UndoMove();
 	board.DoMove("b2b4");*/
 	
 	auto moveStack = MoveStack();
