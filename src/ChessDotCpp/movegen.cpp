@@ -179,6 +179,40 @@ Bitboard PinDetector::GetPinned(const Board& board, Piece color, Position pos)
 	return pinned;
 }
 
+template<Piece TColor>
+Bitboard GetPinnedForColor(const Board& board, Position pos)
+{
+	constexpr Piece color = TColor;
+	constexpr Piece opponentColor = color ^ 1;
+	constexpr Piece opponentBishop = ChessPiece::Bishop | opponentColor;
+	constexpr Piece opponentRook = ChessPiece::Rook | opponentColor;
+	constexpr Piece opponentQueen = ChessPiece::Queen | opponentColor;
+	
+	Bitboard pinned = 0ULL;
+	const Bitboard ownPieces = board.BitBoard[color];
+
+	Bitboard xrays = DiagonalAntidiagonalXray(board.AllPieces, ownPieces, pos);
+	Bitboard pinners = xrays & (board.BitBoard[opponentBishop] | board.BitBoard[opponentQueen]);
+
+	while (pinners != 0)
+	{
+		const Position pinner = BitScanForward(pinners);
+		pinned |= BetweenBitboards.Between[pinner][pos] & ownPieces;
+		pinners &= pinners - 1;
+	}
+
+	xrays = HorizontalVerticalXray(board.AllPieces, ownPieces, pos);
+	pinners = xrays & (board.BitBoard[opponentRook] | board.BitBoard[opponentQueen]);
+
+	while (pinners != 0)
+	{
+		const Position pinner = BitScanForward(pinners);
+		pinned |= BetweenBitboards.Between[pinner][pos] & ownPieces;
+		pinners &= pinners - 1;
+	}
+	return pinned;
+}
+
 Bitboard GetPinnedData(const Board& board, Piece color, Position pos, PinPaths& paths)
 {
 	paths.fill(~0ULL);
@@ -195,7 +229,7 @@ Bitboard GetPinnedData(const Board& board, Piece color, Position pos, PinPaths& 
 		const Bitboard pinnerBitboard = GetBitboard(pinnerPos);
 		const Bitboard between = BetweenBitboards.Between[pinnerPos][pos];
 		const Bitboard pinnedBitboard = between & ownPieces;
-		const Bitboard pinnedPos = BitScanForward(pinnedBitboard);
+		const Position pinnedPos = BitScanForward(pinnedBitboard);
 		paths[pinnedPos] = between | pinnerBitboard;
 		allPinned |= pinnedBitboard;
 		pinners &= pinners - 1;
@@ -210,7 +244,7 @@ Bitboard GetPinnedData(const Board& board, Piece color, Position pos, PinPaths& 
 		const Bitboard pinnerBitboard = GetBitboard(pinnerPos);
 		const Bitboard between = BetweenBitboards.Between[pinnerPos][pos];
 		const Bitboard pinnedBitboard = between & ownPieces;
-		const Bitboard pinnedPos = BitScanForward(pinnedBitboard);
+		const Position pinnedPos = BitScanForward(pinnedBitboard);
 		paths[pinnedPos] = between | pinnerBitboard;
 		allPinned |= pinnedBitboard;
 		pinners &= pinners - 1;
@@ -408,16 +442,17 @@ void GetPotentialBlackPawnCaptures(const Board& board, Bitboard allowedFrom, Bit
 	}
 }
 
+template<Piece TPiece>
 void BitmaskToMoves
 (
 	const Board& board,
 	Bitboard bitmask,
 	const Position positionFrom,
-	const Piece piece,
 	MoveArray& moves,
 	size_t& moveCount
 )
 {
+	constexpr Piece piece = TPiece;
 	while (bitmask != 0)
 	{
 		const auto i = BitScanForward(bitmask);
@@ -427,13 +462,13 @@ void BitmaskToMoves
 	}
 }
 
+template<Piece TPiece>
 void GetPotentialJumpingMoves
 (
 	const Board& board,
 	const Bitboard allowedTo,
 	Bitboard jumpingPieces,
 	const JumpArray& jumpTable,
-	const Piece piece,
 	MoveArray& moves,
 	size_t& moveCount
 )
@@ -443,23 +478,27 @@ void GetPotentialJumpingMoves
 		const Position i = BitScanForward(jumpingPieces);
 		Bitboard jumps = jumpTable[i];
 		jumps &= allowedTo;
-		BitmaskToMoves(board, jumps, i, piece, moves, moveCount);
+		BitmaskToMoves<TPiece>(board, jumps, i, moves, moveCount);
 		jumpingPieces &= jumpingPieces - 1;
 	}
 }
 
+template<Piece TColor>
 void GetPotentialKnightMoves(const Board& board, Bitboard allowedFrom, Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
 {
-	const Piece chessPiece = board.WhiteToMove ? ChessPiece::WhiteKnight : ChessPiece::BlackKnight;
-	const Bitboard knights = board.BitBoard[chessPiece] & allowedFrom;
-	GetPotentialJumpingMoves(board, allowedTo, knights, BitboardJumps.KnightJumps, chessPiece, moves, moveCount);
+	constexpr Piece color = TColor;
+	constexpr Piece piece = ChessPiece::Knight | color;
+	const Bitboard knights = board.BitBoard[piece] & allowedFrom;
+	GetPotentialJumpingMoves<piece>(board, allowedTo, knights, BitboardJumps.KnightJumps, moves, moveCount);
 }
 
-void GetPotentialKingCaptures(const Board& board, Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
+template<Piece TColor>
+void GetPotentialKingMoves(const Board& board, const Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
 {
-	const Bitboard kings = board.WhiteToMove ? board.BitBoard[ChessPiece::WhiteKing] : board.BitBoard[ChessPiece::BlackKing];
-	const Piece chessPiece = board.WhiteToMove ? ChessPiece::WhiteKing : ChessPiece::BlackKing;
-	GetPotentialJumpingMoves(board, allowedTo, kings, BitboardJumps.KingJumps, chessPiece, moves, moveCount);
+	constexpr Piece color = TColor;
+	constexpr Piece piece = ChessPiece::King | color;
+	const Bitboard kings = board.BitBoard[piece];
+	GetPotentialJumpingMoves<piece>(board, allowedTo, kings, BitboardJumps.KingJumps, moves, moveCount);
 }
 
 void GetPotentialCastlingMoves(const Board& board, MoveArray& moves, size_t& moveCount)
@@ -514,65 +553,65 @@ void GetPotentialCastlingMoves(const Board& board, MoveArray& moves, size_t& mov
 	}
 }
 
-void GetPotentialKingMoves(const Board& board, const Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
-{
-	const Bitboard kings = board.WhiteToMove ? board.BitBoard[ChessPiece::WhiteKing] : board.BitBoard[ChessPiece::BlackKing];
-	const Piece chessPiece = board.WhiteToMove ? ChessPiece::WhiteKing : ChessPiece::BlackKing;
-	GetPotentialJumpingMoves(board, allowedTo, kings, BitboardJumps.KingJumps, chessPiece, moves, moveCount);
-}
-
+template<Piece TColor>
 void GetPotentialRookMoves(const Board& board, const Bitboard allowedFrom, const Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
 {
-	const Piece piece = static_cast<Piece>(ChessPiece::Rook | board.ColorToMove);
+	constexpr Piece color = TColor;
+	constexpr Piece piece = ChessPiece::Rook | color;
 	Bitboard piecesBitmask = board.BitBoard[piece] & allowedFrom;
 	while (piecesBitmask != 0)
 	{
 		const Position position = BitScanForward(piecesBitmask);
 		Bitboard slide = SlideMoveGenerator::HorizontalVerticalSlide(board.AllPieces, position);
 		slide &= allowedTo;
-		BitmaskToMoves(board, slide, position, piece, moves, moveCount);
+		BitmaskToMoves<piece>(board, slide, position, moves, moveCount);
 		piecesBitmask &= piecesBitmask - 1;
 	}
 }
 
+template<Piece TColor>
 void GetPotentialBishopMoves(const Board& board, const Bitboard allowedFrom, const Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
 {
-	const Piece piece = static_cast<Piece>(ChessPiece::Bishop | board.ColorToMove);
+	constexpr Piece color = TColor;
+	constexpr Piece piece = ChessPiece::Bishop | color;
 	Bitboard piecesBitmask = board.BitBoard[piece] & allowedFrom;
 	while (piecesBitmask != 0)
 	{
 		const Position position = BitScanForward(piecesBitmask);
 		Bitboard slide = SlideMoveGenerator::DiagonalAntidiagonalSlide(board.AllPieces, position);
 		slide &= allowedTo;
-		BitmaskToMoves(board, slide, position, piece, moves, moveCount);
+		BitmaskToMoves<piece>(board, slide, position, moves, moveCount);
 		piecesBitmask &= piecesBitmask - 1;
 	}
 }
 
+template<Piece TColor>
 void GetPotentialQueenMoves(const Board& board, const Bitboard allowedFrom, const Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
 {
-	const Piece piece = static_cast<Piece>(ChessPiece::Queen | board.ColorToMove);
+	constexpr Piece color = TColor;
+	constexpr Piece piece = ChessPiece::Queen | color;
 	Bitboard piecesBitmask = board.BitBoard[piece] & allowedFrom;
 	while (piecesBitmask != 0)
 	{
 		const Position position = BitScanForward(piecesBitmask);
 		Bitboard slide = SlideMoveGenerator::AllSlide(board.AllPieces, position);
 		slide &= allowedTo;
-		BitmaskToMoves(board, slide, position, piece, moves, moveCount);
+		BitmaskToMoves<piece>(board, slide, position, moves, moveCount);
 		piecesBitmask &= piecesBitmask - 1;
 	}
 }
 
-void MoveGenerator::GetAllPotentialMoves(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, size_t& moveCount)
+template<Piece TColor>
+void GetAllPotentialMovesForColor(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, size_t& moveCount)
 {
 	Bitboard allowedFrom = ~0ULL;
 	Bitboard allowedTo = board.EmptySquares | board.BitBoard[board.ColorToMove ^ 1];
 	Bitboard allowedToKing = allowedTo;
-	
+
 	const auto checkCount = PopCount(checkers);
 	if (checkCount > 1)
 	{
-		GetPotentialKingMoves(board, allowedToKing, moves, moveCount);
+		GetPotentialKingMoves<TColor>(board, allowedToKing, moves, moveCount);
 		return;
 	}
 
@@ -582,7 +621,7 @@ void MoveGenerator::GetAllPotentialMoves(const Board& board, const Bitboard chec
 	//	auto a = 123;
 	//}
 
-	
+
 
 	if (checkCount == 1)
 	{
@@ -596,25 +635,38 @@ void MoveGenerator::GetAllPotentialMoves(const Board& board, const Bitboard chec
 		GetPotentialCastlingMoves(board, moves, moveCount);
 	}
 
-	GetPotentialKnightMoves(board, allowedFrom, allowedTo, moves, moveCount);
-	GetPotentialBishopMoves(board, allowedFrom, allowedTo, moves, moveCount);
-	GetPotentialRookMoves(board, allowedFrom, allowedTo, moves, moveCount);
-	GetPotentialQueenMoves(board, allowedFrom, allowedTo, moves, moveCount);
-	GetPotentialKingMoves(board, allowedToKing, moves, moveCount);
+	GetPotentialKnightMoves<TColor>(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialBishopMoves<TColor>(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialRookMoves<TColor>(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialQueenMoves<TColor>(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialKingMoves<TColor>(board, allowedToKing, moves, moveCount);
 
-	if (board.WhiteToMove)
+	if constexpr (TColor == ChessPiece::White)
 	{
 		GetPotentialWhitePawnCaptures(board, allowedFrom, allowedTo, moves, moveCount);
-		GetPotentialPawnMoves<ChessPiece::White>(board, allowedFrom, allowedTo, moves, moveCount);
 	}
 	else
 	{
 		GetPotentialBlackPawnCaptures(board, allowedFrom, allowedTo, moves, moveCount);
-		GetPotentialPawnMoves<ChessPiece::Black>(board, allowedFrom, allowedTo, moves, moveCount);
+	}
+	
+	GetPotentialPawnMoves<TColor>(board, allowedFrom, allowedTo, moves, moveCount);
+}
+
+void MoveGenerator::GetAllPotentialMoves(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, size_t& moveCount)
+{
+	if (board.WhiteToMove)
+	{
+		GetAllPotentialMovesForColor<ChessPiece::White>(board, checkers, pinned, moves, moveCount);
+	}
+	else
+	{
+		GetAllPotentialMovesForColor<ChessPiece::Black>(board, checkers, pinned, moves, moveCount);
 	}
 }
 
-void MoveGenerator::GetAllPotentialCaptures(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, size_t& moveCount)
+template<Piece TColor>
+void GetAllPotentialCapturesForColor(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, size_t& moveCount)
 {
 	Bitboard allowedFrom = ~0ULL;
 	Bitboard allowedTo = board.BitBoard[board.ColorToMove ^ 1];
@@ -623,7 +675,7 @@ void MoveGenerator::GetAllPotentialCaptures(const Board& board, const Bitboard c
 	const auto checkCount = PopCount(checkers);
 	if (checkCount > 1)
 	{
-		GetPotentialKingCaptures(board, allowedToKing, moves, moveCount);
+		GetPotentialKingMoves<TColor>(board, allowedToKing, moves, moveCount);
 		return;
 	}
 
@@ -633,19 +685,31 @@ void MoveGenerator::GetAllPotentialCaptures(const Board& board, const Bitboard c
 		allowedTo = checkers;
 	}
 
-	GetPotentialKnightMoves(board, allowedFrom, allowedTo, moves, moveCount);
-	GetPotentialBishopMoves(board, allowedFrom, allowedTo, moves, moveCount);
-	GetPotentialRookMoves(board, allowedFrom, allowedTo, moves, moveCount);
-	GetPotentialQueenMoves(board, allowedFrom, allowedTo, moves, moveCount);
-	GetPotentialKingCaptures(board, allowedToKing, moves, moveCount);
+	GetPotentialKnightMoves<TColor>(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialBishopMoves<TColor>(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialRookMoves<TColor>(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialQueenMoves<TColor>(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialKingMoves<TColor>(board, allowedToKing, moves, moveCount);
 
-	if (board.WhiteToMove)
+	if constexpr (TColor == ChessPiece::White)
 	{
 		GetPotentialWhitePawnCaptures(board, allowedFrom, allowedTo, moves, moveCount);
 	}
 	else
 	{
 		GetPotentialBlackPawnCaptures(board, allowedFrom, allowedTo, moves, moveCount);
+	}
+}
+
+void MoveGenerator::GetAllPotentialCaptures(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, size_t& moveCount)
+{
+	if (board.WhiteToMove)
+	{
+		GetAllPotentialCapturesForColor<ChessPiece::White>(board, checkers, pinned, moves, moveCount);
+	}
+	else
+	{
+		GetAllPotentialCapturesForColor<ChessPiece::Black>(board, checkers, pinned, moves, moveCount);
 	}
 }
 
@@ -674,6 +738,7 @@ void MoveGenerator::GetAllPotentialCaptures(const Board& board, const Bitboard c
 //	const bool isSafe = (enemyAttackedAfterMove & myKings) == 0;
 //	return isSafe;
 //}
+
 
 bool MoveValidator::IsKingSafeAfterMove(const Board& board, const Move move)
 {
@@ -886,10 +951,23 @@ Bitboard GetCheckers(const Board& board)
 	return checkers;
 }
 
-void MoveGenerator::GetAllPossibleMoves(const Board& board, MoveArray& moves, size_t& moveCount)
+template<Piece TColor>
+void GetAllPossibleMovesForColor(const Board& board, MoveArray& moves, size_t& moveCount)
 {
 	const Bitboard checkers = GetCheckers(board);
-	const Bitboard pinned = PinDetector::GetPinned(board, board.ColorToMove, board.KingPositions[board.ColorToMove]);
-	GetAllPotentialMoves(board, checkers, pinned, moves, moveCount);
+	const Bitboard pinned = GetPinnedForColor<TColor>(board, board.KingPositions[board.ColorToMove]);
+	GetAllPotentialMovesForColor<TColor>(board, checkers, pinned, moves, moveCount);
 	MoveValidator::FilterMovesByKingSafety(board, checkers, pinned, moves, moveCount);
+}
+
+void MoveGenerator::GetAllPossibleMoves(const Board& board, MoveArray& moves, size_t& moveCount)
+{
+	if (board.WhiteToMove)
+	{
+		GetAllPossibleMovesForColor<ChessPiece::White>(board, moves, moveCount);
+	}
+	else
+	{
+		GetAllPossibleMovesForColor<ChessPiece::Black>(board, moves, moveCount);
+	}
 }

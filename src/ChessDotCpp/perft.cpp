@@ -49,7 +49,7 @@ size_t InternalPerftClient::GetMovesAndNodes(Board& board, Ply depth, MoveStack&
 	size_t possibleMoveCount = 0;
 	MoveGenerator::GetAllPossibleMoves(board, possibleMoves, possibleMoveCount);
 	size_t totalNodes = 0;
-	for (auto i = 0; i < possibleMoveCount; i++)
+	for (size_t i = 0; i < possibleMoveCount; i++)
 	{
 		auto& move = possibleMoves[i];
 		//auto boardStr1 = Fens::Serialize(board);
@@ -88,7 +88,7 @@ void RunIteration(Fen fen, Ply depth)
 
 	std::cout << "Depth: " << depth << ", Perft nodes: " << nodes << ", " << elapsedMs << " (" << ToUserFriendly(nps) << "N/s)" << std::endl;
 	std::sort(movesAndNodes.begin(), movesAndNodes.begin() + moveAndNodeCount, [](const MoveAndNodes& lhs, const MoveAndNodes& rhs) {return lhs.MovePos < rhs.MovePos; });
-	for(auto i = 0; i < moveAndNodeCount; i++)
+	for(size_t i = 0; i < moveAndNodeCount; i++)
 	{
 		auto& moveAndNodes = movesAndNodes[i];
 		std::cout << moveAndNodes.MovePos << ": " << moveAndNodes.Nodes << std::endl;

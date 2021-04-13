@@ -3,14 +3,43 @@
 #include "common.h"
 #include "constants.h"
 
-//#include "magicMoveboard.h"
+#include "magicMoveboardFixed.h"
 
 class HyperbolaQuintessence
 {
+private:
+	constexpr static Bitboard MaskedSlide(const Bitboard allPieces, const Bitboard pieceBitboard, const Bitboard mask)
+	{
+		const auto left = ((allPieces & mask) - 2 * pieceBitboard);
+		const auto right = ReverseBits(ReverseBits(allPieces & mask) - 2 * ReverseBits(pieceBitboard));
+		const auto both = left ^ right;
+		const auto slide = both & mask;
+		return slide;
+	}
+
 public:
-	constexpr static Bitboard HorizontalVerticalSlide(const Bitboard allPieces, const Position position);
-	constexpr static Bitboard DiagonalAntidiagonalSlide(const Bitboard allPieces, const Position position);
-	constexpr static Bitboard AllSlide(const Bitboard allPieces, const Position position);
+	constexpr static Bitboard HorizontalVerticalSlide(const Bitboard allPieces, const Position position)
+	{
+		const auto pieceBitboard = GetBitboard(position);
+		const auto horizontal = MaskedSlide(allPieces, pieceBitboard, BitboardConstants::Ranks[position / 8]);
+		const auto vertical = MaskedSlide(allPieces, pieceBitboard, BitboardConstants::Files[position % 8]);
+		return horizontal | vertical;
+	}
+	
+	constexpr static Bitboard DiagonalAntidiagonalSlide(const Bitboard allPieces, const Position position)
+	{
+		const auto pieceBitboard = GetBitboard(position);
+		const auto horizontal = MaskedSlide(allPieces, pieceBitboard, BitboardConstants::Diagonals[position / 8 + position % 8]);
+		const auto vertical = MaskedSlide(allPieces, pieceBitboard, BitboardConstants::Antidiagonals[position / 8 + 7 - position % 8]);
+		return horizontal | vertical;
+	}
+	
+	constexpr static Bitboard AllSlide(const Bitboard allPieces, const Position position)
+	{
+		const auto hv = HorizontalVerticalSlide(allPieces, position);
+		const auto dad = DiagonalAntidiagonalSlide(allPieces, position);
+		return hv | dad;
+	}
 };
 
 template<bool TDiagonal>
@@ -47,11 +76,11 @@ class MagicsDataClass
 public:
 	using BishopEntryArray = std::array<BishopMagicsEntry, 64>;
 	using RookEntryArray = std::array<RookMagicsEntry, 64>;
-		using MoveboardArray = std::array<Bitboard, 89524>;
+	//using MoveboardArray = std::array<Bitboard, 89524>;
 	
 	BishopEntryArray Bishops{};
 	RookEntryArray Rooks{};
-	MoveboardArray Table{};
+	//MoveboardArray Table{};
 	//bool Initialized;
 
 private:
@@ -284,7 +313,7 @@ private:
 
 			assert(Table[entry.Offset + localOffset] == 123456789123456 || Table[entry.Offset + localOffset] == moveboard);
 			
-			Table[entry.Offset + localOffset] = moveboard; // TODO: Uncomment if using non-hardcoded table
+			//Table[entry.Offset + localOffset] = moveboard; // TODO: Uncomment if using non-hardcoded table
 		}
 		//entry.MagicNumber = diagonal ? BishopMagics[position] : RookMagics[position];
 		//currentOffset += permutations;
@@ -292,37 +321,29 @@ private:
 	
 
 public:
-	MagicsDataClass()
+	constexpr MagicsDataClass()
 	{
 		/*Rooks = RookEntryArray{};
 		Bishops = BishopEntryArray{};
 		Table = MoveboardArray{};*/
-		Table.fill(123456789123456);
+		//Table.fill(123456789123456);
 		//size_t currentOffset = 0;
 		for (Position position = 0; position < 64; position++)
 		{
 			{
 				auto& entry = Rooks[position];
-				InitializeEntry(entry, position);
-				//entry.BlockerMask = GetOrthogonalMask(position);
-				//uint8_t bitCount = PopCount(entry.BlockerMask);
-				//entry.Shift = 64 - bitCount;
-				//entry.Offset = currentOffset;
-				//const auto permutations = 1 << bitCount;
-				//entry.MagicNumber = RookMagics[position];
-				//currentOffset += permutations;
+				//InitializeEntry(entry, position);
+				entry.BlockerMask = GetOrthogonalMask(position);
+				entry.Offset = RookMagics[position].Position;
+				entry.MagicNumber = RookMagics[position].MagicNumber;
 			}
 
 			{
 				auto& entry = Bishops[position];
-				InitializeEntry(entry, position);
-				/*entry.BlockerMask = GetDiagonalMask(position);
-				uint8_t bitCount = PopCount(entry.BlockerMask);
-				entry.Shift = 64 - bitCount;
-				entry.Offset = currentOffset;
-				const auto permutations = 1 << bitCount;
-				entry.MagicNumber = BishopMagics[position];
-				currentOffset += permutations;*/
+				//InitializeEntry(entry, position);
+				entry.BlockerMask = GetDiagonalMask(position);
+				entry.Offset = BishopMagics[position].Position;
+				entry.MagicNumber = BishopMagics[position].MagicNumber;
 			}
 			
 		}
@@ -331,7 +352,7 @@ public:
 	}
 };
 
-static MagicsDataClass MagicsData = MagicsDataClass();
+static constexpr MagicsDataClass MagicsData = MagicsDataClass();
 
 class MagicBitboards
 {
@@ -340,8 +361,8 @@ public:
 	{
 		const auto& entry = MagicsData.Rooks[position];
 		const auto localOffset = entry.GetLocalOffset(allPieces, position);
-		const auto bitboard = MagicsData.Table[entry.Offset + localOffset];
-		//const auto bitboard = MagicMoveTable[entry.Offset + localOffset];
+		//const auto bitboard = MagicsData.Table[entry.Offset + localOffset];
+		const auto bitboard = MagicMoveTable[entry.Offset + localOffset];
 		return bitboard;
 	}
 	
@@ -349,8 +370,8 @@ public:
 	{
 		const auto& entry = MagicsData.Bishops[position];
 		const auto localOffset = entry.GetLocalOffset(allPieces, position);
-		const auto bitboard = MagicsData.Table[entry.Offset + localOffset];
-		//const auto bitboard = MagicMoveTable[entry.Offset + localOffset];
+		//const auto bitboard = MagicsData.Table[entry.Offset + localOffset];
+		const auto bitboard = MagicMoveTable[entry.Offset + localOffset];
 		return bitboard;
 	}
 	

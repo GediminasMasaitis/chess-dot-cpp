@@ -12,25 +12,16 @@
 
 using namespace std;
 
-constexpr uint64_t foo()
-{
-	auto rng = PRNG();
-	Bitboard a = rng.rand64();
-	return a;
-}
-
 int main()
 {
 	
-	constexpr auto a = foo();
-	
-	/*ofstream magics;
-	magics.open("C:/Temp/magics.txt");
-	for(auto value : MagicsData.Table)
-	{
-		magics << "0x" << std::hex << value << ",\n";
-	}
-	magics.close();*/
+	//ofstream magics;
+	//magics.open("C:/Temp/magics.txt");
+	//for(auto value : MagicsData.Table)
+	//{
+	//	magics << "0x" << std::hex << value << ",\n";
+	//}
+	//magics.close();
 	
 	Fen fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	//Fen fen = "r1bqkbnr/pppppppp/n7/3P4/8/1N6/PPP1PPPP/R1BQKBNR b KQkq - 0 1";
