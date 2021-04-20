@@ -9,9 +9,13 @@
 class Constants
 {
 public:
-	static constexpr Ply MaxDepth = 256;
+	static constexpr Ply MaxDepth = 64;
 	static constexpr Ply MaxHistory = 20;
 	static constexpr size_t MaxMoves = 218;
+
+	static constexpr Score Inf = 32000;
+	static constexpr Score Mate = 30000;
+
 private:
 	Constants() = default;
 };
@@ -290,7 +294,6 @@ public:
 	{	
 		for (Position i = 0; i < 64; i++)
 		{
-			const Bitboard from = GetBitboard(i);
 			const File fromFile = i & 7;
 			const Rank fromRank = i >> 3;
 			const Diagonal fromDiagonal = fromFile + fromRank;
@@ -303,7 +306,6 @@ public:
 					continue;
 				}
 
-				const Bitboard to = GetBitboard(j);
 				const File toFile = j & 7;
 				const Rank toRank = j >> 3;
 				const Diagonal toDiagonal = toFile + toRank;

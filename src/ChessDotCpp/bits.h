@@ -76,7 +76,7 @@ constexpr uint8_t PopCount(const Bitboard bb)
 {
 	Bitboard result = bb - ((bb >> 1) & 0x5555555555555555UL);
 	result = (result & 0x3333333333333333UL) + ((result >> 2) & 0x3333333333333333UL);
-	return static_cast<uint8_t>((result + (result >> 4) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL >> 56);
+	return static_cast<uint8_t>(((result + (result >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL >> 56);
 }
 
 //inline uint8_t PopCount(const Bitboard bb)

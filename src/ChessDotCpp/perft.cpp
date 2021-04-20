@@ -82,11 +82,11 @@ void RunIteration(Fen fen, Ply depth)
 	size_t nodes = InternalPerftClient::GetMovesAndNodes(board, depth, moveStack, movesAndNodes, moveAndNodeCount);
 	auto end = std::chrono::high_resolution_clock::now();
 	auto elapsed = end - start;
-	auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
-	auto elapsedNs = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed);
-	auto nps = static_cast<uint64_t>(static_cast<double>(nodes * 1000000000) / elapsedNs.count());
+	const auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
+	const auto elapsedNs = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
+	const auto nps = static_cast<uint64_t>(static_cast<double>(nodes * 1000000000) / static_cast<double>(elapsedNs));
 
-	std::cout << "Depth: " << depth << ", Perft nodes: " << nodes << ", " << elapsedMs << " (" << ToUserFriendly(nps) << "N/s)" << std::endl;
+	std::cout << "Depth: " << std::to_string(depth) << ", Perft nodes: " << nodes << ", " << elapsedMs << "ms (" << ToUserFriendly(nps) << "N/s)" << std::endl;
 	std::sort(movesAndNodes.begin(), movesAndNodes.begin() + moveAndNodeCount, [](const MoveAndNodes& lhs, const MoveAndNodes& rhs) {return lhs.MovePos < rhs.MovePos; });
 	for(size_t i = 0; i < moveAndNodeCount; i++)
 	{

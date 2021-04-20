@@ -1,10 +1,10 @@
 #include "fen.h"
 
-#include <regex>
-#include <sstream>
-
 #include "common.h"
 #include "zobrist.h"
+
+#include <regex>
+#include <sstream>
 
 Piece TryParsePiece(char ch)
 {
@@ -28,7 +28,7 @@ Piece TryParsePiece(char ch)
 
 void SyncMaterial(Board& board)
 {
-	// TODO
+    // TODO
     /*board.WhiteMaterial = 0;
     board.BlackMaterial = 0;
     for (auto i = 1; i < 7; i++)
@@ -58,7 +58,7 @@ void Fens::Parse(Board& board, Fen fen)
         const Piece piece = TryParsePiece(ch);
         if (piece != ChessPiece::Empty)
         {
-	        const auto pieceBitBoard = GetBitboard(fixedBoardPosition);
+            const auto pieceBitBoard = GetBitboard(fixedBoardPosition);
             board.BitBoard[piece] |= pieceBitBoard;
             board.ArrayBoard[fixedBoardPosition] = piece;
             board.PieceCounts[piece]++;
@@ -94,13 +94,13 @@ void Fens::Parse(Board& board, Fen fen)
     case 'w':
         board.ColorToMove = ChessPiece::White;
         board.WhiteToMove = true;
-    	break;
+        break;
     case 'b':
         board.ColorToMove = ChessPiece::Black;
         board.WhiteToMove = false;
         break;
     default:
-        throw std::exception("Unknown color");
+        Throw("Unknown color");
     }
     
     fenPosition += 2;
@@ -111,7 +111,7 @@ void Fens::Parse(Board& board, Fen fen)
         {
             break;
         }
-    	
+        
         bool done = false;
         switch (fen[fenPosition])
         {
@@ -135,7 +135,7 @@ void Fens::Parse(Board& board, Fen fen)
             done = true;
             break;
         default:
-            throw std::exception("Unknown character in castling permissions");
+            Throw("Unknown character in castling permissions");
         }
         fenPosition++;
         if (done)
@@ -182,7 +182,7 @@ char PieceToChar(Piece piece)
     case ChessPiece::BlackRook: return 'r';
     case ChessPiece::BlackQueen: return 'q';
     case ChessPiece::BlackKing: return 'k';
-    default: throw std::exception("Unknown piece while parsing FEN");
+    default: Throw("Unknown piece while parsing FEN");
     }
 }
 

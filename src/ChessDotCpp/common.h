@@ -2,10 +2,14 @@
 
 #include "constants.h"
 #include "bits.h"
+#include "error.h"
 
 #include <array>
 #include <cassert>
 #include <string>
+#include <stdexcept>
+
+#define MAYBE_UNUSED(x) ((void)(x))
 
 template<class T>
 static std::string TrimNumber(const T number, double divisor, const std::string& sufffix)

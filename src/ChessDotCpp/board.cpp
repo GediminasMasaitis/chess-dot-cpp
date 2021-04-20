@@ -362,7 +362,7 @@ Move Board::FromPositionString(const MoveString& moveString) const
 		case 'R':
 			pawnPromotesTo = static_cast<Piece>(ChessPiece::Rook + ColorToMove);
 			break;
-		default: throw std::exception("Unknown promotion");
+		default: Throw("Unknown promotion");
 		}
 	}
 

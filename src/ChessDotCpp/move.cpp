@@ -53,7 +53,7 @@ MoveString Move::ToPositionString() const
 			promotionLetter = 'q';
 			break;
 		default:
-			throw std::exception("Invalid pawn promotion");
+			Throw("Invalid pawn promotion");
 		}
 		stream << promotionLetter;
 	}

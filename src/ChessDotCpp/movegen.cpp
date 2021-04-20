@@ -2,10 +2,6 @@
 
 #include "common.h"
 #include "magics.h"
-
-#include <exception>
-#include <iostream>
-
 #include "fen.h"
 
 constexpr Bitboard GetAttackedByPawns(const Bitboard myPawns, const bool whiteToMove)
