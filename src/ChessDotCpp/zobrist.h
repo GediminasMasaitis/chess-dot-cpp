@@ -9,9 +9,9 @@
 class ZobristKeysClass
 {
 public:
-    std::array<std::array<ZobristKey, ChessPiece::Count>, 64> ZPieces {};
+    std::array<std::array<ZobristKey, Pieces::Count>, 64> ZPieces {};
     std::array<ZobristKey, 8> ZEnPassant {};
-    std::array<ZobristKey, ChessCastlingPermissions::All + 1> ZCastle {};
+    std::array<ZobristKey, CastlingPermissions::All + 1> ZCastle {};
     ZobristKey ZWhiteToMove {};
 
     constexpr ZobristKeysClass()
@@ -32,19 +32,19 @@ public:
             ZEnPassant[i] = static_cast<ZobristKey>(rng.rand64());
         }
 
-        constexpr auto castleLength = ChessCastlingPermissions::All + 1;
-        ZCastle[ChessCastlingPermissions::WhiteQueen] = static_cast<ZobristKey>(rng.rand64());
-        ZCastle[ChessCastlingPermissions::WhiteKing] = static_cast<ZobristKey>(rng.rand64());
-        ZCastle[ChessCastlingPermissions::BlackQueen] = static_cast<ZobristKey>(rng.rand64());
-        ZCastle[ChessCastlingPermissions::BlackKing] = static_cast<ZobristKey>(rng.rand64());
+        constexpr auto castleLength = CastlingPermissions::All + 1;
+        ZCastle[CastlingPermissions::WhiteQueen] = static_cast<ZobristKey>(rng.rand64());
+        ZCastle[CastlingPermissions::WhiteKing] = static_cast<ZobristKey>(rng.rand64());
+        ZCastle[CastlingPermissions::BlackQueen] = static_cast<ZobristKey>(rng.rand64());
+        ZCastle[CastlingPermissions::BlackKing] = static_cast<ZobristKey>(rng.rand64());
         for (int i = 1; i < castleLength; i++)
         {
             if
                 (
-                    i == ChessCastlingPermissions::WhiteQueen
-                    || i == ChessCastlingPermissions::WhiteKing
-                    || i == ChessCastlingPermissions::BlackQueen
-                    || i == ChessCastlingPermissions::BlackKing
+                    i == CastlingPermissions::WhiteQueen
+                    || i == CastlingPermissions::WhiteKing
+                    || i == CastlingPermissions::BlackQueen
+                    || i == CastlingPermissions::BlackKing
                     )
             {
                 continue;
@@ -66,13 +66,13 @@ public:
         ZWhiteToMove = static_cast<ZobristKey>(rng.rand64());
     }
 
-    constexpr ZobristKey CalculateKey(const Board& board) const
+    [[nodiscard]] constexpr ZobristKey CalculateKey(const Board& board) const
     {
         ZobristKey key = 0;
-        for (Position i = 0; i < 64; i++)
+        for (Position i = 0; i < Positions::Count; i++)
         {
-            Piece piece = board.ArrayBoard[i];
-            if (piece != ChessPiece::Empty)
+            const Piece piece = board.ArrayBoard[i];
+            if (piece != Pieces::Empty)
             {
                 key ^= ZPieces[i][piece];
             }
@@ -83,21 +83,21 @@ public:
             key ^= ZEnPassant[board.EnPassantFileIndex];
         }
 
-        if ((board.CastlingPermissions & ChessCastlingPermissions::WhiteQueen) != ChessCastlingPermissions::None)
+        if ((board.CastlingPermissions & CastlingPermissions::WhiteQueen) != CastlingPermissions::None)
         {
-            key ^= ZCastle[ChessCastlingPermissions::WhiteQueen];
+            key ^= ZCastle[CastlingPermissions::WhiteQueen];
         }
-        if ((board.CastlingPermissions & ChessCastlingPermissions::WhiteKing) != ChessCastlingPermissions::None)
+        if ((board.CastlingPermissions & CastlingPermissions::WhiteKing) != CastlingPermissions::None)
         {
-            key ^= ZCastle[ChessCastlingPermissions::WhiteKing];
+            key ^= ZCastle[CastlingPermissions::WhiteKing];
         }
-        if ((board.CastlingPermissions & ChessCastlingPermissions::BlackQueen) != ChessCastlingPermissions::None)
+        if ((board.CastlingPermissions & CastlingPermissions::BlackQueen) != CastlingPermissions::None)
         {
-            key ^= ZCastle[ChessCastlingPermissions::BlackQueen];
+            key ^= ZCastle[CastlingPermissions::BlackQueen];
         }
-        if ((board.CastlingPermissions & ChessCastlingPermissions::BlackKing) != ChessCastlingPermissions::None)
+        if ((board.CastlingPermissions & CastlingPermissions::BlackKing) != CastlingPermissions::None)
         {
-            key ^= ZCastle[ChessCastlingPermissions::BlackKing];
+            key ^= ZCastle[CastlingPermissions::BlackKing];
         }
 
         if (board.WhiteToMove)
@@ -105,6 +105,20 @@ public:
             key ^= ZWhiteToMove;
         }
 
+        return key;
+    }
+
+    [[nodiscard]] constexpr ZobristKey CalculatePawnKey(const Board& board) const
+    {
+        ZobristKey key = 0;
+        for (Position i = 0; i < Positions::Count; i++)
+        {
+            const Piece piece = board.ArrayBoard[i];
+            if ((piece & ~Pieces::Color) == Pieces::Pawn)
+            {
+                key ^= ZPieces[i][piece];
+            }
+        }
         return key;
     }
 };

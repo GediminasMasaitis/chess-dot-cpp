@@ -66,11 +66,12 @@ public:
 	
 	static Score AlphaBeta(Board& board, SearchData& data, Ply depth, Ply ply, Score alpha, Score beta)
 	{
+		/*pins = PinDetector::GetPinned()
 		Score staticScore = Evaluation::Evaluate(board);
 		if(depth <= 0)
 		{
 			return staticScore;
-		}
+		}*/
 		
 		MoveArray moves;
 		return 0;

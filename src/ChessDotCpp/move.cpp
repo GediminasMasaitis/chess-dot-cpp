@@ -31,25 +31,25 @@ MoveString Move::ToPositionString() const
 	stream << PositionToText(GetFrom());
 	stream << PositionToText(GetTo());
 	//std::string text = PositionToText(GetFrom()) + PositionToText(GetTo());
-	if (GetPawnPromoteTo() != ChessPiece::Empty)
+	if (GetPawnPromoteTo() != Pieces::Empty)
 	{
 		char promotionLetter;
 		switch (GetPawnPromoteTo())
 		{
-		case ChessPiece::WhiteKnight:
-		case ChessPiece::BlackKnight:
+		case Pieces::WhiteKnight:
+		case Pieces::BlackKnight:
 			promotionLetter = 'n';
 			break;
-		case ChessPiece::WhiteBishop:
-		case ChessPiece::BlackBishop:
+		case Pieces::WhiteBishop:
+		case Pieces::BlackBishop:
 			promotionLetter = 'b';
 			break;
-		case ChessPiece::WhiteRook:
-		case ChessPiece::BlackRook:
+		case Pieces::WhiteRook:
+		case Pieces::BlackRook:
 			promotionLetter = 'r';
 			break;
-		case ChessPiece::WhiteQueen:
-		case ChessPiece::BlackQueen:
+		case Pieces::WhiteQueen:
+		case Pieces::BlackQueen:
 			promotionLetter = 'q';
 			break;
 		default:

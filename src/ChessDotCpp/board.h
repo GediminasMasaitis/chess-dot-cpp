@@ -14,36 +14,38 @@ public:
 	Rank EnPassantRankIndex;
 	Ply FiftyMoveRule;
 	ZobristKey Key;
+	ZobristKey PawnKey;
 };
 
 class Board
 {
 public:
-	Piece ColorToMove;
+	Color ColorToMove;
 	bool WhiteToMove;
 	CastlingPermission CastlingPermissions;
 	
 	std::array<UndoMove, Constants::MaxHistory> History;
-	Ply HistoryDepth;
-	Ply LastTookPieceHistoryIndex;
+	HistoryPly HistoryDepth;
+	HistoryPly FiftyMoveRuleIndex;
 
 	//Bitboard WhitePieces;
 	//Bitboard BlackPieces;
 	Bitboard EmptySquares;
 	Bitboard AllPieces;
 
-	std::array<Bitboard, ChessPiece::Count> BitBoard;
-	std::array<Piece, 64> ArrayBoard;
+	EachPiece<Bitboard> BitBoard;
+	EachPosition<Piece> ArrayBoard;
 
 	File EnPassantFileIndex;
 	Rank EnPassantRankIndex;
 	Bitboard EnPassantFile;
 	ZobristKey Key;
+	ZobristKey PawnKey;
 
-	std::array<Piece, ChessPiece::Count> PieceCounts;
-	std::array<Position, 2> KingPositions;
-	Material WhiteMaterial;
-	Material BlackMaterial;
+	EachPiece<Piece> PieceCounts;
+	EachColor<Position> KingPositions;
+	EachColor<Score> PawnMaterial;
+	EachColor<Score> PieceMaterial;
 
 	void SyncExtraBitBoards();
 	void DoMove(const Move move);
@@ -62,28 +64,28 @@ public:
 	{
 		for (Position i = 0; i < 64; i++)
 		{
-			CastlingPermission permission = ChessCastlingPermissions::All;
+			CastlingPermission permission = CastlingPermissions::All;
 			switch (i)
 			{
 			case 0:
-				permission &= ~ChessCastlingPermissions::WhiteQueen;
+				permission &= ~CastlingPermissions::WhiteQueen;
 				break;
 			case 4:
-				permission &= ~ChessCastlingPermissions::WhiteQueen;
-				permission &= ~ChessCastlingPermissions::WhiteKing;
+				permission &= ~CastlingPermissions::WhiteQueen;
+				permission &= ~CastlingPermissions::WhiteKing;
 				break;
 			case 7:
-				permission &= ~ChessCastlingPermissions::WhiteKing;
+				permission &= ~CastlingPermissions::WhiteKing;
 				break;
 			case 56:
-				permission &= ~ChessCastlingPermissions::BlackQueen;
+				permission &= ~CastlingPermissions::BlackQueen;
 				break;
 			case 60:
-				permission &= ~ChessCastlingPermissions::BlackQueen;
-				permission &= ~ChessCastlingPermissions::BlackKing;
+				permission &= ~CastlingPermissions::BlackQueen;
+				permission &= ~CastlingPermissions::BlackKing;
 				break;
 			case 63:
-				permission &= ~ChessCastlingPermissions::BlackKing;
+				permission &= ~CastlingPermissions::BlackKing;
 				break;
 			default:
 				break;

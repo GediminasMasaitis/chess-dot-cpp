@@ -17,14 +17,14 @@ public:
 		const Piece takesPiece = 0,
 		const bool enPassant = false,
 		const bool castle = false,
-		const Piece pawnPromoteTo = ChessPiece::Empty
+		const Piece pawnPromoteTo = Pieces::Empty
 	)
 	{
 		assert(from >= 0 && from < 64);
 		assert(to >= 0 && to < 64);
-		assert(piece >= 0 && piece < ChessPiece::Count);
-		assert(takesPiece >= 0 && takesPiece < ChessPiece::Count);
-		assert(pawnPromoteTo >= 0 && pawnPromoteTo < ChessPiece::Count);
+		assert(piece >= 0 && piece < Pieces::Count);
+		assert(takesPiece >= 0 && takesPiece < Pieces::Count);
+		assert(pawnPromoteTo >= 0 && pawnPromoteTo < Pieces::Count);
 		
 		MoveValue value = 0;
 		value |= static_cast<MoveValue>(from);
@@ -35,8 +35,8 @@ public:
 		value |= static_cast<MoveValue>(enPassant) << 28;
 		//value |= static_cast<MoveValue>((piece == ChessPiece::WhiteKing || piece == ChessPiece::BlackKing) && Math.Abs(from - to) == 2) << 41;
 		value |= static_cast<MoveValue>(castle) << 29;
-		value |= static_cast<MoveValue>(piece == ChessPiece::Empty) << 30;
-		value |= static_cast<MoveValue>(piece & ChessPiece::Color) << 31;
+		value |= static_cast<MoveValue>(piece == Pieces::Empty) << 30;
+		value |= static_cast<MoveValue>(piece & Pieces::Color) << 31;
 		Value = value;
 	}
 

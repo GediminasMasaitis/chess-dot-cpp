@@ -10,35 +10,37 @@ Piece TryParsePiece(char ch)
 {
     switch (ch)
     {
-    case 'p': return ChessPiece::BlackPawn;
-    case 'P': return ChessPiece::WhitePawn;
-    case 'n': return ChessPiece::BlackKnight;
-    case 'N': return ChessPiece::WhiteKnight;
-    case 'b': return ChessPiece::BlackBishop;
-    case 'B': return ChessPiece::WhiteBishop;
-    case 'r': return ChessPiece::BlackRook;
-    case 'R': return ChessPiece::WhiteRook;
-    case 'q': return ChessPiece::BlackQueen;
-    case 'Q': return ChessPiece::WhiteQueen;
-    case 'k': return ChessPiece::BlackKing;
-    case 'K': return ChessPiece::WhiteKing;
-    default: return ChessPiece::Empty;
+    case 'p': return Pieces::BlackPawn;
+    case 'P': return Pieces::WhitePawn;
+    case 'n': return Pieces::BlackKnight;
+    case 'N': return Pieces::WhiteKnight;
+    case 'b': return Pieces::BlackBishop;
+    case 'B': return Pieces::WhiteBishop;
+    case 'r': return Pieces::BlackRook;
+    case 'R': return Pieces::WhiteRook;
+    case 'q': return Pieces::BlackQueen;
+    case 'Q': return Pieces::WhiteQueen;
+    case 'k': return Pieces::BlackKing;
+    case 'K': return Pieces::WhiteKing;
+    default: return Pieces::Empty;
     }
 }
 
 void SyncMaterial(Board& board)
 {
-    // TODO
-    /*board.WhiteMaterial = 0;
-    board.BlackMaterial = 0;
-    for (auto i = 1; i < 7; i++)
+    for (Piece piece = 0; piece < Pieces::Count; piece++)
     {
-        board.WhiteMaterial += board.PieceCounts[i] * EvaluationConstants::Weights[i];
+        Color color = piece & Pieces::Color;
+        bool isPawn = (piece & ~Pieces::Color) == Pieces::Pawn;
+        if (isPawn)
+        {
+            board.PawnMaterial[color] += board.PieceCounts[piece] * EvaluationConstants::PieceValues[piece];
+        }
+        else
+        {
+            board.PieceMaterial[color] += board.PieceCounts[piece] * EvaluationConstants::PieceValues[piece];
+        }
     }
-    for (auto i = 7; i < ChessPiece::Count; i++)
-    {
-        board.BlackMaterial += board.PieceCounts[i] * EvaluationConstants::Weights[i];
-    }*/
 }
 
 void Fens::Parse(Board& board, Fen fen)
@@ -56,19 +58,19 @@ void Fens::Parse(Board& board, Fen fen)
         Position fixedBoardPosition = (7 - boardPosition / 8) * 8 + boardPosition % 8;
         auto ch = fen[fenPosition];
         const Piece piece = TryParsePiece(ch);
-        if (piece != ChessPiece::Empty)
+        if (piece != Pieces::Empty)
         {
             const auto pieceBitBoard = GetBitboard(fixedBoardPosition);
             board.BitBoard[piece] |= pieceBitBoard;
             board.ArrayBoard[fixedBoardPosition] = piece;
             board.PieceCounts[piece]++;
-            if (piece == ChessPiece::WhiteKing)
+            if (piece == Pieces::WhiteKing)
             {
-                board.KingPositions[ChessPiece::White] = fixedBoardPosition;
+                board.KingPositions[Colors::White] = fixedBoardPosition;
             }
-            else if (piece == ChessPiece::BlackKing)
+            else if (piece == Pieces::BlackKing)
             {
-                board.KingPositions[ChessPiece::Black] = fixedBoardPosition;
+                board.KingPositions[Colors::Black] = fixedBoardPosition;
             }
             boardPosition++;
             continue;
@@ -92,11 +94,11 @@ void Fens::Parse(Board& board, Fen fen)
     switch (fen[fenPosition])
     {
     case 'w':
-        board.ColorToMove = ChessPiece::White;
+        board.ColorToMove = Colors::White;
         board.WhiteToMove = true;
         break;
     case 'b':
-        board.ColorToMove = ChessPiece::Black;
+        board.ColorToMove = Colors::Black;
         board.WhiteToMove = false;
         break;
     default:
@@ -116,16 +118,16 @@ void Fens::Parse(Board& board, Fen fen)
         switch (fen[fenPosition])
         {
         case 'K':
-            board.CastlingPermissions |= ChessCastlingPermissions::WhiteKing;
+            board.CastlingPermissions |= CastlingPermissions::WhiteKing;
             break;
         case 'Q':
-            board.CastlingPermissions |= ChessCastlingPermissions::WhiteQueen;
+            board.CastlingPermissions |= CastlingPermissions::WhiteQueen;
             break;
         case 'k':
-            board.CastlingPermissions |= ChessCastlingPermissions::BlackKing;
+            board.CastlingPermissions |= CastlingPermissions::BlackKing;
             break;
         case 'q':
-            board.CastlingPermissions |= ChessCastlingPermissions::BlackQueen;
+            board.CastlingPermissions |= CastlingPermissions::BlackQueen;
             break;
         case ' ':
             fenPosition--;
@@ -163,25 +165,26 @@ void Fens::Parse(Board& board, Fen fen)
     board.SyncExtraBitBoards();
     SyncMaterial(board);
     board.Key = ZobristKeys.CalculateKey(board);
+    board.PawnKey = ZobristKeys.CalculatePawnKey(board);
 }
 
 char PieceToChar(Piece piece)
 {
     switch (piece)
     {
-    case ChessPiece::Empty: return '\0';
-    case ChessPiece::WhitePawn: return 'P';
-    case ChessPiece::WhiteKnight: return 'N';
-    case ChessPiece::WhiteBishop: return 'B';
-    case ChessPiece::WhiteRook: return 'R';
-    case ChessPiece::WhiteQueen: return 'Q';
-    case ChessPiece::WhiteKing: return 'K';
-    case ChessPiece::BlackPawn: return 'p';
-    case ChessPiece::BlackKnight: return 'n';
-    case ChessPiece::BlackBishop: return 'b';
-    case ChessPiece::BlackRook: return 'r';
-    case ChessPiece::BlackQueen: return 'q';
-    case ChessPiece::BlackKing: return 'k';
+    case Pieces::Empty: return '\0';
+    case Pieces::WhitePawn: return 'P';
+    case Pieces::WhiteKnight: return 'N';
+    case Pieces::WhiteBishop: return 'B';
+    case Pieces::WhiteRook: return 'R';
+    case Pieces::WhiteQueen: return 'Q';
+    case Pieces::WhiteKing: return 'K';
+    case Pieces::BlackPawn: return 'p';
+    case Pieces::BlackKnight: return 'n';
+    case Pieces::BlackBishop: return 'b';
+    case Pieces::BlackRook: return 'r';
+    case Pieces::BlackQueen: return 'q';
+    case Pieces::BlackKing: return 'k';
     default: Throw("Unknown piece while parsing FEN");
     }
 }
@@ -223,25 +226,25 @@ Fen Fens::Serialize(const Board& board)
     builder << " ";
     builder << (board.WhiteToMove ? 'w' : 'b');
     builder << " ";
-    if (board.CastlingPermissions == ChessCastlingPermissions::None)
+    if (board.CastlingPermissions == CastlingPermissions::None)
     {
         builder << "-";
     }
     else
     {
-        if ((board.CastlingPermissions & ChessCastlingPermissions::WhiteKing) != ChessCastlingPermissions::None)
+        if ((board.CastlingPermissions & CastlingPermissions::WhiteKing) != CastlingPermissions::None)
         {
             builder << "K";
         }
-        if ((board.CastlingPermissions & ChessCastlingPermissions::WhiteQueen) != ChessCastlingPermissions::None)
+        if ((board.CastlingPermissions & CastlingPermissions::WhiteQueen) != CastlingPermissions::None)
         {
             builder << "Q";
         }
-        if ((board.CastlingPermissions & ChessCastlingPermissions::BlackKing) != ChessCastlingPermissions::None)
+        if ((board.CastlingPermissions & CastlingPermissions::BlackKing) != CastlingPermissions::None)
         {
             builder << "k";
         }
-        if ((board.CastlingPermissions & ChessCastlingPermissions::BlackQueen) != ChessCastlingPermissions::None)
+        if ((board.CastlingPermissions & CastlingPermissions::BlackQueen) != CastlingPermissions::None)
         {
             builder << "q";
         }
