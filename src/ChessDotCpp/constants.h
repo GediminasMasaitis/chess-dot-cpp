@@ -10,7 +10,7 @@ class Constants
 {
 public:
     static constexpr Ply MaxDepth = 64;
-    static constexpr Ply MaxHistory = 20;
+    static constexpr HistoryPly MaxHistory = 500;
     static constexpr size_t MaxMoves = 218;
 
     static constexpr Score Inf = 32000;

@@ -22,15 +22,14 @@ public:
 
     void OnCallback(SearchCallbackData& data) const
     {	
-        std::vector<TranspositionTableEntry> principalVariation = std::vector<TranspositionTableEntry>();
-        data.Data.Global.Table.GetPrincipalVariation(data.Board, principalVariation);
+        std::vector<Move>& principalVariation = data.Data.Global.Table.SavedPrincipalVariation;
         
         std::stringstream builder = std::stringstream();
 
         builder << "info";
         builder << " depth " << std::to_string(data.Depth);
         builder << " multipv 1";
-        builder << " score " << std::to_string(data._Score);
+        builder << " score cp " << std::to_string(data._Score);
         builder << " nodes " << std::to_string(data.Data.Stats.Nodes);
         builder << " nps 0";
         builder << " time 0";
@@ -39,7 +38,7 @@ public:
         for (size_t ply = 0; ply < principalVariation.size(); ply++)
         {
             const auto& entry = principalVariation[ply];
-            builder << " " << entry.MMove.ToPositionString();
+            builder << " " << entry.ToPositionString();
         }
             
         *Out << builder.str() << std::endl;
@@ -53,6 +52,21 @@ public:
             reader >> moveStr;
 
             board.DoMove(moveStr);
+        }
+    }
+
+    void HandleStartpos(std::stringstream& reader)
+    {
+        Fens::Parse(board, startPos);
+        if (!reader.eof())
+        {
+            std::string type;
+            reader >> type;
+
+            if (type == "moves")
+            {
+                HandleMoves(reader);
+            }
         }
     }
 
@@ -82,7 +96,7 @@ public:
 
         if(type == "startpos")
         {
-            Fens::Parse(board, startPos);
+            HandleStartpos(reader);
         }
         else if(type == "moves")
         {
@@ -125,7 +139,8 @@ public:
             }
         }
         
-        Search::Run(board, parameters, [&](SearchCallbackData& data) { OnCallback(data); });
+        const Move move = Search::Run(board, parameters, [&](SearchCallbackData& data) { OnCallback(data); });
+        *Out << "bestmove " << move.ToPositionString() << std::endl;
     }
 
     void HandleUci(std::stringstream& reader)

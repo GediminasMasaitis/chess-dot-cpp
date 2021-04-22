@@ -9,7 +9,7 @@
 class ZobristKeysClass
 {
 public:
-    std::array<std::array<ZobristKey, Pieces::Count>, 64> ZPieces {};
+    EachPosition<EachPiece<ZobristKey>> ZPieces {};
     std::array<ZobristKey, 8> ZEnPassant {};
     std::array<ZobristKey, CastlingPermissions::All + 1> ZCastle {};
     ZobristKey ZWhiteToMove {};
@@ -19,9 +19,9 @@ public:
         //auto rng = std::mt19937_64(0);
         auto rng = PRNG();
 
-        for (auto i = 0; i < 64; i++)
+        for (auto i = 0; i < Positions::Count; i++)
         {
-            for (auto j = 0; j < 13; j++)
+            for (auto j = 0; j < Pieces::Count; j++)
             {
                 ZPieces[i][j] = static_cast<ZobristKey>(rng.rand64());
             }

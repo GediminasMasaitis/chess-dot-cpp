@@ -4,13 +4,15 @@
 #include "attacks.h"
 #include "movegen.h"
 #include "evaluation.h"
+#include "stopper.h"
 
 static void StoreTranspositionTable(SearchData& data, const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag)
 {
-    if (data.Stopper.ShouldStop())
+    if (data.Stopper.Stopped)
     {
         return;
     }
+    
     data.Global.Table.Store(key, move, depth, score, flag);
 }
 
@@ -21,6 +23,12 @@ static Score Contempt(const Board& board)
 
 static Score AlphaBeta(Board& board, SearchData& data, Ply depth, const Ply ply, Score alpha, Score beta)
 {
+    //if (depth > 2 && data.Stopper.ShouldStop())
+    //{
+    //    const Score score = Contempt(board);
+    //    return score;
+    //}
+    
     if(depth <= 0)
     {
         ++data.Stats.Nodes;
@@ -117,27 +125,42 @@ static Score Aspiration(Board& board, SearchData& data, const Ply depth, const S
     return score;
 }
 
-static void IterativeDeepen(Board& board, SearchData& data, const SearchCallback& callback)
+static Move IterativeDeepen(Board& board, SearchData& data, const SearchCallback& callback)
 {
     Score score = AlphaBeta(board, data, 1, 0, -Constants::Inf, Constants::Inf);
-
+    data.Global.Table.SavePrincipalVariation(board);
     SearchCallbackData callbackData(board, data, 1, score);
     
     callback(callbackData);
+
+    if (data.Stopper.ShouldStopDepthIncrease())
+    {
+        return data.Global.Table.SavedPrincipalVariation[0];
+    }
     
     for (Ply depth = 2; depth < Constants::MaxDepth; depth++)
     {
         score = Aspiration(board, data, depth, score);
         callbackData.Depth = depth;
         callbackData._Score = score;
+
+        if(data.Stopper.ShouldStopDepthIncrease())
+        {
+            break;
+        }
+
+        data.Global.Table.SavePrincipalVariation(board);
         callback(callbackData);
     }
+
+    return data.Global.Table.SavedPrincipalVariation[0];
 }
 
-void Search::Run(Board& board, const SearchParameters& parameters, const SearchCallback& callback)
+Move Search::Run(Board& board, const SearchParameters& parameters, const SearchCallback& callback)
 {
-    const SearchStopper stopper = SearchStopper(parameters);
+    const SearchStopper stopper = SearchStopper(parameters, board.WhiteToMove);
     SearchData data = SearchData(stopper);
-    data.Global.Table.SetSize(16 * 1024 * 1024);
-    IterativeDeepen(board, data, callback);
+    data.Global.Table.SetSize(1024 * 1024 * 1024);
+    const auto move = IterativeDeepen(board, data, callback);
+    return move;
 }

@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "stopper.h"
+
 class PlyData
 {
 };
@@ -26,39 +28,7 @@ public:
     Stat Nodes = 0;
 };
 
-class SearchParameters
-{
-public:
-    bool Infinite = false;
-    Ply MaxDepth = Constants::MaxDepth;
 
-    size_t WhiteTime = 10000;
-    size_t BlackTime = 10000;
-
-    size_t WhiteTimeIncrement = 100;
-    size_t BlackTimeIncrement = 100;
-};
-
-class SearchStopper
-{
-public:
-    SearchParameters Parameters;
-
-    [[nodiscard]] bool ShouldStop()
-    {
-        return false;
-    }
-
-    [[nodiscard]] bool ShouldStopDepthIncrease()
-    {
-        return false;
-    }
-
-    explicit SearchStopper(const SearchParameters& parameters)
-        : Parameters(parameters)
-    {
-    }
-};
 
 class TranspositionTableFlags
 {
@@ -118,7 +88,6 @@ private:
     size_t _mask = 0;
     size_t _size = 0;
     TableEntries _entries = nullptr;
-    std::vector<TranspositionTableEntry> _principalVariation;
     
     static size_t GetClampedSize(size_t bytes)
     {
@@ -151,7 +120,9 @@ private:
     }
 
 public:
- 
+
+    std::vector<Move> SavedPrincipalVariation{};
+    
     void SetSize(const size_t bytes)
     {
         const size_t newSize = GetClampedSize(bytes);
@@ -187,16 +158,6 @@ public:
 
         const TranspositionTableEntry entry = TranspositionTableEntry(key, move, depth, score, flag);
         _entries[index] = entry;
-
-        TranspositionTableEntry e;
-        ZobristKey k;
-        if(key == 17035895950239398082ULL)
-        {
-            auto a = 123;
-            auto e2 = TranspositionTableEntry(key, move, depth, score, flag);
-        }
-        assert(TryProbe(key, &e, &k));
-        assert(key == k);
     }
 
     bool TryProbe(const ZobristKey key, TranspositionTableEntry* entry, ZobristKey* entryKey) const
@@ -209,7 +170,7 @@ public:
         return exists;
     }
 
-    void GetPrincipalVariation(const Board& board, std::vector<TranspositionTableEntry>& principalVariation) const
+    void GetPrincipalVariation(const Board& board, std::vector<Move>& principalVariation) const
     {
         Board clone = board;
         for (Ply i = 0; i < Constants::MaxDepth; i++)
@@ -235,9 +196,15 @@ public:
             }
 
             Move move = entry.MMove;
-            principalVariation.push_back(entry);
+            principalVariation.push_back(move);
             clone.DoMove(move);
         }
+    }
+
+    void SavePrincipalVariation(const Board& board)
+    {
+        SavedPrincipalVariation.clear();
+        GetPrincipalVariation(board, SavedPrincipalVariation);
     }
 };
 
@@ -286,7 +253,7 @@ using SearchCallback = std::function<void(SearchCallbackData& data)>;
 class Search
 {
 public:
-    static void Run(Board& board, const SearchParameters& parameters, const SearchCallback& callback);
+    static Move Run(Board& board, const SearchParameters& parameters, const SearchCallback& callback);
     
     Search() = delete;
 };
