@@ -269,7 +269,8 @@ using EachPosition = std::array<T, Positions::Count>;
 class BitboardConstants
 {
 public:
-    static constexpr Bitboard AllBoard = ~0ULL;	
+    static constexpr Bitboard Empty = 0ULL;
+    static constexpr Bitboard AllBoard = ~Empty;
     static constexpr std::array<Bitboard, 8> Files =
     {
         0x101010101010101ULL,

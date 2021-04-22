@@ -45,6 +45,7 @@ void SyncMaterial(Board& board)
 
 void Fens::Parse(Board& board, Fen fen)
 {
+    board = Board();
     fen = std::regex_replace(fen, std::regex("/"), "");
     //board.ArrayBoard = new Piece[64];
     //board.BitBoard = new ulong[13];

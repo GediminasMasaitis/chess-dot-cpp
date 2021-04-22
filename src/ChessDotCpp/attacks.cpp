@@ -115,3 +115,59 @@ Bitboard AttacksGenerator::GetAllAttacked(const Board& board, const bool whiteTo
 	const Bitboard allAttacked = pawnsAttack | knightsAttack | bqAttack | rqAttack | kingsAttack;
 	return allAttacked;
 }
+
+Bitboard AttacksGenerator::GetAttackersOfSide(const Board& board, Position position, bool byWhite, Bitboard allPieces)
+{
+	Bitboard result = 0UL;
+
+	Bitboard pawns;
+	Bitboard knights;
+	Bitboard bishops;
+	Bitboard rooks;
+	Bitboard queens;
+	Bitboard kings;
+	if (byWhite)
+	{
+		pawns = board.BitBoard[Pieces::WhitePawn];
+		knights = board.BitBoard[Pieces::WhiteKnight];
+		bishops = board.BitBoard[Pieces::WhiteBishop];
+		rooks = board.BitBoard[Pieces::WhiteRook];
+		queens = board.BitBoard[Pieces::WhiteQueen];
+		kings = board.BitBoard[Pieces::WhiteKing];
+	}
+	else
+	{
+		pawns = board.BitBoard[Pieces::BlackPawn];
+		knights = board.BitBoard[Pieces::BlackKnight];
+		bishops = board.BitBoard[Pieces::BlackBishop];
+		rooks = board.BitBoard[Pieces::BlackRook];
+		queens = board.BitBoard[Pieces::BlackQueen];
+		kings = board.BitBoard[Pieces::BlackKing];
+	}
+
+	const Bitboard knightAttack = BitboardJumps.KnightJumps[position];
+	result |= knightAttack & knights;
+
+	const Bitboard kingAttack = BitboardJumps.KingJumps[position];
+	result |= kingAttack & kings;
+
+	const Piece pawnIndex = byWhite ? Colors::Black : Colors::White;
+	const Bitboard pawnAttack = BitboardJumps.PawnJumps[pawnIndex][position];
+	result |= pawnAttack & pawns;
+
+	const Bitboard diagonalAttack = SlideMoveGenerator::DiagonalAntidiagonalSlide(allPieces, position);
+	result |= diagonalAttack & bishops;
+	result |= diagonalAttack & queens;
+
+	const Bitboard verticalAttack = SlideMoveGenerator::HorizontalVerticalSlide(allPieces, position);
+	result |= verticalAttack & rooks;
+	result |= verticalAttack & queens;
+
+	return result;
+}
+
+Bitboard AttacksGenerator::GetCheckers(const Board& board)
+{
+	const Bitboard checkers = GetAttackersOfSide(board, board.KingPositions[board.ColorToMove], !board.WhiteToMove, board.AllPieces);
+	return checkers;
+}

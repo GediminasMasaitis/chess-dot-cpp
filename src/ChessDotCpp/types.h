@@ -16,10 +16,14 @@ using HistoryPly = uint16_t;
 using CastlingPermission = uint8_t;
 using MoveValue = uint32_t;
 using MoveString = std::string;
-using Score = int32_t;
+using MoveCount = uint8_t;
+using Score = int16_t;
 using Phase = int32_t;
 using Tropism = int8_t;
 using ZobristKey = uint64_t;
 using Magic = uint64_t;
+using Time = int32_t;
+using Stat = uint64_t;
+using TtFlag = uint8_t;
 
 using Fen = std::string;

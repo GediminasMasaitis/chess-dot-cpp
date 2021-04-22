@@ -15,7 +15,7 @@ size_t GetNodesInner(Board& board, Move parentMove, Ply depth, MoveStack& moveSt
 	}
 
 	auto possibleMoves = moveStack[depth];
-	size_t possibleMoveCount = 0;
+	MoveCount possibleMoveCount = 0;
 	MoveGenerator::GetAllPossibleMoves(board, possibleMoves, possibleMoveCount);
 	if (depth == 1)
 	{
@@ -30,7 +30,7 @@ size_t GetNodesInner(Board& board, Move parentMove, Ply depth, MoveStack& moveSt
 	}
 
 	size_t nodes = 0;
-	for (size_t i = 0; i < possibleMoveCount; i++)
+	for (MoveCount i = 0; i < possibleMoveCount; i++)
 	{
 		auto& move = possibleMoves[i];
 		board.DoMove(move);
@@ -46,10 +46,10 @@ size_t InternalPerftClient::GetMovesAndNodes(Board& board, Ply depth, MoveStack&
 	assert(depth > 0);
 	moveAndNodeCount = 0;
 	auto possibleMoves = moveStack[depth];
-	size_t possibleMoveCount = 0;
+	MoveCount possibleMoveCount = 0;
 	MoveGenerator::GetAllPossibleMoves(board, possibleMoves, possibleMoveCount);
 	size_t totalNodes = 0;
-	for (size_t i = 0; i < possibleMoveCount; i++)
+	for (MoveCount i = 0; i < possibleMoveCount; i++)
 	{
 		auto& move = possibleMoves[i];
 		//auto boardStr1 = Fens::Serialize(board);

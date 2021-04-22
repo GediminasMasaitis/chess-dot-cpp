@@ -134,7 +134,7 @@ void GeneratePromotionMoves
 	const Position to,
 	const Piece takesPiece,
 	MoveArray& moves,
-	size_t& moveCount
+	MoveCount& moveCount
 )
 {
 	constexpr Piece color = TColor;
@@ -150,7 +150,7 @@ void GeneratePromotionMoves
 	moves[moveCount++] = Move(from, to, piece, takesPiece, false, false, bishop);
 }
 
-void GetPotentialWhitePawnCaptures(const Board& board, Bitboard allowedFrom, Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
+void GetPotentialWhitePawnCaptures(const Board& board, Bitboard allowedFrom, Bitboard allowedTo, MoveArray& moves, MoveCount& moveCount)
 {
 	const Bitboard pawns = board.BitBoard[Pieces::WhitePawn] & allowedFrom;
 	Bitboard takeLeft = (pawns << 7) & ~BitboardConstants::Files[7] & board.BitBoard[Colors::Black] & allowedTo;
@@ -206,7 +206,7 @@ void GetPotentialWhitePawnCaptures(const Board& board, Bitboard allowedFrom, Bit
 }
 
 template<Piece TColor>
-void GetPotentialPawnMoves(const Board& board, Bitboard allowedFrom, Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
+void GetPotentialPawnMoves(const Board& board, Bitboard allowedFrom, Bitboard allowedTo, MoveArray& moves, MoveCount& moveCount)
 {
 	constexpr Piece color = TColor;
 	constexpr bool isWhite = color == Colors::White;
@@ -262,7 +262,7 @@ void GetPotentialPawnMoves(const Board& board, Bitboard allowedFrom, Bitboard al
 	}
 }
 
-void GetPotentialBlackPawnCaptures(const Board& board, Bitboard allowedFrom, Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
+void GetPotentialBlackPawnCaptures(const Board& board, Bitboard allowedFrom, Bitboard allowedTo, MoveArray& moves, MoveCount& moveCount)
 {
 	const Bitboard pawns = board.BitBoard[Pieces::BlackPawn] & allowedFrom;
 	Bitboard takeLeft = (pawns >> 7) & ~BitboardConstants::Files[0] & board.BitBoard[Colors::White] & allowedTo;
@@ -324,7 +324,7 @@ void BitmaskToMoves
 	Bitboard bitmask,
 	const Position positionFrom,
 	MoveArray& moves,
-	size_t& moveCount
+	MoveCount& moveCount
 )
 {
 	constexpr Piece piece = TPiece;
@@ -345,7 +345,7 @@ void GetPotentialJumpingMoves
 	Bitboard jumpingPieces,
 	const JumpArray& jumpTable,
 	MoveArray& moves,
-	size_t& moveCount
+	MoveCount& moveCount
 )
 {
 	while (jumpingPieces != 0)
@@ -359,7 +359,7 @@ void GetPotentialJumpingMoves
 }
 
 template<Piece TColor>
-void GetPotentialKnightMoves(const Board& board, Bitboard allowedFrom, Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
+void GetPotentialKnightMoves(const Board& board, Bitboard allowedFrom, Bitboard allowedTo, MoveArray& moves, MoveCount& moveCount)
 {
 	constexpr Piece color = TColor;
 	constexpr Piece piece = Pieces::Knight | color;
@@ -368,7 +368,7 @@ void GetPotentialKnightMoves(const Board& board, Bitboard allowedFrom, Bitboard 
 }
 
 template<Piece TColor>
-void GetPotentialKingMoves(const Board& board, const Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
+void GetPotentialKingMoves(const Board& board, const Bitboard allowedTo, MoveArray& moves, MoveCount& moveCount)
 {
 	constexpr Piece color = TColor;
 	constexpr Piece piece = Pieces::King | color;
@@ -376,7 +376,7 @@ void GetPotentialKingMoves(const Board& board, const Bitboard allowedTo, MoveArr
 	GetPotentialJumpingMoves<piece>(board, allowedTo, kings, BitboardJumps.KingJumps, moves, moveCount);
 }
 
-void GetPotentialCastlingMoves(const Board& board, MoveArray& moves, size_t& moveCount)
+void GetPotentialCastlingMoves(const Board& board, MoveArray& moves, MoveCount& moveCount)
 {
 	const bool isWhite = board.WhiteToMove;
 	Position kingPos;
@@ -429,7 +429,7 @@ void GetPotentialCastlingMoves(const Board& board, MoveArray& moves, size_t& mov
 }
 
 template<Piece TColor>
-void GetPotentialRookMoves(const Board& board, const Bitboard allowedFrom, const Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
+void GetPotentialRookMoves(const Board& board, const Bitboard allowedFrom, const Bitboard allowedTo, MoveArray& moves, MoveCount& moveCount)
 {
 	constexpr Piece color = TColor;
 	constexpr Piece piece = Pieces::Rook | color;
@@ -445,7 +445,7 @@ void GetPotentialRookMoves(const Board& board, const Bitboard allowedFrom, const
 }
 
 template<Piece TColor>
-void GetPotentialBishopMoves(const Board& board, const Bitboard allowedFrom, const Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
+void GetPotentialBishopMoves(const Board& board, const Bitboard allowedFrom, const Bitboard allowedTo, MoveArray& moves, MoveCount& moveCount)
 {
 	constexpr Piece color = TColor;
 	constexpr Piece piece = Pieces::Bishop | color;
@@ -461,7 +461,7 @@ void GetPotentialBishopMoves(const Board& board, const Bitboard allowedFrom, con
 }
 
 template<Piece TColor>
-void GetPotentialQueenMoves(const Board& board, const Bitboard allowedFrom, const Bitboard allowedTo, MoveArray& moves, size_t& moveCount)
+void GetPotentialQueenMoves(const Board& board, const Bitboard allowedFrom, const Bitboard allowedTo, MoveArray& moves, MoveCount& moveCount)
 {
 	constexpr Piece color = TColor;
 	constexpr Piece piece = Pieces::Queen | color;
@@ -477,7 +477,7 @@ void GetPotentialQueenMoves(const Board& board, const Bitboard allowedFrom, cons
 }
 
 template<Piece TColor>
-void GetAllPotentialMovesForColor(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, size_t& moveCount)
+void GetAllPotentialMovesForColor(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, MoveCount& moveCount)
 {
 	Bitboard allowedFrom = ~0ULL;
 	Bitboard allowedTo = board.EmptySquares | board.BitBoard[board.ColorToMove ^ 1];
@@ -528,7 +528,7 @@ void GetAllPotentialMovesForColor(const Board& board, const Bitboard checkers, c
 	GetPotentialPawnMoves<TColor>(board, allowedFrom, allowedTo, moves, moveCount);
 }
 
-void MoveGenerator::GetAllPotentialMoves(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, size_t& moveCount)
+void MoveGenerator::GetAllPotentialMoves(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, MoveCount& moveCount)
 {
 	if (board.WhiteToMove)
 	{
@@ -541,7 +541,7 @@ void MoveGenerator::GetAllPotentialMoves(const Board& board, const Bitboard chec
 }
 
 template<Piece TColor>
-void GetAllPotentialCapturesForColor(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, size_t& moveCount)
+void GetAllPotentialCapturesForColor(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, MoveCount& moveCount)
 {
 	Bitboard allowedFrom = ~0ULL;
 	Bitboard allowedTo = board.BitBoard[board.ColorToMove ^ 1];
@@ -576,7 +576,7 @@ void GetAllPotentialCapturesForColor(const Board& board, const Bitboard checkers
 	}
 }
 
-void MoveGenerator::GetAllPotentialCaptures(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, size_t& moveCount)
+void MoveGenerator::GetAllPotentialCaptures(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, MoveCount& moveCount)
 {
 	if (board.WhiteToMove)
 	{
@@ -748,7 +748,7 @@ bool MoveValidator::IsKingSafeAfterMove2(const Board& board, Move move, Bitboard
 	return true;
 }
 
-void MoveValidator::FilterMovesByKingSafety(const Board& board, Bitboard checkers, Bitboard pinnedPieces, MoveArray& moves, size_t& moveCount)
+void MoveValidator::FilterMovesByKingSafety(const Board& board, Bitboard checkers, Bitboard pinnedPieces, MoveArray& moves, MoveCount& moveCount)
 {
 	size_t toRemove = 0;
 	for (size_t i = 0; i < moveCount; i++)
@@ -770,72 +770,16 @@ void MoveValidator::FilterMovesByKingSafety(const Board& board, Bitboard checker
 	moveCount -= toRemove;
 }
 
-Bitboard GetAttackersOfSide(const Board& board, Position position, bool byWhite, Bitboard allPieces)
-{
-	Bitboard result = 0UL;
-
-	Bitboard pawns;
-	Bitboard knights;
-	Bitboard bishops;
-	Bitboard rooks;
-	Bitboard queens;
-	Bitboard kings;
-	if (byWhite)
-	{
-		pawns = board.BitBoard[Pieces::WhitePawn];
-		knights = board.BitBoard[Pieces::WhiteKnight];
-		bishops = board.BitBoard[Pieces::WhiteBishop];
-		rooks = board.BitBoard[Pieces::WhiteRook];
-		queens = board.BitBoard[Pieces::WhiteQueen];
-		kings = board.BitBoard[Pieces::WhiteKing];
-	}
-	else
-	{
-		pawns = board.BitBoard[Pieces::BlackPawn];
-		knights = board.BitBoard[Pieces::BlackKnight];
-		bishops = board.BitBoard[Pieces::BlackBishop];
-		rooks = board.BitBoard[Pieces::BlackRook];
-		queens = board.BitBoard[Pieces::BlackQueen];
-		kings = board.BitBoard[Pieces::BlackKing];
-	}
-
-	const Bitboard knightAttack = BitboardJumps.KnightJumps[position];
-	result |= knightAttack & knights;
-
-	const Bitboard kingAttack = BitboardJumps.KingJumps[position];
-	result |= kingAttack & kings;
-
-	const Piece pawnIndex = byWhite ? Colors::Black : Colors::White;
-	const Bitboard pawnAttack = BitboardJumps.PawnJumps[pawnIndex][position];
-	result |= pawnAttack & pawns;
-
-	const Bitboard diagonalAttack = SlideMoveGenerator::DiagonalAntidiagonalSlide(allPieces, position);
-	result |= diagonalAttack & bishops;
-	result |= diagonalAttack & queens;
-
-	const Bitboard verticalAttack = SlideMoveGenerator::HorizontalVerticalSlide(allPieces, position);
-	result |= verticalAttack & rooks;
-	result |= verticalAttack & queens;
-
-	return result;
-}
-
-Bitboard GetCheckers(const Board& board)
-{
-	const Bitboard checkers = GetAttackersOfSide(board, board.KingPositions[board.ColorToMove], !board.WhiteToMove, board.AllPieces);
-	return checkers;
-}
-
 template<Piece TColor>
-void GetAllPossibleMovesForColor(const Board& board, MoveArray& moves, size_t& moveCount)
+void GetAllPossibleMovesForColor(const Board& board, MoveArray& moves, MoveCount& moveCount)
 {
-	const Bitboard checkers = GetCheckers(board);
+	const Bitboard checkers = AttacksGenerator::GetCheckers(board);
 	const Bitboard pinned = GetPinnedForColor<TColor>(board, board.KingPositions[board.ColorToMove]);
 	GetAllPotentialMovesForColor<TColor>(board, checkers, pinned, moves, moveCount);
 	MoveValidator::FilterMovesByKingSafety(board, checkers, pinned, moves, moveCount);
 }
 
-void MoveGenerator::GetAllPossibleMoves(const Board& board, MoveArray& moves, size_t& moveCount)
+void MoveGenerator::GetAllPossibleMoves(const Board& board, MoveArray& moves, MoveCount& moveCount)
 {
 	if (board.WhiteToMove)
 	{
