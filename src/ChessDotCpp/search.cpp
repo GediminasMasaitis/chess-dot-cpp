@@ -4,6 +4,7 @@
 #include "attacks.h"
 #include "movegen.h"
 #include "evaluation.h"
+#include "moveorder.h"
 #include "stopper.h"
 
 bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, Move& bestMove, Score& score, bool& entryExists)
@@ -182,7 +183,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     ++State.Stats.Nodes;
 
     // PROBE TRANSPOSITION TABLE
-    Move principalVariationMove{};
+    Move principalVariationMove = Move(0);
     bool hashEntryExists = true;
     Score probedScore;
     constexpr bool isPrincipalVariation = false;
@@ -219,14 +220,19 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     MoveCount moveCount = 0;
     MoveGenerator::GetAllPotentialMoves(board, checkers, pinned, moves, moveCount);
 
+    MoveScoreArray staticMoveScores{};
+    MoveOrdering::CalculateStaticScores(State, moves, moveCount, ply, principalVariationMove, staticMoveScores);
+
     Score bestScore = -Constants::Inf;
     Move bestMove;
     bool raisedAlpha = false;
     bool betaCutoff = false;
     uint8_t movesEvaluated = 0;
-    for (MoveCount i = 0; i < moveCount; i++)
+    for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
     {
-        const Move move = moves[i];
+        MoveOrdering::OrderNextMove(State, moveIndex, moves, staticMoveScores, moveCount);
+        const Move move = moves[moveIndex];
+    	
         const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
         if(!valid)
         {

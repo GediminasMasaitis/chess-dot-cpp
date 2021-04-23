@@ -18,6 +18,7 @@ using MoveValue = uint32_t;
 using MoveString = std::string;
 using MoveCount = uint8_t;
 using Score = int16_t;
+using MoveScore = int32_t;
 using Phase = int32_t;
 using Tropism = int8_t;
 using ZobristKey = uint64_t;
