@@ -14,7 +14,8 @@ public:
     static constexpr size_t MaxMoves = 218;
 
     static constexpr Score Inf = 32000;
-    static constexpr Score Mate = 30000;
+    static constexpr Score Mate = 31000;
+    static constexpr Score MateThreshold = 30000;
 
 private:
     Constants() = default;

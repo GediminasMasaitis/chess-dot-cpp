@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <memory>
 #include <functional>
+#include <cstring>
 
 #define MAYBE_UNUSED(x) ((void)(x))
 

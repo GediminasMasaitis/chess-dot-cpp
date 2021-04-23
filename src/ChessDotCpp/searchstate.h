@@ -137,7 +137,8 @@ public:
 
     void Clear()
     {
-        // TODO
+	    const size_t bytesToClear = sizeof(TranspositionTableEntry) * _size;
+        std::memset(_entries.get(), 0, bytesToClear);
     }
 
     void Store(const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag) const

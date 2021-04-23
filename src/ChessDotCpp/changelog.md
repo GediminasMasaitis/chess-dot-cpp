@@ -58,3 +58,25 @@ Score of ChessDotCppDev vs tscp: 18 - 147 - 35  [0.177] 200
 ...      White vs Black: 89 - 76 - 35  [0.532] 200
 Elo difference: -266.4 +/- 53.6, LOS: 0.0 %, DrawRatio: 17.5 %
 ```
+
+### 1.4
+Probe transposition table
+
+```
+info depth 1 multipv 1 score cp 44 nodes 21 nps 21000 time 1 pv e2e4
+info depth 2 multipv 1 score cp 10 nodes 205 nps 205000 time 1 pv d2d4 d7d5
+info depth 3 multipv 1 score cp 32 nodes 2134 nps 2134000 time 1 pv e2e4 d7d5 d2d3
+info depth 4 multipv 1 score cp 8 nodes 17560 nps 3512000 time 5 pv g1f3 d7d6 d2d4 g8f6
+info depth 5 multipv 1 score cp 30 nodes 93167 nps 3212655 time 29 pv b1c3 b8c6 e2e3 e7e5 d2d4
+info depth 6 multipv 1 score cp 10 nodes 934092 nps 3232152 time 289 pv g1f3 g8f6 d2d3 d7d6 e2e4 e7e5
+info depth 7 multipv 1 score cp 33 nodes 5410501 nps 3263269 time 1658 pv g1f3 d7d5 e2e3 c8g4 f1e2 d8d6 e1g1
+info depth 8 multipv 1 score cp 13 nodes 75787710 nps 3174221 time 23876 pv e2e4 d7d5 e4d5 d8d5 g1f3 c8f5 b1c3 d5d6
+```
+
+```
+Score of ChessDotCppDev vs tscp: 14 - 141 - 45  [0.182] 200
+...      ChessDotCppDev playing White: 8 - 63 - 30  [0.228] 101
+...      ChessDotCppDev playing Black: 6 - 78 - 15  [0.136] 99
+...      White vs Black: 86 - 69 - 45  [0.542] 200
+Elo difference: -260.5 +/- 49.9, LOS: 0.0 %, DrawRatio: 22.5 %
+```

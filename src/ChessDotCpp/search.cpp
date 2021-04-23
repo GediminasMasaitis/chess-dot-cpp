@@ -162,7 +162,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
         return score;
     }
 
-	// IN CHECK EXTENSION
+    // IN CHECK EXTENSION
     const Bitboard checkers = AttacksGenerator::GetCheckers(board);
     const bool inCheck = checkers != BitboardConstants::Empty;
     if (inCheck)
@@ -179,7 +179,36 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
         return eval;
     }
 
-    ++State.Stats.Nodes;   
+    ++State.Stats.Nodes;
+
+    // PROBE TRANSPOSITION TABLE
+    Move principalVariationMove{};
+    bool hashEntryExists = true;
+    Score probedScore;
+    constexpr bool isPrincipalVariation = false;
+    const bool probeSuccess = TryProbeTranspositionTable(board.Key, depth, alpha, beta, principalVariationMove, probedScore, hashEntryExists);
+    if (probeSuccess)
+    {
+        if (!isPrincipalVariation || (probedScore > alpha && probedScore < beta))
+        {
+            if (probedScore > Constants::MateThreshold)
+            {
+                probedScore -= ply;
+            }
+            else if (probedScore < -Constants::MateThreshold)
+            {
+                probedScore += ply;
+            }
+
+            /*if (principalVariationMove.GetTakesPiece() == Pieces::Empty)
+            {
+                UpdateHistory(threadState, principalVariationMove, bonus);
+            }*/
+
+            return probedScore;
+        }
+    }
+    
     const Score currentMateScore = Constants::Mate - ply;
     
     EachColor<Bitboard> pins;
