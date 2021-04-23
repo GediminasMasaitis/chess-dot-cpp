@@ -18,19 +18,18 @@ public:
 class SearchStopper
 {
 public:
-    SearchParameters Parameters;
+    //SearchParameters Parameters;
     
     std::chrono::high_resolution_clock::time_point start;
     size_t _minTime;
     size_t _maxTime;
     bool Stopped;
 
-    explicit SearchStopper(const SearchParameters& parameters, bool whiteToMove)
-        : Parameters(parameters)
+    void Init(const SearchParameters& parameters, bool whiteToMove)
     {
         start = std::chrono::high_resolution_clock::now();
-        size_t time = whiteToMove ? parameters.WhiteTime : parameters.BlackTime;
-        size_t increment = whiteToMove ? parameters.WhiteTimeIncrement : parameters.BlackTimeIncrement;
+        const size_t time = whiteToMove ? parameters.WhiteTime : parameters.BlackTime;
+        const size_t increment = whiteToMove ? parameters.WhiteTimeIncrement : parameters.BlackTimeIncrement;
         _minTime = parameters.Infinite ? std::numeric_limits<size_t>::max() : time / 60 + increment / 3;
         _maxTime = parameters.Infinite ? std::numeric_limits<size_t>::max() : time / 20 + increment;
         Stopped = false;
@@ -50,7 +49,7 @@ public:
         {
             return true;
         }
-    	
+        
         const auto elapsed = GetElapsed();
         Stopped = elapsed > _maxTime;
         return Stopped;
@@ -62,7 +61,7 @@ public:
         {
             return true;
         }
-    	
+        
         const auto elapsed = GetElapsed();
         Stopped = elapsed > _minTime;
         return Stopped;

@@ -1,7 +1,4 @@
-﻿// ChessDotCpp.cpp : Defines the entry point for the application.
-//
-
-#include "ChessDotCpp.h"
+﻿#include "ChessDotCpp.h"
 #include "fen.h"
 #include "movegen.h"
 #include "perft.h"
@@ -10,7 +7,7 @@
 #include "fstream"
 #include "random.h"
 #include "search.h"
-#include "bench.h";
+#include "bench.h"
 #include "evaluation.h"
 #include "tune.h"
 #include "uci.h"

@@ -8,6 +8,8 @@
 #include <cassert>
 #include <string>
 #include <stdexcept>
+#include <memory>
+#include <functional>
 
 #define MAYBE_UNUSED(x) ((void)(x))
 

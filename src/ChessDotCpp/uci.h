@@ -14,27 +14,33 @@ public:
     std::ostream* Out;
 
     Board board;
+    Search search;
     
-    Uci(std::istream* in, std::ostream* out) : In(in), Out(out)
+    Uci(std::istream* in, std::ostream* out) : In(in), Out(out), search([&](SearchCallbackData& data) { OnCallback(data); })
     {
-        
     }
 
     void OnCallback(SearchCallbackData& data) const
     {	
-        std::vector<Move>& principalVariation = data.Data.Global.Table.SavedPrincipalVariation;
-        
         std::stringstream builder = std::stringstream();
 
         builder << "info";
         builder << " depth " << std::to_string(data.Depth);
         builder << " multipv 1";
         builder << " score cp " << std::to_string(data._Score);
-        builder << " nodes " << std::to_string(data.Data.Stats.Nodes);
-        builder << " nps 0";
-        builder << " time 0";
+        builder << " nodes " << std::to_string(data.State.Stats.Nodes);
+        auto elapsed = data.State.Stopper.GetElapsed();
+        if(elapsed == 0)
+        {
+            elapsed = 1;
+        }
+        auto nps = (data.State.Stats.Nodes * 1000) / elapsed;
+        
+        builder << " nps " << nps;
+        builder << " time " << elapsed;
 
         builder << " pv";
+        std::vector<Move>& principalVariation = data.State.Global.Table.SavedPrincipalVariation;
         for (size_t ply = 0; ply < principalVariation.size(); ply++)
         {
             const auto& entry = principalVariation[ply];
@@ -139,7 +145,7 @@ public:
             }
         }
         
-        const Move move = Search::Run(board, parameters, [&](SearchCallbackData& data) { OnCallback(data); });
+        const Move move = search.Run(board, parameters);
         *Out << "bestmove " << move.ToPositionString() << std::endl;
     }
 
@@ -154,6 +160,11 @@ public:
     void HandleIsReady(std::stringstream& reader)
     {
         *Out << "readyok" << std::endl;
+    }
+
+    void HandleUciNewGame(std::stringstream& reader)
+    {
+        search.State.NewGame();
     }
 
     void HandleInput(const std::string& line)
@@ -173,14 +184,18 @@ public:
             {
                 HandleGo(reader);
             }
-        	else if(word == "uci")
-        	{
+            else if(word == "uci")
+            {
                 HandleUci(reader);
-        	}
-        	else if(word == "isready")
-        	{
+            }
+            else if(word == "ucinewgame")
+            {
+                HandleUciNewGame(reader);
+            }
+            else if(word == "isready")
+            {
                 HandleIsReady(reader);
-        	}
+            }
         }
     }
     
