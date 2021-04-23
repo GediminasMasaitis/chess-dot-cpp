@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+#include "movegen.h"
+
 class EvaluationScores
 {
 public:
@@ -639,7 +641,7 @@ Score GetPawnScore(const Board& board, const EachColor<Bitboard>& pawnControl)
     }
 }
 
-Score Evaluation::Evaluate(const Board& board, const EachColor<Bitboard>& pins)
+Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins)
 {
     EvaluationScores scores = EvaluationScores();
 
@@ -664,11 +666,11 @@ Score Evaluation::Evaluate(const Board& board, const EachColor<Bitboard>& pins)
 
     scores.KingShield[Colors::White] = KingShield<Colors::White>(board);
     scores.KingShield[Colors::Black] = KingShield<Colors::Black>(board);
-    
+
     BlockedPieces<Colors::White>(board, scores);
     BlockedPieces<Colors::Black>(board, scores);
 
-    if(board.WhiteToMove)
+    if (board.WhiteToMove)
     {
         scores.Result += EvaluationData::Tempo;
     }
@@ -762,37 +764,37 @@ Score Evaluation::Evaluate(const Board& board, const EachColor<Bitboard>& pins)
         }
 
         if
-        (
-            board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook]
-            && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Knight] // TODO FIXED
-        )
+            (
+                board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook]
+                && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Knight] // TODO FIXED
+                )
         {
             scores.Result /= 2;
         }
 
         if
-        (
-            board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook]
-            && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Bishop]
-        )
+            (
+                board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook]
+                && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Bishop]
+                )
         {
             scores.Result /= 2;
         }
 
         if
-        (
-            board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook] + EvaluationConstants::PieceValues[Pieces::Knight]
-            && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Rook]
-        )
+            (
+                board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook] + EvaluationConstants::PieceValues[Pieces::Knight]
+                && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Rook]
+                )
         {
             scores.Result /= 2;
         }
 
         if
-        (
-            board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook] + EvaluationConstants::PieceValues[Pieces::Bishop]
-            && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Rook]
-        )
+            (
+                board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook] + EvaluationConstants::PieceValues[Pieces::Bishop]
+                && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Rook]
+                )
         {
             scores.Result /= 2;
         }
@@ -804,6 +806,20 @@ Score Evaluation::Evaluate(const Board& board, const EachColor<Bitboard>& pins)
     }
 
     //scores.Print(board);
-    
+
     return scores.Result;
+}
+
+Score Evaluation::Evaluate(const Board& board, const EachColor<Bitboard>& pins)
+{
+	const Score score = EvaluateInner(board, pins);
+
+    /*auto clone = board;
+    clone.FlipColors();
+    EachColor<Bitboard> clonePins{};
+    PinDetector::GetPinnedToKings(clone, clonePins);
+    auto cloneScore = EvaluateInner(clone, clonePins);
+    assert(score == cloneScore);*/
+	
+    return score;
 }

@@ -265,3 +265,17 @@ Fen Fens::Serialize(const Board& board)
     auto fen = builder.str();
     return fen;
 }
+
+
+void Fens::Flip(Board& board, Board& target)
+{
+    const Fen fen = Serialize(board);
+
+        
+    for(auto i = 0; i < fen.length(); i++)
+    {
+        
+    }
+    
+    std::stringstream builder = std::stringstream();
+}

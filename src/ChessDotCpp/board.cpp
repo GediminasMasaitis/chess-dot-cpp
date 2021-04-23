@@ -376,3 +376,59 @@ void Board::DoMove(const MoveString& moveString)
     const Move move = FromPositionString(moveString);
     DoMove(move);
 }
+
+void Board::FlipColors()
+{
+    ArrayBoard = Positions::MakeReflected(ArrayBoard);
+
+    for(Piece i = 0; i < Colors::Count; i++)
+    {
+        PawnMaterial[i] = 0;
+        PieceMaterial[i] = 0;
+    }
+    
+    for(Piece i = 0; i < Pieces::Count; i++)
+    {
+        BitBoard[i] = 0;
+        PieceCounts[i] = 0;
+    }
+
+    for(Position i = 0; i < Positions::Count; i++)
+    {
+        const auto piece = ArrayBoard[i];
+        if(piece == Pieces::Empty)
+        {
+            continue;
+        }
+        
+        const Piece flippedPiece = piece ^ 1;
+        const Piece noColor = flippedPiece & ~Pieces::Color;
+        const Color color = flippedPiece & Pieces::Color;
+
+        if(noColor == Pieces::King)
+        {
+            KingPositions[color] = i;
+        }
+
+        if(noColor == Pieces::Pawn)
+        {
+            PawnMaterial[color] += EvaluationConstants::PieceValues[flippedPiece];
+        }
+        else
+        {
+            PieceMaterial[color] += EvaluationConstants::PieceValues[flippedPiece];
+        }
+        
+        ArrayBoard[i] = flippedPiece;
+        BitBoard[flippedPiece] |= GetBitboard(i);
+        PieceCounts[flippedPiece] += 1;
+    }
+
+    ColorToMove = ColorToMove ^ 1;
+    WhiteToMove = !WhiteToMove;
+	
+    Key = ZobristKeys.CalculateKey(*this);
+    PawnKey = ZobristKeys.CalculatePawnKey(*this);
+    
+    SyncExtraBitBoards();
+}

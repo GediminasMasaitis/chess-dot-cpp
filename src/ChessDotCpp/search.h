@@ -33,6 +33,7 @@ private:
 public:
     SearchState State;
 
+    bool TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, Move& bestMove, Score& score, bool& entryExists);
     void StoreTranspositionTable(const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag);
     Score Contempt(const Board& board);
     Score Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score beta);

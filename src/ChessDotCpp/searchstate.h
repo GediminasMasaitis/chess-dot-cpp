@@ -20,6 +20,10 @@ public:
     //static constexpr bool Enable = true;
 
     Stat Nodes = 0;
+	
+    Stat HashMiss = 0;
+    Stat HashCollision = 0;
+    Stat HashInsufficientDepth = 0;
 };
 
 

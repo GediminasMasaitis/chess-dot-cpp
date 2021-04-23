@@ -6,6 +6,65 @@
 #include "evaluation.h"
 #include "stopper.h"
 
+bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, Move& bestMove, Score& score, bool& entryExists)
+{
+    score = 0;
+    entryExists = false;
+    TranspositionTableEntry entry;
+    ZobristKey entryKey;
+    
+    const bool found = State.Global.Table.TryProbe(key, &entry, &entryKey);
+    if (!found)
+    {
+        State.Stats.HashMiss++;
+        return false;
+    }
+
+    if (entryKey != key)
+    {
+        State.Stats.HashCollision++;
+        return false;
+    }
+
+    entryExists = true;
+    bestMove = entry.MMove;
+
+    if (entry.GetDepth() < depth)
+    {
+        State.Stats.HashInsufficientDepth++;
+        return false;
+    }
+
+    switch (entry.GetFlag())
+    {
+    case TranspositionTableFlags::Exact:
+        score = entry.GetScore();
+        return true;
+        
+    case TranspositionTableFlags::Alpha:
+        if (entry.GetScore() <= alpha)
+        {
+            score = alpha;
+            return true;
+        }
+        return false;
+        
+    case TranspositionTableFlags::Beta:
+        if (entry.GetScore() >= beta)
+        {
+            score = beta;
+            return true;
+        }
+        return false;
+        
+    default:
+        assert(false);
+        break;
+    }
+
+    return false;
+}
+
 void Search::StoreTranspositionTable(const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag)
 {
     if (State.Stopper.Stopped)
@@ -102,10 +161,17 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
         const Score score = Contempt(board);
         return score;
     }
+
+	// IN CHECK EXTENSION
+    const Bitboard checkers = AttacksGenerator::GetCheckers(board);
+    const bool inCheck = checkers != BitboardConstants::Empty;
+    if (inCheck)
+    {
+        depth++;
+    }
     
     if(depth <= 0)
     {
-        
         EachColor<Bitboard> pins;
         PinDetector::GetPinnedToKings(board, pins);
         //const Score eval = Evaluation::Evaluate(board, pins);
@@ -113,16 +179,12 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
         return eval;
     }
 
-    ++State.Stats.Nodes;
-
-    const Bitboard checkers = AttacksGenerator::GetCheckers(board);
-    const bool inCheck = checkers != BitboardConstants::Empty;
+    ++State.Stats.Nodes;   
     const Score currentMateScore = Constants::Mate - ply;
     
     EachColor<Bitboard> pins;
     PinDetector::GetPinnedToKings(board, pins);
     const Bitboard pinned = pins[board.ColorToMove];
-
     
     MoveArray moves;
     MoveCount moveCount = 0;

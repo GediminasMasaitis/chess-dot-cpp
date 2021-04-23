@@ -53,6 +53,8 @@ public:
 
 	[[nodiscard]] Move FromPositionString(const MoveString& moveString) const;
 	void DoMove(const MoveString& moveString);
+
+	void FlipColors();
 };
 
 class CastleRevocationClass
