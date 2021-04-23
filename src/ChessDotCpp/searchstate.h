@@ -2,15 +2,33 @@
 #include "board.h"
 #include "stopper.h"
 
+using KillerArray = std::array<Move, 2>;
 class PlyData
 {
+public:
+    KillerArray Killers;
+
+    void NewSearch()
+    {
+        Killers[0].Value = 0;
+        Killers[1].Value = 0;
+    }
 };
+
 using PlyDataArray = std::array<PlyData, Constants::MaxDepth>;
 
 class ThreadData
 {
 public:
     PlyDataArray Plies;
+
+    void NewSearch()
+    {
+        for(Ply i = 0; i < Constants::MaxDepth; i++)
+        {
+            Plies[i].NewSearch();
+        }
+    }
 };
 using ThreadVector = std::vector<ThreadData>;
 
@@ -20,7 +38,7 @@ public:
     //static constexpr bool Enable = true;
 
     Stat Nodes = 0;
-	
+    
     Stat HashMiss = 0;
     Stat HashCollision = 0;
     Stat HashInsufficientDepth = 0;
@@ -137,7 +155,7 @@ public:
 
     void Clear()
     {
-	    const size_t bytesToClear = sizeof(TranspositionTableEntry) * _size;
+        const size_t bytesToClear = sizeof(TranspositionTableEntry) * _size;
         std::memset(_entries.get(), 0, bytesToClear);
     }
 
@@ -238,5 +256,10 @@ public:
     {
         Global.Table.SetSize(16 * 1024 * 1024);
         Global.Table.Clear();
+    }
+
+    void NewSearch()
+    {
+
     }
 };

@@ -157,6 +157,8 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
 
 Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Score beta)
 {
+    constexpr int threadId = 0;
+    
     if (depth > 2 && State.Stopper.ShouldStop())
     {
         const Score score = Contempt(board);
@@ -232,7 +234,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     {
         MoveOrdering::OrderNextMove(State, moveIndex, moves, staticMoveScores, moveCount);
         const Move move = moves[moveIndex];
-    	
+        
         const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
         if(!valid)
         {
@@ -266,6 +268,13 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     
     if (betaCutoff)
     {
+        if(bestMove.GetTakesPiece() == Pieces::Empty)
+        {
+            PlyData& plyState = State.Thread[threadId].Plies[ply];
+            plyState.Killers[1] = plyState.Killers[0];
+            plyState.Killers[0] = bestMove;
+        }
+        
         StoreTranspositionTable(board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Beta);
         return beta;
     }
