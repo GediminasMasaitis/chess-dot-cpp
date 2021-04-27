@@ -9,30 +9,22 @@
 #include "search.h"
 #include "bench.h"
 #include "evaluation.h"
+#include "game.h"
 #include "tune.h"
 #include "uci.h"
 
-
-void UciStdOut(const std::string& str)
-{
-    std::cout << str << std::endl;
-}
-
-std::string UciStdIn()
-{
-    std::string line;
-    std::getline(std::cin, line);
-    return line;
-}
-
 void Run()
 {
-    auto uci = Uci(&std::cin, &std::cout);
+    auto uci = UciStd();
     uci.Run();
 }
 
 void Test()
 {
+    Game::RunTestCommands();
+    
+    //PerftSuite::Run();
+    
     //ofstream magics;
     //magics.open("C:/Temp/magics.txt");
     //for(auto value : MagicsData.Table)
@@ -42,36 +34,36 @@ void Test()
     //magics.close();
 
     //Fen fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    Fen fen = "rnbqkbnr/pppppppp/8/8/1P6/8/P1PPPPPP/RNBQKBNR b KQkq - 0 1";
-    //Fen fen = "r4rk1/p2n1ppp/3qp3/6B1/N5P1/3P1b2/PPP1BbP1/R2Q1R1K b - - 0 14";
+    //Fen fen = "rnbqkbnr/pppppppp/8/8/1P6/8/P1PPPPPP/RNBQKBNR b KQkq - 0 1";
+    ////Fen fen = "r4rk1/p2n1ppp/3qp3/6B1/N5P1/3P1b2/PPP1BbP1/R2Q1R1K b - - 0 14";
 
-    //PerftRunner::Run(fen, 7);
+    ////PerftRunner::Run(fen, 7);
 
 
-    Board board = Board();
-    Fens::Parse(board, fen);
+    //Board board = Board();
+    //Fens::Parse(board, fen);
 
-    EachColor<Bitboard> pins;
-    PinDetector::GetPinnedToKings(board, pins);
-    Score eval1 = Evaluation::Evaluate(board, pins);
-    
-    auto key = board.Key;
-    board.FlipColors();
+    //EachColor<Bitboard> pins;
+    //PinDetector::GetPinnedToKings(board, pins);
+    //Score eval1 = Evaluation::Evaluate(board, pins);
+    //
+    //auto key = board.Key;
+    //board.FlipColors();
 
-    PinDetector::GetPinnedToKings(board, pins);
-    Score eval2 = Evaluation::Evaluate(board, pins);   
-    auto key2 = board.Key;
-    auto fen2 = Fens::Serialize(board);
+    //PinDetector::GetPinnedToKings(board, pins);
+    //Score eval2 = Evaluation::Evaluate(board, pins);   
+    //auto key2 = board.Key;
+    //auto fen2 = Fens::Serialize(board);
 
-    board.FlipColors();
-    auto key3 = board.Key;
-    auto fen3 = Fens::Serialize(board);
-    PinDetector::GetPinnedToKings(board, pins);
-    Score eval3 = Evaluation::Evaluate(board, pins);
+    //board.FlipColors();
+    //auto key3 = board.Key;
+    //auto fen3 = Fens::Serialize(board);
+    //PinDetector::GetPinnedToKings(board, pins);
+    //Score eval3 = Evaluation::Evaluate(board, pins);
 
-    SearchParameters search_parameters = SearchParameters();
-    search_parameters.MaxDepth = Constants::MaxDepth;
-    search_parameters.Infinite = true;
+    //SearchParameters search_parameters = SearchParameters();
+    //search_parameters.MaxDepth = Constants::MaxDepth;
+    //search_parameters.Infinite = true;
 
     //Search::Run(board, search_parameters, Uci::OnCallback);
 
@@ -97,5 +89,7 @@ void Test()
 int main()
 {
     Run();
+    //Test();
+    //Game::RunTestCommands();
     return 0;
 }

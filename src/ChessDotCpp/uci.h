@@ -1,27 +1,32 @@
 #pragma once
 
 #include "search.h"
+#include "debug.h"
 
 #include <iostream>
 #include <sstream>
+
 
 class Uci
 {
 public:
     static inline std::string startPos = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+    using InType = std::function<std::string()>;
+    using OutType = std::function<void(std::string)>;
     
-    std::istream* In;
-    std::ostream* Out;
+    InType& In;
+    OutType& Out;
 
     Board board;
     Search search;
     
-    Uci(std::istream* in, std::ostream* out) : In(in), Out(out), search([&](SearchCallbackData& data) { OnCallback(data); })
+    Uci(InType& in, OutType& out) : In(in), Out(out), search([&](SearchCallbackData& data) { OnCallback(data); })
     {
     }
 
     void OnCallback(SearchCallbackData& data) const
-    {	
+    {
         std::stringstream builder = std::stringstream();
 
         builder << "info";
@@ -46,8 +51,18 @@ public:
             const auto& entry = principalVariation[ply];
             builder << " " << entry.ToPositionString();
         }
-            
-        *Out << builder.str() << std::endl;
+        
+        Out(builder.str());
+
+        auto pv2 = std::vector<Move>();
+        search.State.Global.Table.GetPrincipalVariation(board, pv2);
+    	
+        //if (principalVariation.empty())
+        //{
+        //    auto a = 123;
+        //    //Debug::SaveTt(data.State);
+        //    //Throw();
+        //}
     }
 
     void HandleMoves(std::stringstream& reader)
@@ -117,6 +132,10 @@ public:
 
     void HandleGo(std::stringstream& reader)
     {
+        //search.State.Global.Table.Print();
+        
+        //Debug::StoreTt(search.State);
+        
         SearchParameters parameters = SearchParameters();
         while(!reader.eof())
         {
@@ -146,25 +165,27 @@ public:
         }
         
         const Move move = search.Run(board, parameters);
-        *Out << "bestmove " << move.ToPositionString() << std::endl;
+        const Move move2 = search.State.Global.Table.SavedPrincipalVariation[0];
+        Out("bestmove " + move2.ToPositionString());
     }
 
     void HandleUci(std::stringstream& reader)
     {
-        *Out << "id name ChessDotCpp" << std::endl;
-        *Out << "id author Gediminas Masaitis" << std::endl;
-        *Out << std::endl;
-        *Out << "uciok" << std::endl;
+        Out("id name ChessDotCpp");
+        Out("id author Gediminas Masaitis");
+        Out("");
+        Out("uciok");
     }
 
     void HandleIsReady(std::stringstream& reader)
     {
-        *Out << "readyok" << std::endl;
+        Out("readyok");
     }
 
     void HandleUciNewGame(std::stringstream& reader)
     {
         search.State.NewGame();
+        //Debug::LoadTt("C:/Temp/tt/tt1619555771084.dat", search.State);
     }
 
     void HandleInput(const std::string& line)
@@ -203,9 +224,29 @@ public:
     {
         while (true)
         {
-            std::string line;
-            std::getline(*In, line);
+            std::string line = In();
             HandleInput(line);
         }
+    }
+};
+
+class UciStd : public Uci
+{
+public:
+    InType StdIn = []()
+    {
+        std::string command;
+        std::getline(std::cin, command);
+        return command;
+    };
+
+    OutType StdOut = [](std::string str)
+    {
+        std::cout << str << std::endl;
+    };
+    
+    UciStd() : Uci(StdIn, StdOut)
+    {
+        
     }
 };

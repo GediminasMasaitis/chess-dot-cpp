@@ -37,5 +37,11 @@ public:
 class PerftRunner
 {
 public:
-    static void Run(std::string fen, Ply depth);
+    static size_t Run(std::string fen, Ply depth);
+};
+
+class PerftSuite
+{
+public:
+    static void Run();
 };

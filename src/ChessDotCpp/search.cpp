@@ -7,13 +7,72 @@
 #include "moveorder.h"
 #include "stopper.h"
 
+//bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, Move& bestMove, Score& score, bool& entryExists)
+//{
+//    score = 0;
+//    entryExists = false;
+//    TranspositionTableEntry entry;
+//    ZobristKey entryKey;
+//    
+//    const bool found = State.Global.Table.TryProbe(key, &entry, &entryKey);
+//    if (!found)
+//    {
+//        State.Stats.HashMiss++;
+//        return false;
+//    }
+//
+//    if (entryKey != key)
+//    {
+//        State.Stats.HashCollision++;
+//        return false;
+//    }
+//
+//    entryExists = true;
+//    bestMove = entry.MMove;
+//
+//    if (entry.GetDepth() < depth)
+//    {
+//        State.Stats.HashInsufficientDepth++;
+//        return false;
+//    }
+//
+//    switch (entry.GetFlag())
+//    {
+//    case TranspositionTableFlags::Exact:
+//        score = entry.GetScore();
+//        return true;
+//        
+//    case TranspositionTableFlags::Alpha:
+//        if (entry.GetScore() <= alpha)
+//        {
+//            score = alpha;
+//            return true;
+//        }
+//        return false;
+//        
+//    case TranspositionTableFlags::Beta:
+//        if (entry.GetScore() >= beta)
+//        {
+//            score = beta;
+//            return true;
+//        }
+//        return false;
+//        
+//    default:
+//        assert(false);
+//        break;
+//    }
+//
+//    return false;
+//}
+
 bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, Move& bestMove, Score& score, bool& entryExists)
 {
     score = 0;
     entryExists = false;
     TranspositionTableEntry entry;
     ZobristKey entryKey;
-    
+
     const bool found = State.Global.Table.TryProbe(key, &entry, &entryKey);
     if (!found)
     {
@@ -30,34 +89,34 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
     entryExists = true;
     bestMove = entry.MMove;
 
-    if (entry.GetDepth() < depth)
+    if (entry.Depth < depth)
     {
         State.Stats.HashInsufficientDepth++;
         return false;
     }
 
-    switch (entry.GetFlag())
+    switch (entry.Flag)
     {
     case TranspositionTableFlags::Exact:
-        score = entry.GetScore();
+        score = entry.SScore;
         return true;
-        
+
     case TranspositionTableFlags::Alpha:
-        if (entry.GetScore() <= alpha)
+        if (entry.SScore <= alpha)
         {
             score = alpha;
             return true;
         }
         return false;
-        
+
     case TranspositionTableFlags::Beta:
-        if (entry.GetScore() >= beta)
+        if (entry.SScore >= beta)
         {
             score = beta;
             return true;
         }
         return false;
-        
+
     default:
         assert(false);
         break;
@@ -188,7 +247,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     Move principalVariationMove = Move(0);
     bool hashEntryExists = true;
     Score probedScore;
-    constexpr bool isPrincipalVariation = false;
+    constexpr bool isPrincipalVariation = true;
     const bool probeSuccess = TryProbeTranspositionTable(board.Key, depth, alpha, beta, principalVariationMove, probedScore, hashEntryExists);
     if (probeSuccess)
     {
@@ -264,7 +323,6 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
             }
         }
     }
-
     
     if (betaCutoff)
     {
