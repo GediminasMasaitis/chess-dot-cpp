@@ -234,8 +234,8 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     
     if(depth <= 0)
     {
-        EachColor<Bitboard> pins;
-        PinDetector::GetPinnedToKings(board, pins);
+        //EachColor<Bitboard> pins;
+        //PinDetector::GetPinnedToKings(board, pins);
         //const Score eval = Evaluation::Evaluate(board, pins);
         const Score eval = Quiescence(board, depth, ply, alpha, beta);
         return eval;
