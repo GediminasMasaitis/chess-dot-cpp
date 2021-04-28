@@ -25,6 +25,7 @@ public:
     PlyDataArray Plies;
     
     EachColor<EachPosition<EachPosition<MoveScore>>> History;
+    EachPiece<EachPosition<Move>> Countermoves;
 
     void NewSearch()
     {
@@ -43,6 +44,14 @@ public:
                 }
             }
         }
+
+    	for(Piece piece = 0; piece < Pieces::Count; piece++)
+    	{
+            for (Position to = 0; to < Positions::Count; to++)
+            {
+                Countermoves[piece][to].Value = 0;
+            }
+    	}
     }
 };
 using ThreadVector = std::vector<ThreadData>;

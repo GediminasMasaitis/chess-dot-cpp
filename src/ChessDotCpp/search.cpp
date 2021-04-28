@@ -163,6 +163,9 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
 {
     ++State.Stats.Nodes;
     
+    constexpr int threadId = 0;
+    const bool rootNode = ply == 0;
+    
     EachColor<Bitboard> pins;
     PinDetector::GetPinnedToKings(board, pins);
     const Score standPat = Evaluation::Evaluate(board, pins, State.Global.Eval);
@@ -187,8 +190,11 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
     MoveCount moveCount = 0;
     MoveGenerator::GetAllPotentialCaptures(board, checkers, pinned, moves, moveCount);
 
+    const Move previousMove = rootNode ? Move(0) : board.History[board.HistoryDepth - 1].Move;
+    const Move countermove = State.Thread[threadId].Countermoves[previousMove.GetPiece()][previousMove.GetTo()];
+    
     MoveScoreArray staticMoveScores{};
-    MoveOrdering::CalculateStaticScores(State, moves, moveCount, ply, Move(0), staticMoveScores);
+    MoveOrdering::CalculateStaticScores(State, moves, moveCount, ply, Move(0), countermove, staticMoveScores);
 
     Score bestScore = -Constants::Inf;
     Move bestMove;
@@ -241,6 +247,8 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
 Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed)
 {
     constexpr int threadId = 0;
+    ThreadData& threadState = State.Thread[threadId];
+    PlyData& plyState = threadState.Plies[ply];
     const bool rootNode = ply == 0;
     
     if (depth > 2 && State.Stopper.ShouldStop())
@@ -372,8 +380,11 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     MoveCount moveCount = 0;
     MoveGenerator::GetAllPotentialMoves(board, checkers, pinned, moves, moveCount);
 
+    const Move previousMove = rootNode ? Move(0) : board.History[board.HistoryDepth - 1].Move;
+    const Move countermove = threadState.Countermoves[previousMove.GetPiece()][previousMove.GetTo()];
+
     MoveScoreArray staticMoveScores{};
-    MoveOrdering::CalculateStaticScores(State, moves, moveCount, ply, principalVariationMove, staticMoveScores);
+    MoveOrdering::CalculateStaticScores(State, moves, moveCount, ply, principalVariationMove, countermove, staticMoveScores);
 
     Score bestScore = -Constants::Inf;
     Move bestMove;
@@ -415,25 +426,25 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
         }
 
         Ply reduction = 0;
-    	//if
-    	//(
-     //       movesEvaluated > 1
-     //       && (!rootNode || movesEvaluated > 3)
-     //       && depth >= 3
-     //       && !inCheck
-     //       && move.Value != State.Thread[0].Plies[ply].Killers[0].Value
-     //       && move.Value != State.Thread[0].Plies[ply].Killers[1].Value
-     //       && move.GetTakesPiece() == Pieces::Empty
-     //       && move.GetPawnPromoteTo() == Pieces::Empty
-     //   )
-    	//{
-     //       reduction++;
-     //       if (movesEvaluated > 6)
-     //       {
-     //           reduction++;
-     //       }
-    	//}
-    	
+        if
+        (
+            movesEvaluated > 1
+            && (!rootNode || movesEvaluated > 3)
+            && depth >= 3
+            && !inCheck
+            && move.Value != plyState.Killers[0].Value
+            && move.Value != plyState.Killers[1].Value
+            && move.GetTakesPiece() == Pieces::Empty
+            && move.GetPawnPromoteTo() == Pieces::Empty
+        )
+        {
+            reduction++;
+            if (movesEvaluated > 6)
+            {
+                reduction++;
+            }
+        }
+        
         Score childScore;
         if(raisedAlpha)
         {
@@ -448,10 +459,10 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
             childScore = -AlphaBeta(board, depth - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
         }
 
-        //if (reduction > 0 && childScore > alpha)
-        //{
-        //    childScore = -AlphaBeta(board, depth - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
-        //}
+        if (reduction > 0 && childScore > alpha)
+        {
+            childScore = -AlphaBeta(board, depth - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
+        }
         
         board.UndoMove();
         movesEvaluated++;
@@ -489,9 +500,9 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
         {
             if (bestMove.GetTakesPiece() == Pieces::Empty)
             {
-                PlyData& plyState = State.Thread[threadId].Plies[ply];
                 plyState.Killers[1] = plyState.Killers[0];
                 plyState.Killers[0] = bestMove;
+                threadState.Countermoves[previousMove.GetPiece()][previousMove.GetTo()] = bestMove;
             }
 
             StoreTranspositionTable(board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Beta);

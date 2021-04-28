@@ -24,7 +24,7 @@ public:
 
 constexpr MvvLvaClass MvvLva = MvvLvaClass();
 
-MoveScore CalculateStaticMoveScore(const Move move, const SearchState& state, const Ply ply, const Move pvMove)
+MoveScore CalculateStaticMoveScore(const Move move, const SearchState& state, const Ply ply, const Move pvMove, const Move countermove)
 {
     const bool isPrincipalVariation = move.Value == pvMove.Value;
     if (isPrincipalVariation)
@@ -51,14 +51,19 @@ MoveScore CalculateStaticMoveScore(const Move move, const SearchState& state, co
         return 8'000'000;
     }
 
+    if(move.Value == countermove.Value)
+    {
+        return 6'000'000;
+    }
+
     return 0;
 }
 
-void MoveOrdering::CalculateStaticScores(const SearchState& state, const MoveArray& moves, const MoveCount moveCount, const Ply ply, const Move pvMove, MoveScoreArray& staticScores)
+void MoveOrdering::CalculateStaticScores(const SearchState& state, const MoveArray& moves, const MoveCount moveCount, const Ply ply, const Move pvMove, const Move countermove, MoveScoreArray& staticScores)
 {
     for (MoveCount i = 0; i < moveCount; i++)
     {
-        const MoveScore score = CalculateStaticMoveScore(moves[i], state, ply, pvMove);
+        const MoveScore score = CalculateStaticMoveScore(moves[i], state, ply, pvMove, countermove);
         staticScores[i] = score;
     }
 }
@@ -72,12 +77,12 @@ void MoveOrdering::OrderNextMove(const SearchState& state, const MoveCount curre
     {
         const MoveScore staticScore = staticScores[i];
         MoveScore score = staticScore;
-    	if(score == 0)
-    	{
+        if(score == 0)
+        {
             const Move move = moves[i];
             const MoveScore history = state.Thread[0].History[move.GetColorToMove()][move.GetFrom()][move.GetTo()];
             score = history;
-    	}
+        }
         if(score > bestScore)
         {
             bestScore = score;
