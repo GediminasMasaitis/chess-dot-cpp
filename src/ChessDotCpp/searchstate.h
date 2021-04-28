@@ -22,12 +22,25 @@ class ThreadData
 {
 public:
     PlyDataArray Plies;
+    
+    EachColor<EachPosition<EachPosition<MoveScore>>> History;
 
     void NewSearch()
     {
         for(Ply i = 0; i < Constants::MaxDepth; i++)
         {
             Plies[i].NewSearch();
+        }
+
+        for(Color color = 0; color < Colors::Count; color++)
+        {
+            for(Position from = 0; from < Positions::Count; from++)
+            {
+                for (Position to = 0; to < Positions::Count; to++)
+                {
+                    History[color][from][to] = 0;
+                }
+            }
         }
     }
 };

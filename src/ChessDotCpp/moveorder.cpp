@@ -46,7 +46,13 @@ void MoveOrdering::OrderNextMove(const SearchState& state, const MoveCount curre
     for(MoveCount i = currentIndex; i < moveCount; i++)
     {
         const MoveScore staticScore = staticScores[i];
-        const MoveScore score = staticScore;
+        MoveScore score = staticScore;
+    	if(score == 0)
+    	{
+            const Move move = moves[i];
+            const MoveScore history = state.Thread[0].History[move.GetColorToMove()][move.GetFrom()][move.GetTo()];
+            score = history;
+    	}
         if(score > bestScore)
         {
             bestScore = score;

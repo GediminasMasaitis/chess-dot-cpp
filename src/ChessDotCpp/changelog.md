@@ -185,3 +185,25 @@ Score of ChessDotCppDev vs vice: 35 - 112 - 53  [0.307] 200
 Elo difference: -141.0 +/- 43.6, LOS: 0.0 %, DrawRatio: 26.5 %
 ```
 
+### 1.8.1
+Move ordering: history heuristic
+
+```
+info depth 1 multipv 1 score cp 44 nodes 21 nps 21000 time 1 pv e2e4
+info depth 2 multipv 1 score cp 10 nodes 104 nps 104000 time 1 pv e2e4 e7e5
+info depth 3 multipv 1 score cp 32 nodes 729 nps 729000 time 1 pv e2e4 d7d5 d2d3
+info depth 4 multipv 1 score cp 8 nodes 4252 nps 4252000 time 1 pv d2d4 g8f6 g1f3 d7d6
+info depth 5 multipv 1 score cp 30 nodes 26494 nps 2649400 time 10 pv b1c3 b8c6 d2d4 e7e5 e2e3
+info depth 6 multipv 1 score cp 10 nodes 144762 nps 2838470 time 51 pv e2e3 d7d5 d2d4 e7e6 f1b5 c7c6 b5d3
+info depth 7 multipv 1 score cp 33 nodes 832266 nps 2961800 time 281 pv g1f3 d7d5 e2e3 c8g4 f1e2 d8d6 e1g1
+info depth 8 multipv 1 score cp 13 nodes 5529958 nps 2913571 time 1898 pv e2e4 d7d5 e4d5 d8d5 g1f3 c8f5 b1c3
+info depth 9 multipv 1 score cp 34 nodes 36202964 nps 2924310 time 12380 pv g1f3 d7d5 e2e3 c8f5 f1e2 b8c6 d2d4 c6b4 e2b5 c7c6
+```
+
+```
+Score of ChessDotCppDev vs vice: 41 - 102 - 57  [0.347] 200
+...      ChessDotCppDev playing White: 22 - 48 - 30  [0.370] 100
+...      ChessDotCppDev playing Black: 19 - 54 - 27  [0.325] 100
+...      White vs Black: 76 - 67 - 57  [0.522] 200
+Elo difference: -109.5 +/- 42.1, LOS: 0.0 %, DrawRatio: 28.5 %
+```

@@ -242,6 +242,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     }
 
     ++State.Stats.Nodes;
+    MoveScore bonus = depth * depth + depth - 1;
 
     // PROBE TRANSPOSITION TABLE
     Move principalVariationMove = Move(0);
@@ -261,11 +262,6 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
             {
                 probedScore += ply;
             }
-
-            /*if (principalVariationMove.GetTakesPiece() == Pieces::Empty)
-            {
-                UpdateHistory(threadState, principalVariationMove, bonus);
-            }*/
 
             return probedScore;
         }
@@ -289,6 +285,9 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     bool raisedAlpha = false;
     bool betaCutoff = false;
     uint8_t movesEvaluated = 0;
+
+    MoveArray failedMoves;
+    MoveCount failedMoveCount = 0;
     for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
     {
         MoveOrdering::OrderNextMove(State, moveIndex, moves, staticMoveScores, moveCount);
@@ -322,19 +321,30 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
                 }
             }
         }
-    }
-    
-    if (betaCutoff)
-    {
-        if(bestMove.GetTakesPiece() == Pieces::Empty)
+        else
         {
-            PlyData& plyState = State.Thread[threadId].Plies[ply];
-            plyState.Killers[1] = plyState.Killers[0];
-            plyState.Killers[0] = bestMove;
+            failedMoves[failedMoveCount++] = move;
         }
-        
-        StoreTranspositionTable(board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Beta);
-        return beta;
+    }
+
+    if (raisedAlpha)
+    {
+    	if(bestMove.GetTakesPiece() == Pieces::Empty)
+    	{
+            State.Thread[threadId].History[bestMove.GetColorToMove()][bestMove.GetFrom()][bestMove.GetTo()] += bonus;
+    	}
+        if (betaCutoff)
+        {
+            if (bestMove.GetTakesPiece() == Pieces::Empty)
+            {
+                PlyData& plyState = State.Thread[threadId].Plies[ply];
+                plyState.Killers[1] = plyState.Killers[0];
+                plyState.Killers[0] = bestMove;
+            }
+
+            StoreTranspositionTable(board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Beta);
+            return beta;
+        }
     }
 
     // MATE / STALEMATE
