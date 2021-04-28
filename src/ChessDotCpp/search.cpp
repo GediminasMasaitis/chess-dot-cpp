@@ -180,7 +180,7 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
     {
         MoveOrdering::OrderNextMove(State, moveIndex, moves, staticMoveScores, moveCount);
         const Move move = moves[moveIndex];
-    	
+        
         const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
         if (!valid)
         {
@@ -219,7 +219,7 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
     return alpha;
 }
 
-Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool nullMoveAllowed)
+Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed)
 {
     constexpr int threadId = 0;
     
@@ -253,7 +253,6 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     Move principalVariationMove = Move(0);
     bool hashEntryExists = true;
     Score probedScore;
-    constexpr bool isPrincipalVariation = true;
     const bool probeSuccess = TryProbeTranspositionTable(board.Key, depth, alpha, beta, principalVariationMove, probedScore, hashEntryExists);
     if (probeSuccess)
     {
@@ -274,6 +273,29 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     
     const Score currentMateScore = Constants::Mate - ply;
 
+    // STATIC EVALUATION PRUNING
+    EachColor<Bitboard> pins;
+    PinDetector::GetPinnedToKings(board, pins);
+    const Score staticScore = Evaluation::Evaluate(board, pins, State.Global.Eval);
+    if
+    (
+        depth < 3
+        && !isPrincipalVariation
+        && !inCheck
+    )
+    {
+        if (!(std::abs(beta - 1) > -Constants::Mate + 100))
+        {
+            Throw();
+        }
+
+        const Score margin = 120 * depth; // 120? Pawn is 100
+        if (staticScore - margin >= beta)
+        {
+            return staticScore - margin;
+        }
+    }
+    
     // NULL MOVE PRUNING
     if
     (
@@ -289,7 +311,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
             const Ply nullDepthReduction = depth > 6 ? 3 : 2;
             const Move nullMove = Move(0, 0, Pieces::Empty);
             board.DoMove(nullMove);
-            const Score nullMoveScore = -AlphaBeta(board, depth - nullDepthReduction - 1, ply + 1, -beta, -beta + 1, false);
+            const Score nullMoveScore = -AlphaBeta(board, depth - nullDepthReduction - 1, ply + 1, -beta, -beta + 1, false, false);
             board.UndoMove();
             if (nullMoveScore >= beta)
             {
@@ -298,8 +320,6 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
         }
     }
     
-    EachColor<Bitboard> pins;
-    PinDetector::GetPinnedToKings(board, pins);
     const Bitboard pinned = pins[board.ColorToMove];
     
     MoveArray moves;
@@ -329,7 +349,20 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
         }
 
         board.DoMove(move);
-        const Score childScore = -AlphaBeta(board, depth - 1, ply + 1, -beta, -alpha, true);
+        Score childScore;
+        if(raisedAlpha)
+        {
+            childScore = -AlphaBeta(board, depth - 1, ply + 1, -alpha - 1, -alpha, false, true);
+            if(childScore > alpha)
+            {
+                childScore = -AlphaBeta(board, depth - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
+            }
+        }
+        else
+        {
+            childScore = -AlphaBeta(board, depth - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
+        }
+        
         board.UndoMove();
         movesEvaluated++;
         
@@ -358,10 +391,10 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
 
     if (raisedAlpha)
     {
-    	if(bestMove.GetTakesPiece() == Pieces::Empty)
-    	{
+        if(bestMove.GetTakesPiece() == Pieces::Empty)
+        {
             State.Thread[threadId].History[bestMove.GetColorToMove()][bestMove.GetFrom()][bestMove.GetTo()] += bonus;
-    	}
+        }
         if (betaCutoff)
         {
             if (bestMove.GetTakesPiece() == Pieces::Empty)
@@ -400,13 +433,13 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
 
 Score Search::Aspiration(Board& board, const Ply depth, const Score previous)
 {
-    Score score = AlphaBeta(board, depth, 0, -Constants::Inf, Constants::Inf, true);
+    Score score = AlphaBeta(board, depth, 0, -Constants::Inf, Constants::Inf, true, true);
     return score;
 }
 
 Move Search::IterativeDeepen(Board& board)
 {
-    Score score = AlphaBeta(board, 1, 0, -Constants::Inf, Constants::Inf, true);
+    Score score = AlphaBeta(board, 1, 0, -Constants::Inf, Constants::Inf, true, true);
     State.Global.Table.SavePrincipalVariation(board);
     SearchCallbackData callbackData(board, State, 1, score);
     
