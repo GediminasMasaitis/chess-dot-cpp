@@ -231,3 +231,37 @@ Score of ChessDotCppDev vs vice: 59 - 68 - 73  [0.477] 200
 ...      White vs Black: 67 - 60 - 73  [0.517] 200
 Elo difference: -15.6 +/- 38.5, LOS: 21.2 %, DrawRatio: 36.5 %
 ```
+
+### 1.10.1
+Null move pruning
+
+```
+info depth 1 multipv 1 score cp 44 nodes 21 nps 21000 time 1 pv e2e4
+info depth 2 multipv 1 score cp 10 nodes 104 nps 104000 time 1 pv e2e4 e7e5
+info depth 3 multipv 1 score cp 32 nodes 727 nps 727000 time 1 pv e2e4 d7d5 d2d3
+info depth 4 multipv 1 score cp 8 nodes 3821 nps 3821000 time 1 pv d2d4 g8f6 g1f3 d7d6
+info depth 5 multipv 1 score cp 30 nodes 23072 nps 2884000 time 8 pv b1c3 b8c6 d2d4 e7e5 e2e3
+info depth 6 multipv 1 score cp 10 nodes 74847 nps 2772111 time 27 pv e2e3 d7d5 d2d4 e7e6 g1f3 g8f6
+info depth 7 multipv 1 score cp 33 nodes 391043 nps 2940172 time 133 pv g1f3 d7d5 e2e3 c8g4 f1e2 d8d6 e1g1
+info depth 8 multipv 1 score cp 13 nodes 1215845 nps 2887992 time 421 pv e2e4 d7d5 e4d5 d8d5 g1f3 c8f5 b1c3 d5d6
+info depth 9 multipv 1 score cp 34 nodes 4161896 nps 2884196 time 1443 pv g1f3 d7d5 e2e3 c8f5 f1e2 b8c6 d2d4 c6b4 e2b5 c7c6
+info depth 10 multipv 1 score cp 20 nodes 14244923 nps 2874858 time 4955 pv g1f3 g8f6 b1c3 b8c6 e2e4 d7d5 e4e5 f6g4 d2d4 c8f5
+info depth 11 multipv 1 score cp 33 nodes 56580832 nps 2866158 time 19741 pv e2e4 e7e5 g1f3 g8f6 f1c4 f6e4 d2d3 e4f6 f3e5 d7d5 c4b5 c7c6
+info depth 12 multipv 1 score cp 16 nodes 204553661 nps 2863854 time 71426 pv e2e4 e7e5 g1f3 g8f6
+```
+
+```
+Score of ChessDotCppDev vs vice: 77 - 53 - 70  [0.560] 200
+...      ChessDotCppDev playing White: 49 - 16 - 35  [0.665] 100
+...      ChessDotCppDev playing Black: 28 - 37 - 35  [0.455] 100
+...      White vs Black: 86 - 44 - 70  [0.605] 200
+Elo difference: 41.9 +/- 39.1, LOS: 98.2 %, DrawRatio: 35.0 %
+```
+
+```
+Score of ChessDotCppDev vs mediocre: 14 - 159 - 27  [0.138] 200
+...      ChessDotCppDev playing White: 7 - 75 - 18  [0.160] 100
+...      ChessDotCppDev playing Black: 7 - 84 - 9  [0.115] 100
+...      White vs Black: 91 - 82 - 27  [0.522] 200
+Elo difference: -319.0 +/- 60.6, LOS: 0.0 %, DrawRatio: 13.5 %
+```

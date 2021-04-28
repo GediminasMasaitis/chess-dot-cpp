@@ -116,6 +116,41 @@ Bitboard AttacksGenerator::GetAllAttacked(const Board& board, const bool whiteTo
 	return allAttacked;
 }
 
+Bitboard AttacksGenerator::GetAttackersOf(Board board, Position position, Bitboard allPieces)
+{
+	Bitboard result = 0UL;
+
+	const Bitboard whitePawns = board.BitBoard[Pieces::WhitePawn];
+	const Bitboard blackPawns = board.BitBoard[Pieces::BlackPawn];
+	const Bitboard knights = board.BitBoard[Pieces::WhiteKnight] | board.BitBoard[Pieces::BlackKnight];
+	const Bitboard bishops = board.BitBoard[Pieces::WhiteBishop] | board.BitBoard[Pieces::BlackBishop];
+	const Bitboard rooks = board.BitBoard[Pieces::WhiteRook] | board.BitBoard[Pieces::BlackRook];
+	const Bitboard queens = board.BitBoard[Pieces::WhiteQueen] | board.BitBoard[Pieces::BlackQueen];
+	const Bitboard kings = board.BitBoard[Pieces::WhiteKing] | board.BitBoard[Pieces::BlackKing];
+
+	const Bitboard knightAttack = BitboardJumps.KnightJumps[position];
+	result |= knightAttack & knights;
+
+	const Bitboard kingAttack = BitboardJumps.KingJumps[position];
+	result |= kingAttack & kings;
+
+	const Bitboard whitePawnAttack = BitboardJumps.PawnJumps[Colors::Black][position];
+	result |= whitePawnAttack & whitePawns;
+
+	const Bitboard blackPawnAttack = BitboardJumps.PawnJumps[Colors::White][position];
+	result |= blackPawnAttack & blackPawns;
+
+	const Bitboard diagonalAttack = SlideMoveGenerator::DiagonalAntidiagonalSlide(allPieces, position);
+	result |= diagonalAttack & bishops;
+	result |= diagonalAttack & queens;
+
+	const Bitboard verticalAttack = SlideMoveGenerator::HorizontalVerticalSlide(allPieces, position);
+	result |= verticalAttack & rooks;
+	result |= verticalAttack & queens;
+
+	return result;
+}
+
 Bitboard AttacksGenerator::GetAttackersOfSide(const Board& board, Position position, bool byWhite, Bitboard allPieces)
 {
 	Bitboard result = 0UL;

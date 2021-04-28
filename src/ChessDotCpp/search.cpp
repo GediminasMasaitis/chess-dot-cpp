@@ -219,7 +219,7 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
     return alpha;
 }
 
-Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Score beta)
+Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool nullMoveAllowed)
 {
     constexpr int threadId = 0;
     
@@ -273,6 +273,30 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     }
     
     const Score currentMateScore = Constants::Mate - ply;
+
+    // NULL MOVE PRUNING
+    if
+    (
+        nullMoveAllowed
+        && !inCheck
+        && depth > 2
+        && ply > 0
+    )
+    {
+        const Score material = board.PieceMaterial[board.ColorToMove];
+        if (material > Constants::EndgameMaterial)
+        {
+            const Ply nullDepthReduction = depth > 6 ? 3 : 2;
+            const Move nullMove = Move(0, 0, Pieces::Empty);
+            board.DoMove(nullMove);
+            const Score nullMoveScore = -AlphaBeta(board, depth - nullDepthReduction - 1, ply + 1, -beta, -beta + 1, false);
+            board.UndoMove();
+            if (nullMoveScore >= beta)
+            {
+                return beta;
+            }
+        }
+    }
     
     EachColor<Bitboard> pins;
     PinDetector::GetPinnedToKings(board, pins);
@@ -305,7 +329,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
         }
 
         board.DoMove(move);
-        const Score childScore = -AlphaBeta(board, depth - 1, ply + 1, -beta, -alpha);
+        const Score childScore = -AlphaBeta(board, depth - 1, ply + 1, -beta, -alpha, true);
         board.UndoMove();
         movesEvaluated++;
         
@@ -376,13 +400,13 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
 
 Score Search::Aspiration(Board& board, const Ply depth, const Score previous)
 {
-    Score score = AlphaBeta(board, depth, 0, -Constants::Inf, Constants::Inf);
+    Score score = AlphaBeta(board, depth, 0, -Constants::Inf, Constants::Inf, true);
     return score;
 }
 
 Move Search::IterativeDeepen(Board& board)
 {
-    Score score = AlphaBeta(board, 1, 0, -Constants::Inf, Constants::Inf);
+    Score score = AlphaBeta(board, 1, 0, -Constants::Inf, Constants::Inf, true);
     State.Global.Table.SavePrincipalVariation(board);
     SearchCallbackData callbackData(board, State, 1, score);
     
