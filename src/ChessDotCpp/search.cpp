@@ -146,7 +146,7 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
     
     EachColor<Bitboard> pins;
     PinDetector::GetPinnedToKings(board, pins);
-    const Score standPat = Evaluation::Evaluate(board, pins);
+    const Score standPat = Evaluation::Evaluate(board, pins, State.Global.Eval);
 
     if (standPat >= beta)
     {

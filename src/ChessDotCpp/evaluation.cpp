@@ -810,9 +810,16 @@ Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins)
     return scores.Result;
 }
 
-Score Evaluation::Evaluate(const Board& board, const EachColor<Bitboard>& pins)
+Score Evaluation::Evaluate(const Board& board, const EachColor<Bitboard>& pins, EvalState& state)
 {
-	const Score score = EvaluateInner(board, pins);
+    Score score;
+    if(state.EvalTable.TryProbe(board.Key, score))
+    {
+        return score;
+    }
+    
+    score = EvaluateInner(board, pins);
+    state.EvalTable.Store(board.Key, score);
 
     /*auto clone = board;
     clone.FlipColors();
@@ -820,6 +827,6 @@ Score Evaluation::Evaluate(const Board& board, const EachColor<Bitboard>& pins)
     PinDetector::GetPinnedToKings(clone, clonePins);
     auto cloneScore = EvaluateInner(clone, clonePins);
     assert(score == cloneScore);*/
-	
+    
     return score;
 }

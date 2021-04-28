@@ -1,5 +1,6 @@
 #pragma once
 #include "board.h"
+#include "evalstate.h"
 #include "stopper.h"
 #include "searchhash.h"
 
@@ -63,6 +64,7 @@ class GlobalData
 {
 public:
     TranspositionTable Table{};
+    EvalState Eval{};
 };
 
 class SearchState
@@ -85,6 +87,9 @@ public:
     {
         Global.Table.SetSize(16 * 1024 * 1024);
         Global.Table.Clear();
+
+        Global.Eval.EvalTable.SetSize(16 * 1024 * 1024);
+        Global.Eval.EvalTable.Clear();
     }
 
     void NewSearch()
