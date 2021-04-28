@@ -168,14 +168,19 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
     MoveCount moveCount = 0;
     MoveGenerator::GetAllPotentialCaptures(board, checkers, pinned, moves, moveCount);
 
+    MoveScoreArray staticMoveScores{};
+    MoveOrdering::CalculateStaticScores(State, moves, moveCount, ply, Move(0), staticMoveScores);
+
     Score bestScore = -Constants::Inf;
     Move bestMove;
     bool raisedAlpha = false;
     bool betaCutoff = false;
     uint8_t movesEvaluated = 0;
-    for (MoveCount i = 0; i < moveCount; i++)
+    for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
     {
-        const Move move = moves[i];
+        MoveOrdering::OrderNextMove(State, moveIndex, moves, staticMoveScores, moveCount);
+        const Move move = moves[moveIndex];
+    	
         const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
         if (!valid)
         {

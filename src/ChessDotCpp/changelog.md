@@ -207,3 +207,27 @@ Score of ChessDotCppDev vs vice: 41 - 102 - 57  [0.347] 200
 ...      White vs Black: 76 - 67 - 57  [0.522] 200
 Elo difference: -109.5 +/- 42.1, LOS: 0.0 %, DrawRatio: 28.5 %
 ```
+
+### 1.9.1
+Move ordering: MvvLva
+
+```
+info depth 1 multipv 1 score cp 44 nodes 21 nps 21000 time 1 pv e2e4
+info depth 2 multipv 1 score cp 10 nodes 104 nps 104000 time 1 pv e2e4 e7e5
+info depth 3 multipv 1 score cp 32 nodes 727 nps 727000 time 1 pv e2e4 d7d5 d2d3
+info depth 4 multipv 1 score cp 8 nodes 3989 nps 3989000 time 1 pv d2d4 g8f6 g1f3 d7d6
+info depth 5 multipv 1 score cp 30 nodes 24697 nps 2744111 time 9 pv b1c3 b8c6 d2d4 e7e5 e2e3
+info depth 6 multipv 1 score cp 10 nodes 112925 nps 2754268 time 41 pv e2e3 d7d5 d2d4 e7e6 f1b5 c7c6 b5d3
+info depth 7 multipv 1 score cp 33 nodes 719234 nps 2900137 time 248 pv g1f3 d7d5 e2e3 c8g4 f1e2 d8d6 e1g1
+info depth 8 multipv 1 score cp 13 nodes 3664354 nps 2767638 time 1324 pv e2e4 d7d5 e4d5 d8d5 g1f3 c8f5 b1c3
+info depth 9 multipv 1 score cp 34 nodes 25938981 nps 2836721 time 9144 pv g1f3 d7d5 e2e3 c8f5 f1e2 b8c6 d2d4 c6b4 e2b5 c7c6
+info depth 10 multipv 1 score cp 20 nodes 136787825 nps 2745310 time 49826 pv g1f3 g8f6 b1c3 b8c6
+```
+
+```
+Score of ChessDotCppDev vs vice: 59 - 68 - 73  [0.477] 200
+...      ChessDotCppDev playing White: 32 - 33 - 35  [0.495] 100
+...      ChessDotCppDev playing Black: 27 - 35 - 38  [0.460] 100
+...      White vs Black: 67 - 60 - 73  [0.517] 200
+Elo difference: -15.6 +/- 38.5, LOS: 21.2 %, DrawRatio: 36.5 %
+```

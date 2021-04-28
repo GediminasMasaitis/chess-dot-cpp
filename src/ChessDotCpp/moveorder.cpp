@@ -1,5 +1,29 @@
 #include "moveorder.h"
 
+class MvvLvaClass
+{
+public:
+    EachPiece<EachPiece<MoveScore>> Values{};
+
+    constexpr MvvLvaClass()
+    {
+        constexpr EachPiece<MoveScore> pieceScores{ 0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6 };
+
+        for (size_t i = 0; i < Pieces::Count; i++)
+        {
+            for (size_t j = 1; j < Pieces::Count; j++)
+            {
+                MoveScore score = (pieceScores[j] * 10) + (6 - pieceScores[i]);
+                score *= 1000000;
+                score += 100000000;
+                Values[i][j] = score;
+            }
+        }
+    }
+};
+
+constexpr MvvLvaClass MvvLva = MvvLvaClass();
+
 MoveScore CalculateStaticMoveScore(const Move move, const SearchState& state, const Ply ply, const Move pvMove)
 {
     const bool isPrincipalVariation = move.Value == pvMove.Value;
@@ -11,7 +35,8 @@ MoveScore CalculateStaticMoveScore(const Move move, const SearchState& state, co
     const Piece takes = move.GetTakesPiece();
     if(takes != Pieces::Empty)
     {
-        return 100'000'000;
+        const MoveScore mvvLvaScore = MvvLva.Values[move.GetPiece()][move.GetTakesPiece()];
+        return mvvLvaScore;
     }
     
     const PlyData& plyData = state.Thread[0].Plies[ply];
