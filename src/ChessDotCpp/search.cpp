@@ -135,9 +135,28 @@ void Search::StoreTranspositionTable(const ZobristKey key, const Move move, cons
     State.Global.Table.Store(key, move, depth, score, flag);
 }
 
-Score Search::Contempt(const Board& board)
+Score Search::Contempt(const Board& board) const
 {
     return 0;
+}
+
+bool Search::IsRepetitionOr50Move(const Board& board) const
+{
+    if (board.HistoryDepth - board.FiftyMoveRuleIndex > 100)
+    {
+        return true;
+    }
+
+    for (HistoryPly ply = board.FiftyMoveRuleIndex; ply < board.HistoryDepth; ply++)
+    {
+        const auto& previousEntry = board.History[ply];
+        const ZobristKey previousKey = previousEntry.Key;
+        if (board.Key == previousKey)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score beta)
@@ -222,11 +241,23 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
 Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed)
 {
     constexpr int threadId = 0;
+    const bool rootNode = ply == 0;
     
     if (depth > 2 && State.Stopper.ShouldStop())
     {
         const Score score = Contempt(board);
         return score;
+    }
+
+    // REPETITION DETECTION
+    if (nullMoveAllowed && !rootNode)
+    {
+        const bool isDraw = IsRepetitionOr50Move(board);
+        if (isDraw)
+        {
+            const auto score = Contempt(board);
+            return score;
+        }
     }
 
     // IN CHECK EXTENSION
@@ -302,7 +333,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
         nullMoveAllowed
         && !inCheck
         && depth > 2
-        && ply > 0
+        && !rootNode
     )
     {
         const Score material = board.PieceMaterial[board.ColorToMove];
@@ -365,6 +396,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
 
         board.DoMove(move);
 
+        // FUTILITY PRUNING
         if
         (
             futilityPruning
@@ -381,20 +413,45 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
                 continue;
             }
         }
+
+        Ply reduction = 0;
+    	//if
+    	//(
+     //       movesEvaluated > 1
+     //       && (!rootNode || movesEvaluated > 3)
+     //       && depth >= 3
+     //       && !inCheck
+     //       && move.Value != State.Thread[0].Plies[ply].Killers[0].Value
+     //       && move.Value != State.Thread[0].Plies[ply].Killers[1].Value
+     //       && move.GetTakesPiece() == Pieces::Empty
+     //       && move.GetPawnPromoteTo() == Pieces::Empty
+     //   )
+    	//{
+     //       reduction++;
+     //       if (movesEvaluated > 6)
+     //       {
+     //           reduction++;
+     //       }
+    	//}
     	
         Score childScore;
         if(raisedAlpha)
         {
-            childScore = -AlphaBeta(board, depth - 1, ply + 1, -alpha - 1, -alpha, false, true);
+            childScore = -AlphaBeta(board, depth - reduction - 1, ply + 1, -alpha - 1, -alpha, false, true);
             if(childScore > alpha)
             {
-                childScore = -AlphaBeta(board, depth - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
+                childScore = -AlphaBeta(board, depth - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
             }
         }
         else
         {
-            childScore = -AlphaBeta(board, depth - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
+            childScore = -AlphaBeta(board, depth - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
         }
+
+        //if (reduction > 0 && childScore > alpha)
+        //{
+        //    childScore = -AlphaBeta(board, depth - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
+        //}
         
         board.UndoMove();
         movesEvaluated++;
