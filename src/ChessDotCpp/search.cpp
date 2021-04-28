@@ -494,7 +494,11 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     {
         if(bestMove.GetTakesPiece() == Pieces::Empty)
         {
-            State.Thread[threadId].History[bestMove.GetColorToMove()][bestMove.GetFrom()][bestMove.GetTo()] += bonus;
+            threadState.History[bestMove.GetColorToMove()][bestMove.GetFrom()][bestMove.GetTo()] += bonus;
+        }
+        else
+        {
+            threadState.CaptureHistory[bestMove.GetPiece()][bestMove.GetTo()][bestMove.GetTakesPiece()] += bonus;
         }
         if (betaCutoff)
         {

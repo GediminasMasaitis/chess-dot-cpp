@@ -25,7 +25,9 @@ public:
     PlyDataArray Plies;
     
     EachColor<EachPosition<EachPosition<MoveScore>>> History;
+    EachPiece<EachPosition<EachPiece<MoveScore>>> CaptureHistory;
     EachPiece<EachPosition<Move>> Countermoves;
+    
 
     void NewSearch()
     {
@@ -41,6 +43,17 @@ public:
                 for (Position to = 0; to < Positions::Count; to++)
                 {
                     History[color][from][to] = 0;
+                }
+            }
+        }
+
+        for (Piece piece = 0; piece < Pieces::Count; piece++)
+        {
+            for (Position to = 0; to < Positions::Count; to++)
+            {
+                for (Piece takesPiece = 0; takesPiece < Pieces::Count; takesPiece++)
+                {
+                    CaptureHistory[piece][to][takesPiece] = 0;
                 }
             }
         }

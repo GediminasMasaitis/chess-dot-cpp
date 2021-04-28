@@ -70,6 +70,8 @@ void MoveOrdering::CalculateStaticScores(const SearchState& state, const MoveArr
 
 void MoveOrdering::OrderNextMove(const SearchState& state, const MoveCount currentIndex, MoveArray& moves, MoveScoreArray& staticScores, const MoveCount moveCount)
 {
+    const ThreadData& threadState = state.Thread[0];
+    
     MoveScore bestScore = std::numeric_limits<MoveScore>::min();
     MoveCount bestScoreIndex = 0;
     
@@ -77,12 +79,18 @@ void MoveOrdering::OrderNextMove(const SearchState& state, const MoveCount curre
     {
         const MoveScore staticScore = staticScores[i];
         MoveScore score = staticScore;
-        if(score == 0)
+        const Move move = moves[i];
+    	
+        if(move.GetTakesPiece() != Pieces::Empty)
         {
-            const Move move = moves[i];
-            const MoveScore history = state.Thread[0].History[move.GetColorToMove()][move.GetFrom()][move.GetTo()];
+            score += threadState.CaptureHistory[move.GetPiece()][move.GetTo()][move.GetTakesPiece()];
+        }
+        else if(score == 0)
+        {
+            const MoveScore history = threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()];
             score = history;
         }
+    	
         if(score > bestScore)
         {
             bestScore = score;
