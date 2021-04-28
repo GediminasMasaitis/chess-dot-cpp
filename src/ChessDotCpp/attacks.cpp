@@ -206,3 +206,74 @@ Bitboard AttacksGenerator::GetCheckers(const Board& board)
 	const Bitboard checkers = GetAttackersOfSide(board, board.KingPositions[board.ColorToMove], !board.WhiteToMove, board.AllPieces);
 	return checkers;
 }
+
+bool AttacksGenerator::IsPositionAttacked(const Board& board, const Position position, const bool byWhite)
+{
+	Bitboard allPieces = board.AllPieces;
+
+	Bitboard pawns;
+	Bitboard knights;
+	Bitboard bishops;
+	Bitboard rooks;
+	Bitboard queens;
+	Bitboard kings;
+	if (byWhite)
+	{
+		pawns = board.BitBoard[Pieces::WhitePawn];
+		knights = board.BitBoard[Pieces::WhiteKnight];
+		bishops = board.BitBoard[Pieces::WhiteBishop];
+		rooks = board.BitBoard[Pieces::WhiteRook];
+		queens = board.BitBoard[Pieces::WhiteQueen];
+		kings = board.BitBoard[Pieces::WhiteKing];
+	}
+	else
+	{
+		pawns = board.BitBoard[Pieces::BlackPawn];
+		knights = board.BitBoard[Pieces::BlackKnight];
+		bishops = board.BitBoard[Pieces::BlackBishop];
+		rooks = board.BitBoard[Pieces::BlackRook];
+		queens = board.BitBoard[Pieces::BlackQueen];
+		kings = board.BitBoard[Pieces::BlackKing];
+	}
+
+	const Bitboard knightAttack = BitboardJumps.KnightJumps[position];
+	if ((knightAttack & knights) != 0)
+	{
+		return true;
+	}
+
+	const Bitboard kingAttack = BitboardJumps.KingJumps[position];
+	if ((kingAttack & kings) != 0)
+	{
+		return true;
+	}
+
+	const Piece pawnIndex = byWhite ? Colors::Black : Colors::White;
+	const Bitboard pawnAttack = BitboardJumps.PawnJumps[pawnIndex][position];
+	if ((pawnAttack & pawns) != 0)
+	{
+		return true;
+	}
+
+	const Bitboard diagonalAttack = SlideMoveGenerator::DiagonalAntidiagonalSlide(allPieces, position);
+	if ((diagonalAttack & bishops) != 0)
+	{
+		return true;
+	}
+	if ((diagonalAttack & queens) != 0)
+	{
+		return true;
+	}
+
+	const Bitboard verticalAttack = SlideMoveGenerator::HorizontalVerticalSlide(allPieces, position);
+	if ((verticalAttack & rooks) != 0)
+	{
+		return true;
+	}
+	if ((verticalAttack & queens) != 0)
+	{
+		return true;
+	}
+
+	return false;
+}

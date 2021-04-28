@@ -319,6 +319,21 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
             }
         }
     }
+
+    // FUTILITY PRUNING - DETECTION
+    bool futilityPruning = false;
+    std::array<Score, 4> futilityMargins { 0, 200, 300, 500 };
+    if
+    (
+        depth <= 3
+        && !isPrincipalVariation
+        && !inCheck
+        && std::abs(alpha) < 9000
+        && staticScore + futilityMargins[depth] <= alpha
+    )
+    {
+        futilityPruning = true;
+    }
     
     const Bitboard pinned = pins[board.ColorToMove];
     
@@ -349,6 +364,24 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
         }
 
         board.DoMove(move);
+
+        if
+        (
+            futilityPruning
+            && movesEvaluated > 0
+            && move.GetTakesPiece() == Pieces::Empty
+            && move.GetPawnPromoteTo() == Pieces::Empty
+        )
+        {
+            const Position opponentKingPos = board.KingPositions[board.ColorToMove];
+            const bool opponentInCheck = AttacksGenerator::IsPositionAttacked(board, opponentKingPos, !board.WhiteToMove);
+            if (!opponentInCheck)
+            {
+                board.UndoMove();
+                continue;
+            }
+        }
+    	
         Score childScore;
         if(raisedAlpha)
         {
