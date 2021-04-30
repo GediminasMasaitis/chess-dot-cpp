@@ -646,3 +646,49 @@ Score of ChessDotCppDev vs simplex: 183 - 231 - 86  [0.452] 500
 ...      White vs Black: 230 - 184 - 86  [0.546] 500
 Elo difference: -33.5 +/- 27.8, LOS: 0.9 %, DrawRatio: 17.2 %
 ```
+
+### 1.20
+PGO (Profile guided optimization)
+
+```
+info depth 1 multipv 1 score cp 44 nodes 26 nps 26000 time 1 pv e2e4
+info depth 2 multipv 1 score cp 10 nodes 116 nps 116000 time 1 pv e2e4 e7e5
+info depth 3 multipv 1 score cp 32 nodes 444 nps 444000 time 1 pv e2e4 d7d5 d2d3
+info depth 4 multipv 1 score cp 10 nodes 1671 nps 835500 time 2 pv d2d4 d7d5 g1f3 g8f6
+info depth 5 multipv 1 score cp 21 nodes 4026 nps 1342000 time 3 pv d2d4 g8f6 g1f3 d7d6 e2e3
+info depth 6 multipv 1 score cp 13 nodes 11050 nps 1841666 time 6 pv g1f3 d7d5 d2d4 e7e6 c1f4 f8b4 b1c3
+info depth 7 multipv 1 score cp 20 nodes 36029 nps 2401933 time 15 pv b1c3 d7d5 e2e4 e7e6 e4d5 e6d5 d2d4
+info depth 8 multipv 1 score cp 15 nodes 128034 nps 2724127 time 47 pv g1f3 d7d5 e2e3 c8g4 d2d4 e7e6 f1b5 c7c6 b5d3
+info depth 9 multipv 1 score cp 25 nodes 197715 nps 2746041 time 72 pv g1f3 d7d5 e2e3 c8g4 h2h3 g4f3 d1f3 e7e5 b1c3
+info depth 10 multipv 1 score cp 24 nodes 335329 nps 2726252 time 123 pv g1f3 d7d5 e2e3 c8f5 f1e2 d8d6 e1g1 b8c6 d2d4 e8c8
+info depth 11 multipv 1 score cp 21 nodes 1098676 nps 2660232 time 413 pv e2e4 e7e5 g1f3 g8f6 b1c3 f8b4 a2a3 b4c3 d2c3 e8g8 c1g5
+info depth 12 multipv 1 score cp 24 nodes 1588386 nps 2634139 time 603 pv e2e4 e7e5 g1f3 g8f6 f1c4 b8c6 b1c3 f8b4 e1g1 e8g8 d2d3 d7d6
+info depth 13 multipv 1 score cp 16 nodes 2698642 nps 2550701 time 1058 pv e2e4 e7e5 g1f3 g8f6 b1c3 f8b4 f3e5 d7d6 e5f3 e8g8 d2d3 b8c6 c1f4
+info depth 14 multipv 1 score cp 14 nodes 5740991 nps 2471369 time 2323 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 b1c3 c8f5 c3e4 f5e4 d2d3 e4f5
+info depth 15 multipv 1 score cp 18 nodes 11862170 nps 2428781 time 4884 pv e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5c6 d7c6 e1g1 c8g4 h2h3 g4f3 d1f3 d8f6 f3e3
+info depth 16 multipv 1 score cp 18 nodes 22636275 nps 2394106 time 9455 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 d1e2 d8e7 d2d3 e4f6 b1c3 c8g4 c1f4 b8c6
+info depth 17 multipv 1 score cp 26 nodes 42834597 nps 2377982 time 18013 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 d1e2 d8e7 d2d3 e4c5 b1c3 c8g4 c1g5 g4f3 g2f3
+info depth 18 multipv 1 score cp 23 nodes 89618092 nps 2365779 time 37881 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 b1c3 e4c3 d2c3 f8e7 f1d3 e8g8 e1g1 c8e6 c1f4 b8c6
+info depth 19 multipv 1 score cp 24 nodes 202262301 nps 2354954 time 85888 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 b1c3 e4c3 d2c3 f8e7 f1d3 e8g8 e1g1 c8e6 c1f4 b8c6 d1e2
+info depth 20 multipv 1 score cp 24 nodes 441835029 nps 2343952 time 188500 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 b1c3 e4c3 d2c3 f8e7 f1d3 e8g8 e1g1 c8e6 c1f4 b8c6 d1e2 e7h4
+```
+
+```
+Score of ChessDotCppDev vs vice: 378 - 53 - 69  [0.825] 500
+...      ChessDotCppDev playing White: 191 - 24 - 35  [0.834] 250
+...      ChessDotCppDev playing Black: 187 - 29 - 34  [0.816] 250
+...      White vs Black: 220 - 211 - 69  [0.509] 500
+Elo difference: 269.4 +/- 35.2, LOS: 100.0 %, DrawRatio: 13.8 %
+
+Score of ChessDotCppDev vs mediocre: 143 - 260 - 97  [0.383] 500
+...      ChessDotCppDev playing White: 77 - 126 - 47  [0.402] 250
+...      ChessDotCppDev playing Black: 66 - 134 - 50  [0.364] 250
+...      White vs Black: 211 - 192 - 97  [0.519] 500
+Elo difference: -82.8 +/- 28.0, LOS: 0.0 %, DrawRatio: 19.4 %
+
+Score of ChessDotCppDev vs simplex: 202 - 207 - 91  [0.495] 500
+...      ChessDotCppDev playing White: 120 - 84 - 46  [0.572] 250
+...      ChessDotCppDev playing Black: 82 - 123 - 45  [0.418] 250
+...      White vs Black: 243 - 166 - 91  [0.577] 500
+Elo difference: -3.5 +/- 27.6, LOS: 40.2 %, DrawRatio: 18.2 %
+```
