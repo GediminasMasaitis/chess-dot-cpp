@@ -603,7 +603,7 @@ Finished match
 ```
 
 ### 1.19
-Move ordering: Pawn hash table
+Pawn hash table
 
 ```
 info depth 1 multipv 1 score cp 44 nodes 26 nps 26000 time 1 pv e2e4
@@ -625,4 +625,24 @@ info depth 16 multipv 1 score cp 18 nodes 22636275 nps 2107856 time 10739 pv e2e
 info depth 17 multipv 1 score cp 26 nodes 42834597 nps 2094703 time 20449 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 d1e2 d8e7 d2d3 e4c5 b1c3 c8g4 c1g5 g4f3 g2f3
 info depth 18 multipv 1 score cp 23 nodes 89618092 nps 2077137 time 43145 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 b1c3 e4c3 d2c3 f8e7 f1d3 e8g8 e1g1 c8e6 c1f4 b8c6
 info depth 19 multipv 1 score cp 24 nodes 202262301 nps 2072380 time 97599 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 b1c3 e4c3 d2c3 f8e7 f1d3 e8g8 e1g1 c8e6 c1f4 b8c6 d1e2
+```
+
+```
+Score of ChessDotCppDev vs vice: 368 - 65 - 67  [0.803] 500
+...      ChessDotCppDev playing White: 190 - 28 - 32  [0.824] 250
+...      ChessDotCppDev playing Black: 178 - 37 - 35  [0.782] 250
+...      White vs Black: 227 - 206 - 67  [0.521] 500
+Elo difference: 244.1 +/- 34.2, LOS: 100.0 %, DrawRatio: 13.4 %
+
+Score of ChessDotCppDev vs mediocre: 129 - 257 - 114  [0.372] 500
+...      ChessDotCppDev playing White: 69 - 124 - 57  [0.390] 250
+...      ChessDotCppDev playing Black: 60 - 133 - 57  [0.354] 250
+...      White vs Black: 202 - 184 - 114  [0.518] 500
+Elo difference: -91.0 +/- 27.4, LOS: 0.0 %, DrawRatio: 22.8 %
+
+Score of ChessDotCppDev vs simplex: 183 - 231 - 86  [0.452] 500
+...      ChessDotCppDev playing White: 100 - 101 - 49  [0.498] 250
+...      ChessDotCppDev playing Black: 83 - 130 - 37  [0.406] 250
+...      White vs Black: 230 - 184 - 86  [0.546] 500
+Elo difference: -33.5 +/- 27.8, LOS: 0.9 %, DrawRatio: 17.2 %
 ```

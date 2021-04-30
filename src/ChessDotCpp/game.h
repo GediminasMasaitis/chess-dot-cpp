@@ -42,14 +42,14 @@ public:
 		Uci::InType in = [&]()
 		{
 			auto command = commands.front();
-			std::cout << ">> " << command << std::endl;
+			std::cerr << ">> " << command << std::endl;
 			commands.pop();
 			return command;
 		};
 
 		Uci::OutType out = [&](std::string str)
 		{
-			std::cout << "<< " << str << std::endl;
+			std::cerr << "<< " << str << std::endl;
 		};
 
 		Uci uci = Uci(in, out);

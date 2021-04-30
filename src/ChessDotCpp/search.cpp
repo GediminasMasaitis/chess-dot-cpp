@@ -183,7 +183,6 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
 
     const Bitboard checkers = AttacksGenerator::GetCheckers(board);
     const bool inCheck = checkers != BitboardConstants::Empty;
-    const Score currentMateScore = Constants::Mate - ply;
 
     const Bitboard pinned = pins[board.ColorToMove];
 

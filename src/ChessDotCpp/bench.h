@@ -1,31 +1,30 @@
 #pragma once
 
 #include "common.h"
-
-#include <chrono>
-#include <functional>
-#include <iostream>
+#include "game.h"
 
 class Bench
 {
 public:
-	static size_t RunWithTiming(const std::function<void()>& function, const size_t times)
+	static void Run()
 	{
-		const auto start = std::chrono::high_resolution_clock::now();
-		for(size_t i = 0; i < times; i++)
+		std::vector<Fen> fens =
 		{
-			function();
-		}
-		const auto end = std::chrono::high_resolution_clock::now();
-		const auto elapsed = end - start;
-		const auto elapsedNs = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count();
-		return elapsedNs;
-	}
+			"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+			"r3r1kb/p2bp2p/1q1p1npB/5NQ1/2p1P1P1/2N2P2/PPP5/2KR3R b - - 0 1"
+		};
 
-	static void PrintWithTiming(const std::function<void()>& function, const size_t times)
-	{
-		const size_t elapsedNs = RunWithTiming(function, times);
-		const auto perSecond = static_cast<uint64_t>((static_cast<double>(times) / static_cast<double>(elapsedNs)) * 1000000000);
-		std::cout << ToUserFriendly(times) << "it: " << ToUserFriendly(elapsedNs / 1000000) << "ms (" << ToUserFriendly(perSecond) << "it/s)" << std::endl;
+		std::queue<std::string> commands = std::queue<std::string>();
+		commands.push("uci");
+		
+		for (const auto& fen : fens)
+		{
+			commands.push("ucinewgame");
+			commands.push("position fen " + fen);
+			commands.push("isready");
+			commands.push("go wtime 60000 winc 600 btime 60000 binc 600");
+		}
+		commands.push("quit");
+		Game::RunCommands(commands);
 	}
 };

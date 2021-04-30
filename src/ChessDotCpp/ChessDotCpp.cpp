@@ -1,9 +1,21 @@
 ﻿#include "ChessDotCpp.h"
+
+#include "bench.h"
 #include "tests.h"
 #include "uci.h"
 
-void Run()
+void Run(int argc, char** argv)
 {
+	if(argc > 1)
+	{
+        std::string param1 = argv[1];
+		if(param1 == "bench")
+		{
+            Bench::Run();
+			return;
+		}
+	}
+	
     auto uci = UciStd();
     uci.Run();
 }
@@ -77,9 +89,9 @@ void Test()
     //}, 1);
 }
 
-int main()
+int main(int argc, char** argv)
 {
-    Run();
+    Run(argc, argv);
     //Test();
     //Game::RunTestCommands();
     return 0;

@@ -265,7 +265,7 @@ void PerftSuite::Run()
 		PerftSuiteEntry{ "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1", 6, 71179139 }
 	};
 
-	for (auto i = 0; i < entries.size(); i++)
+	for (size_t i = 0; i < entries.size(); i++)
 	{
 		const auto& entry = entries[i];
 		const size_t nodes = PerftRunner::Run(entry.fen, entry.depth);

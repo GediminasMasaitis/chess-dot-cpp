@@ -1,12 +1,11 @@
 #pragma once
 
 #include "search.h"
-#include "debug.h"
+#include "fen.h"
 
 #include <iostream>
 #include <sstream>
-
-
+ 
 class Uci
 {
 public:
@@ -93,20 +92,26 @@ public:
 
     void HandleFen(std::stringstream& reader)
     {
-        std::string fen;
-        reader >> fen;
-
+        std::stringstream fenBuilder;
+        bool hasMoves = false;
+    	while(!reader.eof())
+    	{
+            std::string fenPart;
+            reader >> fenPart;
+    		if(fenPart == "moves")
+    		{
+                hasMoves = true;
+                break;
+    		}
+            fenBuilder << fenPart << " ";
+    	}
+        
+        std::string fen = fenBuilder.str();
         Fens::Parse(board, fen);
 
-        if(!reader.eof())
+        if(hasMoves)
         {
-            std::string type;
-            reader >> type;
-
-            if(type == "moves")
-            {
-                HandleMoves(reader);
-            }
+            HandleMoves(reader);
         }
     }
     
@@ -188,7 +193,7 @@ public:
         //Debug::LoadTt("C:/Temp/tt/tt1619555771084.dat", search.State);
     }
 
-    void HandleInput(const std::string& line)
+    bool HandleInput(const std::string& line)
     {
         std::stringstream reader(line);
 
@@ -217,7 +222,13 @@ public:
             {
                 HandleIsReady(reader);
             }
+            else if(word == "quit")
+            {
+                return false;
+            }
         }
+    	
+        return true;
     }
     
     void Run()
@@ -225,7 +236,11 @@ public:
         while (true)
         {
             std::string line = In();
-            HandleInput(line);
+            bool shouldContinue = HandleInput(line);
+        	if(!shouldContinue)
+        	{
+                break;
+        	}
         }
     }
 };
