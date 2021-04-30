@@ -11,7 +11,7 @@ class See
     static Bitboard GetLeastValuablePiece(const Board& board, Bitboard attadef, Color colorToMove, Piece& piece)
     {
         const Piece start = static_cast<Piece>(Pieces::Pawn | colorToMove);
-        const Piece end = static_cast<Piece>(Pieces::Pawn | colorToMove);
+        const Piece end = static_cast<Piece>(Pieces::King | colorToMove);
         for (piece = start; piece <= end; piece += Pieces::NextPiece)
         {
             Bitboard subset = attadef & board.BitBoard[piece];
@@ -41,7 +41,7 @@ public:
             gain[depth] = SeeWeights[piece] - gain[depth - 1]; // speculative store, if defended
             if (std::max(static_cast<Score>(-gain[depth - 1]), gain[depth]) < 0)
             {
-                //break; // pruning does not influence the result
+                // break; // pruning does not influence the result
             }
 
             occ ^= fromSet;
@@ -65,7 +65,7 @@ public:
         return GetSee(board, move.GetFrom(), move.GetTo(), move.GetPiece(), move.GetTakesPiece());
     }
     
-    static void CalculateSeeScores(const Board& board, const MoveArray& moves, const MoveCount moveCount, MoveScoreArray& seeScores)
+    static void CalculateSeeScores(const Board& board, const MoveArray& moves, const MoveCount moveCount, ScoreArray& seeScores)
     {
         for (MoveCount i = 0; i < moveCount; i++)
         {

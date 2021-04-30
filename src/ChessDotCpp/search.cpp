@@ -5,6 +5,7 @@
 #include "movegen.h"
 #include "evaluation.h"
 #include "moveorder.h"
+#include "see.h"
 #include "stopper.h"
 
 //bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, Move& bestMove, Score& score, bool& entryExists)
@@ -192,9 +193,12 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
 
     const Move previousMove = rootNode ? Move(0) : board.History[board.HistoryDepth - 1].Move;
     const Move countermove = State.Thread[threadId].Countermoves[previousMove.GetPiece()][previousMove.GetTo()];
+
+    ScoreArray seeScores;
+    See::CalculateSeeScores(board, moves, moveCount, seeScores);
     
     MoveScoreArray staticMoveScores{};
-    MoveOrdering::CalculateStaticScores(State, moves, moveCount, ply, Move(0), countermove, staticMoveScores);
+    MoveOrdering::CalculateStaticScores(State, moves, seeScores, moveCount, ply, Move(0), countermove, staticMoveScores);
 
     Score bestScore = -Constants::Inf;
     Move bestMove;
@@ -203,7 +207,7 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
     uint8_t movesEvaluated = 0;
     for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
     {
-        MoveOrdering::OrderNextMove(State, moveIndex, moves, staticMoveScores, moveCount);
+        MoveOrdering::OrderNextMove(State, moveIndex, moves, seeScores, staticMoveScores, moveCount);
         const Move move = moves[moveIndex];
         
         const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
@@ -383,8 +387,11 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     const Move previousMove = rootNode ? Move(0) : board.History[board.HistoryDepth - 1].Move;
     const Move countermove = threadState.Countermoves[previousMove.GetPiece()][previousMove.GetTo()];
 
-    MoveScoreArray staticMoveScores{};
-    MoveOrdering::CalculateStaticScores(State, moves, moveCount, ply, principalVariationMove, countermove, staticMoveScores);
+    ScoreArray seeScores;
+    See::CalculateSeeScores(board, moves, moveCount, seeScores);
+    
+    MoveScoreArray staticMoveScores;
+    MoveOrdering::CalculateStaticScores(State, moves, seeScores, moveCount, ply, principalVariationMove, countermove, staticMoveScores);
 
     Score bestScore = -Constants::Inf;
     Move bestMove;
@@ -396,15 +403,15 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     MoveCount failedMoveCount = 0;
     for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
     {
-        MoveOrdering::OrderNextMove(State, moveIndex, moves, staticMoveScores, moveCount);
+        MoveOrdering::OrderNextMove(State, moveIndex, moves, seeScores, staticMoveScores, moveCount);
         const Move move = moves[moveIndex];
-        
-        const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
+                const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
         if(!valid)
         {
             continue;
         }
 
+        const Score seeScore = seeScores[moveIndex];
         board.DoMove(move);
 
         // FUTILITY PRUNING
@@ -434,7 +441,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
             && !inCheck
             && move.Value != plyState.Killers[0].Value
             && move.Value != plyState.Killers[1].Value
-            && move.GetTakesPiece() == Pieces::Empty
+            && seeScore <= 0
             && move.GetPawnPromoteTo() == Pieces::Empty
         )
         {

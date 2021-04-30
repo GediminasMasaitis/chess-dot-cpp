@@ -116,7 +116,7 @@ Bitboard AttacksGenerator::GetAllAttacked(const Board& board, const bool whiteTo
 	return allAttacked;
 }
 
-Bitboard AttacksGenerator::GetAttackersOf(Board board, Position position, Bitboard allPieces)
+Bitboard AttacksGenerator::GetAttackersOf(const Board& board, Position position, Bitboard allPieces)
 {
 	Bitboard result = 0UL;
 

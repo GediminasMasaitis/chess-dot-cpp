@@ -10,6 +10,7 @@
 #include "bench.h"
 #include "evaluation.h"
 #include "game.h"
+#include "tests.h"
 #include "tune.h"
 #include "uci.h"
 
@@ -21,7 +22,9 @@ void Run()
 
 void Test()
 {
-    Game::RunTestCommands();
+    //Game::RunTestCommands();
+
+    Tests::TestSee();
     
     //PerftSuite::Run();
     

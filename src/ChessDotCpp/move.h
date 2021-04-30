@@ -107,3 +107,4 @@ public:
 
 using MoveArray = std::array<Move, Constants::MaxMoves>;
 using MoveScoreArray = std::array<MoveScore, Constants::MaxMoves>;
+using ScoreArray = std::array<Score, Constants::MaxMoves>;
