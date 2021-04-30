@@ -629,19 +629,20 @@ Score EvalPawnStructure(const Board& board, const EachColor<Bitboard>& pawnContr
     return result;
 }
 
-Score GetPawnScore(const Board& board, const EachColor<Bitboard>& pawnControl)
+Score GetPawnScore(const Board& board, const EachColor<Bitboard>& pawnControl, EvalState& state)
 {
-    if (false)
+    Score score;
+    if (state.PawnTable.TryProbe(board.PawnKey, score))
     {
-    }
-    else
-    {
-        const Score score = EvalPawnStructure(board, pawnControl);
         return score;
     }
+
+    score = EvalPawnStructure(board, pawnControl);
+    state.PawnTable.Store(board.PawnKey, score);
+    return score;
 }
 
-Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins)
+Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins, EvalState& state)
 {
     EvaluationScores scores = EvaluationScores();
 
@@ -691,7 +692,7 @@ Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins)
     scores.MaterialAdjustment[Colors::White] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteRook];
     scores.MaterialAdjustment[Colors::Black] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackRook];
 
-    const Score pawnScore = GetPawnScore(board, pawnControl);
+    const Score pawnScore = GetPawnScore(board, pawnControl, state);
     scores.Result += pawnScore;
 
     EvaluatePieces<Colors::White>(board, scores, pawnControl, pins[Colors::White]);
@@ -764,37 +765,37 @@ Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins)
         }
 
         if
-            (
-                board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook]
-                && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Knight] // TODO FIXED
-                )
+        (
+            board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook]
+            && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Knight] // TODO FIXED
+        )
         {
             scores.Result /= 2;
         }
 
         if
-            (
-                board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook]
-                && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Bishop]
-                )
+        (
+            board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook]
+            && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Bishop]
+        )
         {
             scores.Result /= 2;
         }
 
         if
-            (
-                board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook] + EvaluationConstants::PieceValues[Pieces::Knight]
-                && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Rook]
-                )
+        (
+            board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook] + EvaluationConstants::PieceValues[Pieces::Knight]
+            && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Rook]
+        )
         {
             scores.Result /= 2;
         }
 
         if
-            (
-                board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook] + EvaluationConstants::PieceValues[Pieces::Bishop]
-                && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Rook]
-                )
+        (
+            board.PieceMaterial[stronger] == EvaluationConstants::PieceValues[Pieces::Rook] + EvaluationConstants::PieceValues[Pieces::Bishop]
+            && board.PieceMaterial[weaker] == EvaluationConstants::PieceValues[Pieces::Rook]
+        )
         {
             scores.Result /= 2;
         }
@@ -818,7 +819,7 @@ Score Evaluation::Evaluate(const Board& board, const EachColor<Bitboard>& pins, 
         return score;
     }
     
-    score = EvaluateInner(board, pins);
+    score = EvaluateInner(board, pins, state);
     state.EvalTable.Store(board.Key, score);
 
     /*auto clone = board;

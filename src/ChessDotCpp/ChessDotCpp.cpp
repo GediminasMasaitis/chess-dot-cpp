@@ -1,17 +1,5 @@
 ﻿#include "ChessDotCpp.h"
-#include "fen.h"
-#include "movegen.h"
-#include "perft.h"
-#include "magics.h"
-#include "iostream"
-#include "fstream"
-#include "random.h"
-#include "search.h"
-#include "bench.h"
-#include "evaluation.h"
-#include "game.h"
 #include "tests.h"
-#include "tune.h"
 #include "uci.h"
 
 void Run()

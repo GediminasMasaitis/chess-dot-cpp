@@ -72,9 +72,11 @@ class EvalState
 {
 public:
     EvalHashTable EvalTable;
+    EvalHashTable PawnTable;
 
     EvalState()
     {
         EvalTable = EvalHashTable();
+        PawnTable = EvalHashTable();
     }
 };

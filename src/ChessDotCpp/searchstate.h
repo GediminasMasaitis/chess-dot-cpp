@@ -112,6 +112,9 @@ public:
 
         Global.Eval.EvalTable.SetSize(16 * 1024 * 1024);
         Global.Eval.EvalTable.Clear();
+
+        Global.Eval.PawnTable.SetSize(16 * 1024 * 1024);
+        Global.Eval.PawnTable.Clear();
     }
 
     void NewSearch()

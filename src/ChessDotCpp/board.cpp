@@ -426,7 +426,7 @@ void Board::FlipColors()
 
     ColorToMove = ColorToMove ^ 1;
     WhiteToMove = !WhiteToMove;
-	
+    
     Key = ZobristKeys.CalculateKey(*this);
     PawnKey = ZobristKeys.CalculatePawnKey(*this);
     

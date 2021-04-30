@@ -8,6 +8,7 @@
 #include <cstdlib>
 #endif
 
+#define UNUSED(x) (void)(x)
 
 enum class ErrorCode
 {
@@ -16,26 +17,28 @@ enum class ErrorCode
 	Error = 1
 };
 
-[[noreturn]] static void Throw(const ErrorCode code, const std::string description)
+[[noreturn]] [[maybe_unused]] static void Throw(const ErrorCode code, const std::string description)
 {
 #if __cpp_exceptions
+	UNUSED(code);
 	throw std::runtime_error(description);
 #else
+	UNUSED(description);
 	exit(static_cast<int>(code));
 #endif
 }
 
-[[noreturn]] static void Throw(const ErrorCode code)
+[[noreturn]] [[maybe_unused]] static void Throw(const ErrorCode code)
 {
 	Throw(code, "");
 }
 
-[[noreturn]] static void Throw(const std::string description)
+[[noreturn]] [[maybe_unused]] static void Throw(const std::string description)
 {
 	Throw(ErrorCode::Error, description);
 }
 
-static void Throw()
+[[noreturn]] [[maybe_unused]] static void Throw()
 {
 	Throw(ErrorCode::Error, "");
 }

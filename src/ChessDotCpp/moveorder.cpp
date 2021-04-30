@@ -90,12 +90,11 @@ void MoveOrdering::OrderNextMove(const SearchState& state, const MoveCount curre
         MoveScore score = staticScore;
         const Move move = moves[i];
     	
-        /*if(move.GetTakesPiece() != Pieces::Empty)
+        if(move.GetTakesPiece() != Pieces::Empty)
         {
             score += threadState.CaptureHistory[move.GetPiece()][move.GetTo()][move.GetTakesPiece()];
         }
-        else*/
-    	if(score == 0)
+        else if(score == 0)
         {
             const MoveScore history = threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()];
             score = history;
