@@ -215,6 +215,21 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
             continue;
         }
 
+        const Score takesMaterial = EvaluationConstants::PieceValues[move.GetTakesPiece()];
+        const Score opponentMaterial = board.PieceMaterial[board.ColorToMove ^ 1];
+        const Score resultMaterial = opponentMaterial - takesMaterial;
+    	
+        // DELTA PRUNING
+        if
+        (
+            standPat + takesMaterial + 200 < alpha
+            && resultMaterial > Constants::EndgameMaterial
+            && move.GetPawnPromoteTo() == Pieces::Empty
+        )
+        {
+            continue;
+        }
+
         board.DoMove(move);
         const Score childScore = -Quiescence(board, depth - 1, ply + 1, -beta, -alpha);
         board.UndoMove();
@@ -544,8 +559,17 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
 
 Score Search::Aspiration(Board& board, const Ply depth, const Score previous)
 {
-    Score score = AlphaBeta(board, depth, 0, -Constants::Inf, Constants::Inf, true, true);
-    return score;
+    //constexpr Score window = 50;
+    //const Score alpha = previous - window;
+    //const Score beta = previous + window;
+    //const Score windowScore = AlphaBeta(board, depth, 0, alpha, beta, true, true);
+    //if (windowScore > alpha && windowScore < beta)
+    //{
+    //    return windowScore;
+    //}
+
+    const Score fullSearchScore = AlphaBeta(board, depth, 0, -Constants::Inf, Constants::Inf, true, true);
+    return fullSearchScore;
 }
 
 Move Search::IterativeDeepen(Board& board)
