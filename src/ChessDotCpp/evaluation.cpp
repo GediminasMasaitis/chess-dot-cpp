@@ -318,6 +318,7 @@ void EvalBishop(const Board& board, EvaluationScores& scores, const Position pos
 template<Color TColor>
 void EvalRook(const Board& board, EvaluationScores& scores, const Position position, const EachColor<Bitboard>& pawnControl, const Bitboard pinned)
 {
+    (void)pawnControl; // Unused for now
     constexpr Color color = TColor;
     constexpr Color opp = color ^ 1;
     
@@ -396,6 +397,7 @@ void EvalRook(const Board& board, EvaluationScores& scores, const Position posit
 template<Color TColor>
 void EvalQueen(const Board& board, EvaluationScores& scores, const Position position, const EachColor<Bitboard>& pawnControl, const Bitboard pinned)
 {
+    (void)pawnControl; // Unused for now
     constexpr Color color = TColor;
     constexpr Color opp = color ^ 1;
     

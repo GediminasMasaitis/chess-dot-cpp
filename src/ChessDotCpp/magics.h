@@ -25,7 +25,7 @@ public:
 		const auto vertical = MaskedSlide(allPieces, pieceBitboard, BitboardConstants::Files[position % 8]);
 		return horizontal | vertical;
 	}
-	
+
 	constexpr static Bitboard DiagonalAntidiagonalSlide(const Bitboard allPieces, const Position position)
 	{
 		const auto pieceBitboard = GetBitboard(position);
@@ -33,7 +33,7 @@ public:
 		const auto vertical = MaskedSlide(allPieces, pieceBitboard, BitboardConstants::Antidiagonals[position / 8 + 7 - position % 8]);
 		return horizontal | vertical;
 	}
-	
+
 	constexpr static Bitboard AllSlide(const Bitboard allPieces, const Position position)
 	{
 		const auto hv = HorizontalVerticalSlide(allPieces, position);
@@ -50,10 +50,10 @@ public:
 	constexpr static uint8_t Shift = Diagonal ? 55 : 52;
 	Bitboard BlockerMask;
 	Magic MagicNumber;
-	//uint8_t Shift;
-	size_t Offset;
+	//size_t Offset;
+	Bitboard* Attacks;
 
-	[[nodiscard]] constexpr size_t GetLocalOffset(const Bitboard blockers, const Position pos) const
+	[[nodiscard]] constexpr size_t GetLocalOffset(const Bitboard blockers) const
 	{
 		//const auto index = static_cast<size_t>(_pext_u64(blockers, BlockerMask));
 		const auto index = static_cast<size_t>(((blockers & BlockerMask) * MagicNumber) >> Shift);
@@ -77,7 +77,7 @@ public:
 	using BishopEntryArray = std::array<BishopMagicsEntry, 64>;
 	using RookEntryArray = std::array<RookMagicsEntry, 64>;
 	using MoveboardArray = std::array<Bitboard, 88772>;
-	
+
 	BishopEntryArray Bishops{};
 	RookEntryArray Rooks{};
 	MoveboardArray Table{};
@@ -222,7 +222,7 @@ private:
 		KnownMagic { 0x0003ffffbf7dfeecu,  66501 },
 		KnownMagic { 0x0001ffff9dffa333u,  14826 }
 	};
-	
+
 	static constexpr Bitboard GetOrthogonalMask(Position pos)
 	{
 		const Rank rank = pos >> 3;
@@ -236,7 +236,7 @@ private:
 		mask &= ~GetBitboard(pos);
 		return mask;
 	}
-	
+
 	static constexpr Bitboard GetDiagonalMask(Position pos)
 	{
 		const Rank rank = pos >> 3;
@@ -268,10 +268,11 @@ private:
 			maskCopy &= maskCopy - 1;
 		}
 		//entry.Shift = 64 - bitCount;
-		entry.Offset = diagonal ? BishopMagics[position].Position : RookMagics[position].Position;
+		//entry.Offset = diagonal ? BishopMagics[position].Position : RookMagics[position].Position;
+		entry.Attacks = diagonal ? &Table[BishopMagics[position].Position] : &Table[RookMagics[position].Position];
 		entry.MagicNumber = diagonal ? BishopMagics[position].MagicNumber : RookMagics[position].MagicNumber;
 		const auto permutations = 1 << bitCount;
-		for(auto i = 0; i < permutations; i++)
+		for (auto i = 0; i < permutations; i++)
 		{
 			Bitboard blockers = 0;
 			for (auto j = 0; j < bitCount; j++)
@@ -284,17 +285,17 @@ private:
 				}
 			}
 			const Bitboard moveboard = diagonal ? ReferenceGenerator::DiagonalAntidiagonalSlide(blockers, position) : ReferenceGenerator::HorizontalVerticalSlide(blockers, position);
-			const size_t localOffset = entry.GetLocalOffset(blockers, position);
+			const size_t localOffset = entry.GetLocalOffset(blockers);
 			//const size_t localOffset = i;
 
-			assert(Table[entry.Offset + localOffset] == 123456789123456 || Table[entry.Offset + localOffset] == moveboard);
-			
-			Table[entry.Offset + localOffset] = moveboard; // TODO: Uncomment if using non-hardcoded table
+			assert(entry.Attacks[localOffset] == 123456789123456 || entry.Attacks[localOffset] == moveboard);
+
+			entry.Attacks[localOffset] = moveboard;
 		}
 		//entry.MagicNumber = diagonal ? BishopMagics[position] : RookMagics[position];
 		//currentOffset += permutations;
 	}
-	
+
 
 public:
 	constexpr MagicsDataClass()
@@ -321,7 +322,7 @@ public:
 				entry.Offset = BishopMagics[position].Position;
 				entry.MagicNumber = BishopMagics[position].MagicNumber;*/
 			}
-			
+
 		}
 		//assert(currentOffset == Table.size());
 		//Initialized = true;
@@ -336,21 +337,21 @@ public:
 	constexpr static Bitboard HorizontalVerticalSlide(const Bitboard allPieces, const Position position)
 	{
 		const auto& entry = MagicsData.Rooks[position];
-		const auto localOffset = entry.GetLocalOffset(allPieces, position);
-		const auto bitboard = MagicsData.Table[entry.Offset + localOffset];
+		const auto localOffset = entry.GetLocalOffset(allPieces);
+		const auto bitboard = entry.Attacks[localOffset];
 		//const auto bitboard = MagicMoveTable[entry.Offset + localOffset];
 		return bitboard;
 	}
-	
+
 	constexpr static Bitboard DiagonalAntidiagonalSlide(const Bitboard allPieces, const Position position)
 	{
 		const auto& entry = MagicsData.Bishops[position];
-		const auto localOffset = entry.GetLocalOffset(allPieces, position);
-		const auto bitboard = MagicsData.Table[entry.Offset + localOffset];
+		const auto localOffset = entry.GetLocalOffset(allPieces);
+		const auto bitboard = entry.Attacks[localOffset];
 		//const auto bitboard = MagicMoveTable[entry.Offset + localOffset];
 		return bitboard;
 	}
-	
+
 	constexpr static Bitboard AllSlide(const Bitboard allPieces, const Position position)
 	{
 		return HorizontalVerticalSlide(allPieces, position) | DiagonalAntidiagonalSlide(allPieces, position);

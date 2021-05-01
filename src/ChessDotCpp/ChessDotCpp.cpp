@@ -24,7 +24,8 @@ void Test()
 {
     //Game::RunTestCommands();
 
-    Tests::TestSee();
+    //Tests::TestSee();
+    Tests::TestMagics();
     
     //PerftSuite::Run();
     

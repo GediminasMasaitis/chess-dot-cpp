@@ -138,6 +138,7 @@ void Search::StoreTranspositionTable(const ZobristKey key, const Move move, cons
 
 Score Search::Contempt(const Board& board) const
 {
+    (void)board;
     return 0;
 }
 
@@ -595,6 +596,7 @@ Score Search::Aspiration(Board& board, const Ply depth, const Score previous)
     //    return windowScore;
     //}
 
+    (void)previous;
     const Score fullSearchScore = AlphaBeta(board, depth, 0, -Constants::Inf, Constants::Inf, true, true);
     return fullSearchScore;
 }

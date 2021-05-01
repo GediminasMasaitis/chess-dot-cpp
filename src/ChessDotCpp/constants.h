@@ -48,10 +48,10 @@ private:
 class Colors
 {
 public:
-    static constexpr Piece White = 0;
-    static constexpr Piece Black = 1;
+    static constexpr Color White = 0;
+    static constexpr Color Black = 1;
     
-    static constexpr size_t Count = 2;
+    static constexpr Color Count = 2;
 };
 
 template<class T>
@@ -90,7 +90,7 @@ public:
     static constexpr Piece NextColor = 1;
     static constexpr Piece NextPiece = 1 << 1;
     
-    static constexpr size_t Count = 16;
+    static constexpr Piece Count = 16;
     
 
 private:
@@ -175,7 +175,7 @@ public:
     static constexpr Position G8 = 62;
     static constexpr Position H8 = 63;
 
-    static constexpr int Count = 64;
+    static constexpr Position Count = 64;
 
     static constexpr std::array<Position, Count> All =
     {
@@ -254,6 +254,8 @@ public:
     static constexpr File F = 5;
     static constexpr File G = 6;
     static constexpr File H = 7;
+
+    static constexpr File Count = 8;
 
     static constexpr File Get(const Position position)
     {

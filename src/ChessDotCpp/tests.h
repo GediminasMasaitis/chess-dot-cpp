@@ -4,6 +4,7 @@
 #include "board.h"
 #include "common.h"
 #include "fen.h"
+#include "magics.h"
 #include "see.h"
 
 class Tests
@@ -18,6 +19,16 @@ public:
 		const Move move = board.FromPositionString("f3e4");
 		const Score see = See::GetSee(board, move);
 		std::cout << see << std::endl;
+	}
+
+	static void TestMagics()
+	{
+		Fen fen = "3k4/8/4p1p1/8/4Q3/5N2/8/3K4 w - - 0 1";
+		Board board{};
+		Fens::Parse(board, fen);
+
+		const Bitboard attacks = SlideMoveGenerator::AllSlide(board.AllPieces, Positions::E4);
+		std::cout << attacks << std::endl;
 	}
 
 	static size_t RunWithTiming(const std::function<void()>& function, const size_t times)

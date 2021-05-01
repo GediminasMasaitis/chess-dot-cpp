@@ -19,17 +19,17 @@ public:
         //auto rng = std::mt19937_64(0);
         auto rng = PRNG();
 
-        for (auto i = 0; i < Positions::Count; i++)
+        for (Position position = 0; position < Positions::Count; position++)
         {
-            for (auto j = 0; j < Pieces::Count; j++)
+            for (Piece piece = 0; piece < Pieces::Count; piece++)
             {
-                ZPieces[i][j] = static_cast<ZobristKey>(rng.rand64());
+                ZPieces[position][piece] = static_cast<ZobristKey>(rng.rand64());
             }
         }
 
-        for (auto i = 0; i < 8; i++)
+        for (File file = 0; file < Files::Count; file++)
         {
-            ZEnPassant[i] = static_cast<ZobristKey>(rng.rand64());
+            ZEnPassant[file] = static_cast<ZobristKey>(rng.rand64());
         }
 
         constexpr auto castleLength = CastlingPermissions::All + 1;

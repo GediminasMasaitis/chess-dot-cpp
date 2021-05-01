@@ -52,16 +52,6 @@ public:
         }
         
         Out(builder.str());
-
-        auto pv2 = std::vector<Move>();
-        search.State.Global.Table.GetPrincipalVariation(board, pv2);
-    	
-        //if (principalVariation.empty())
-        //{
-        //    auto a = 123;
-        //    //Debug::SaveTt(data.State);
-        //    //Throw();
-        //}
     }
 
     void HandleMoves(std::stringstream& reader)
@@ -137,10 +127,6 @@ public:
 
     void HandleGo(std::stringstream& reader)
     {
-        //search.State.Global.Table.Print();
-        
-        //Debug::StoreTt(search.State);
-        
         SearchParameters parameters = SearchParameters();
         while(!reader.eof())
         {
@@ -169,12 +155,12 @@ public:
             }
         }
         
-        const Move move = search.Run(board, parameters);
-        const Move move2 = search.State.Global.Table.SavedPrincipalVariation[0];
-        Out("bestmove " + move2.ToPositionString());
+        search.Run(board, parameters);
+        const Move move = search.State.Global.Table.SavedPrincipalVariation[0];
+        Out("bestmove " + move.ToPositionString());
     }
 
-    void HandleUci(std::stringstream& reader)
+    void HandleUci()
     {
         Out("id name ChessDotCpp");
         Out("id author Gediminas Masaitis");
@@ -182,15 +168,14 @@ public:
         Out("uciok");
     }
 
-    void HandleIsReady(std::stringstream& reader)
+    void HandleIsReady()
     {
         Out("readyok");
     }
 
-    void HandleUciNewGame(std::stringstream& reader)
+    void HandleUciNewGame()
     {
         search.State.NewGame();
-        //Debug::LoadTt("C:/Temp/tt/tt1619555771084.dat", search.State);
     }
 
     bool HandleInput(const std::string& line)
@@ -212,15 +197,15 @@ public:
             }
             else if(word == "uci")
             {
-                HandleUci(reader);
+                HandleUci();
             }
             else if(word == "ucinewgame")
             {
-                HandleUciNewGame(reader);
+                HandleUciNewGame();
             }
             else if(word == "isready")
             {
-                HandleIsReady(reader);
+                HandleIsReady();
             }
             else if(word == "quit")
             {
@@ -236,7 +221,7 @@ public:
         while (true)
         {
             std::string line = In();
-            bool shouldContinue = HandleInput(line);
+            const bool shouldContinue = HandleInput(line);
         	if(!shouldContinue)
         	{
                 break;
