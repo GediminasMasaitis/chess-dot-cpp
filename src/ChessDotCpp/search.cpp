@@ -218,16 +218,37 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
         const Score takesMaterial = EvaluationConstants::PieceValues[move.GetTakesPiece()];
         const Score opponentMaterial = board.PieceMaterial[board.ColorToMove ^ 1];
         const Score resultMaterial = opponentMaterial - takesMaterial;
-    	
+        
         // DELTA PRUNING
         if
         (
-            standPat + takesMaterial + 200 < alpha
+            !inCheck
+            && standPat + takesMaterial + 200 < alpha
             && resultMaterial > Constants::EndgameMaterial
             && move.GetPawnPromoteTo() == Pieces::Empty
         )
         {
             continue;
+        }
+
+        // SEE PRUNING
+        if
+        (
+            !inCheck
+            && move.GetPawnPromoteTo() == Pieces::Empty
+            &&
+            (
+                resultMaterial > Constants::EndgameMaterial
+                || move.GetTakesPiece() == Pieces::WhitePawn
+                || move.GetTakesPiece() == Pieces::BlackPawn
+            )
+        )
+        {
+            const Score seeScore = seeScores[moveIndex];
+            if (seeScore < 0) // TODO: -10?
+            {
+                continue;
+            }
         }
 
         board.DoMove(move);
@@ -391,6 +412,8 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     {
         futilityPruning = true;
     }
+
+    const bool improving = board.HistoryDepth < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation;
     
     const Bitboard pinned = pins[board.ColorToMove];
     
@@ -446,6 +469,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
             }
         }
 
+        // LATE MOVE REDUCTION
         Ply reduction = 0;
         if
         (
@@ -455,12 +479,15 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
             && !inCheck
             && move.Value != plyState.Killers[0].Value
             && move.Value != plyState.Killers[1].Value
+            //&& move.Value != countermove.Value
             && seeScore <= 0
             && move.GetPawnPromoteTo() == Pieces::Empty
         )
         {
-            reduction++;
-            if (movesEvaluated > 6)
+            const auto pvReductionIndex = isPrincipalVariation ? 1 : 0;
+            reduction = SearchData.Reductions[pvReductionIndex][depth][movesEvaluated];
+
+            if(!isPrincipalVariation && !improving && reduction > 1)
             {
                 reduction++;
             }

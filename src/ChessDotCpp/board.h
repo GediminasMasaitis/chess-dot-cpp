@@ -15,6 +15,7 @@ public:
 	Ply FiftyMoveRule;
 	ZobristKey Key;
 	ZobristKey PawnKey;
+	Score StaticEvaluation;
 };
 
 class Board
@@ -46,6 +47,7 @@ public:
 	EachColor<Position> KingPositions;
 	EachColor<Score> PawnMaterial;
 	EachColor<Score> PieceMaterial;
+	Score StaticEvaluation;
 
 	void SyncExtraBitBoards();
 	void DoMove(const Move move);

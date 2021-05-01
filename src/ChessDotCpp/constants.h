@@ -2,6 +2,7 @@
 
 #include <array>
 #include <vector>
+#include <cmath>
 
 #include "types.h"
 #include "bits.h"
@@ -21,6 +22,12 @@ public:
 private:
     Constants() = default;
 };
+
+template<class T>
+using EachDepth = std::array<T, Constants::MaxDepth>;
+
+template<class T>
+using EachMove = std::array<T, Constants::MaxMoves>;
 
 class CastlingPermissions
 {
@@ -48,7 +55,7 @@ public:
 };
 
 template<class T>
-using EachColor = std::array<T, 2>;
+using EachColor = std::array<T, Colors::Count>;
 
 class Pieces
 {
@@ -616,3 +623,38 @@ public:
 };
 
 static constexpr BetweenBitboardsClass BetweenBitboards = BetweenBitboardsClass();
+
+class SearchDataClass
+{
+public:
+    using ReductionsTableType = std::array<EachDepth<EachMove<Ply>>, 2>;
+
+    ReductionsTableType Reductions{};
+
+    SearchDataClass()
+    {
+        for(Ply depth = 0; depth < Constants::MaxDepth; depth++)
+        {
+            for(MoveCount movesEvaluated = 1; movesEvaluated < Constants::MaxMoves; movesEvaluated++)
+            {
+                constexpr double offset = 0.8;
+                constexpr double ratio = 0.45;
+                const double reduction = std::log(depth) * std::log(movesEvaluated) * ratio + offset;
+                if (reduction >= 1.5)
+                {
+                    Reductions[0][depth][movesEvaluated] = static_cast<Ply>(reduction);
+                }
+
+                constexpr double offsetPv = 0.5;
+                constexpr double ratioPv = 0.33;
+                const double reductionPv = std::log(depth) * std::log(movesEvaluated) * ratioPv + offsetPv;
+                if(reductionPv >= 1.5)
+                {
+                    Reductions[1][depth][movesEvaluated] = static_cast<Ply>(reductionPv);
+                }
+            }
+        }
+    }
+};
+
+static inline SearchDataClass SearchData = SearchDataClass();

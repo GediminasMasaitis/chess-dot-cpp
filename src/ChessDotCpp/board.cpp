@@ -31,6 +31,7 @@ void Board::DoMove(const Move move)
     History[HistoryDepth].EnPassantFileIndex = EnPassantFileIndex;
     History[HistoryDepth].EnPassantRankIndex = EnPassantRankIndex;
     History[HistoryDepth].FiftyMoveRule = FiftyMoveRuleIndex;
+    History[HistoryDepth].StaticEvaluation = StaticEvaluation;
     HistoryDepth++;
 
     const auto originalWhiteToMove = WhiteToMove;
@@ -208,6 +209,7 @@ void Board::UndoMove()
     Key = history.Key;
     PawnKey = history.PawnKey;
     FiftyMoveRuleIndex = history.FiftyMoveRule;
+    StaticEvaluation = history.StaticEvaluation;
 
     const Color originalColorToMove = ColorToMove;
     WhiteToMove = !WhiteToMove;
