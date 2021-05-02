@@ -176,6 +176,7 @@ public:
     void HandleUciNewGame()
     {
         search.State.NewGame();
+        Fens::Parse(board, startPos);
     }
 
     bool HandleInput(const std::string& line)

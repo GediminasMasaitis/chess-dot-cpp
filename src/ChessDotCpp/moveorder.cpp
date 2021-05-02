@@ -14,8 +14,8 @@ public:
             for (size_t j = 1; j < Pieces::Count; j++)
             {
                 MoveScore score = (pieceScores[j] * 10) + (6 - pieceScores[i]);
-                score *= 1000000;
-                score += 100000000;
+                score *= 10'000'000;
+                score += 500'000'000;
                 Values[i][j] = score;
             }
         }
@@ -29,7 +29,7 @@ MoveScore CalculateStaticMoveScore(const Move move, const Score seeScore, const 
     const bool isPrincipalVariation = move.Value == pvMove.Value;
     if (isPrincipalVariation)
     {
-        return 200'000'000;
+        return 1'000'000'000;
     }
 
     const Piece takes = move.GetTakesPiece();
@@ -44,24 +44,24 @@ MoveScore CalculateStaticMoveScore(const Move move, const Score seeScore, const 
     	{
             return mvvLvaScore / 2;
     	}
-        return mvvLvaScore - 200'000'000;
+        return mvvLvaScore - 2'000'000'000;
     }
     
     const PlyData& plyData = state.Thread[0].Plies[ply];
 
     if(move.Value == plyData.Killers[0].Value)
     {
-        return 9'000'000;
+        return 90'000'000;
     }
     
     if (move.Value == plyData.Killers[1].Value)
     {
-        return 8'000'000;
+        return 80'000'000;
     }
 
     if(move.Value == countermove.Value)
     {
-        return 6'000'000;
+        return 70'000'000;
     }
 
     return 0;

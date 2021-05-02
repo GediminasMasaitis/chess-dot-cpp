@@ -284,6 +284,18 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
     return alpha;
 }
 
+void UpdateHistory(MoveScore& score, const MoveScore value)
+{
+    const MoveScore absValue = std::abs(value);
+    if(absValue > 324)
+    {
+        return;
+    }
+
+    score -= (score * absValue) / 324;
+    score += value * 32;
+}
+
 Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed)
 {
     constexpr int threadId = 0;
@@ -346,6 +358,15 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
                 probedScore += ply;
             }
 
+            if (principalVariationMove.GetTakesPiece() == Pieces::Empty)
+            {
+                UpdateHistory(threadState.History[principalVariationMove.GetColorToMove()][principalVariationMove.GetFrom()][principalVariationMove.GetTo()], bonus);
+            }
+            else
+            {
+                UpdateHistory(threadState.CaptureHistory[principalVariationMove.GetPiece()][principalVariationMove.GetTo()][principalVariationMove.GetTakesPiece()], bonus);
+            }
+            
             return probedScore;
         }
     }
@@ -443,7 +464,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     {
         MoveOrdering::OrderNextMove(State, moveIndex, moves, seeScores, staticMoveScores, moveCount);
         const Move move = moves[moveIndex];
-                const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
+        const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
         if(!valid)
         {
             continue;
@@ -492,6 +513,29 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
             {
                 reduction++;
             }
+
+            if
+            (
+                reduction > 0
+                &&
+                (
+                    threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()] > 0
+                    || threadState.CaptureHistory[move.GetPiece()][move.GetTo()][move.GetTakesPiece()] > 0
+                )
+            )
+            {
+                reduction--;
+            }
+
+
+        	if
+        	(
+                !isPrincipalVariation
+                && threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()] < 0
+            )
+        	{
+                reduction++;
+        	}
         }
         
         Score childScore;
@@ -541,14 +585,28 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
 
     if (raisedAlpha)
     {
+        for(MoveCount failedMoveIndex = 0; failedMoveIndex < failedMoveCount; failedMoveIndex++)
+        {
+            const Move failedMove = failedMoves[failedMoveIndex];
+            if(failedMove.GetTakesPiece() == Pieces::Empty)
+            {
+                UpdateHistory(threadState.History[failedMove.GetColorToMove()][failedMove.GetFrom()][failedMove.GetTo()], -bonus);
+            }
+            else
+            {
+                UpdateHistory(threadState.CaptureHistory[failedMove.GetPiece()][failedMove.GetTo()][failedMove.GetTakesPiece()], -bonus);
+            }
+        }
+        
         if(bestMove.GetTakesPiece() == Pieces::Empty)
         {
-            threadState.History[bestMove.GetColorToMove()][bestMove.GetFrom()][bestMove.GetTo()] += bonus;
+            UpdateHistory(threadState.History[bestMove.GetColorToMove()][bestMove.GetFrom()][bestMove.GetTo()], bonus);
         }
         else
         {
-            threadState.CaptureHistory[bestMove.GetPiece()][bestMove.GetTo()][bestMove.GetTakesPiece()] += bonus;
+            UpdateHistory(threadState.CaptureHistory[bestMove.GetPiece()][bestMove.GetTo()][bestMove.GetTakesPiece()], bonus);
         }
+        
         if (betaCutoff)
         {
             if (bestMove.GetTakesPiece() == Pieces::Empty)
