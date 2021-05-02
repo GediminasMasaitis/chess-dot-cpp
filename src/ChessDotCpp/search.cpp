@@ -299,7 +299,7 @@ void UpdateHistory(MoveScore& score, const MoveScore value)
 Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed)
 {
     constexpr int threadId = 0;
-    ThreadData& threadState = State.Thread[threadId];
+    ThreadState& threadState = State.Thread[threadId];
     PlyData& plyState = threadState.Plies[ply];
     const bool rootNode = ply == 0;
     

@@ -79,7 +79,7 @@ void MoveOrdering::CalculateStaticScores(const SearchState& state, const MoveArr
 
 void MoveOrdering::OrderNextMove(const SearchState& state, const MoveCount currentIndex, MoveArray& moves, ScoreArray& seeScores, MoveScoreArray& staticScores, const MoveCount moveCount)
 {
-    const ThreadData& threadState = state.Thread[0];
+    const ThreadState& threadState = state.Thread[0];
     
     MoveScore bestScore = std::numeric_limits<MoveScore>::min();
     MoveCount bestScoreIndex = 0;
