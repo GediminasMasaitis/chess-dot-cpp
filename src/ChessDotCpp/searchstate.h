@@ -19,7 +19,7 @@ public:
 
 using PlyDataArray = std::array<PlyData, Constants::MaxDepth>;
 
-class ThreadData
+class ThreadState
 {
 public:
     PlyDataArray Plies;
@@ -36,9 +36,42 @@ public:
             Plies[i].NewSearch();
         }
 
-        for(Color color = 0; color < Colors::Count; color++)
+        for (Color color = 0; color < Colors::Count; color++)
         {
-            for(Position from = 0; from < Positions::Count; from++)
+            for (Position from = 0; from < Positions::Count; from++)
+            {
+                for (Position to = 0; to < Positions::Count; to++)
+                {
+                    History[color][from][to] >>= 3;
+                }
+            }
+        }
+
+        for (Piece piece = 0; piece < Pieces::Count; piece++)
+        {
+            for (Position to = 0; to < Positions::Count; to++)
+            {
+                for (Piece takesPiece = 0; takesPiece < Pieces::Count; takesPiece++)
+                {
+                    CaptureHistory[piece][to][takesPiece] >>= 3;
+                }
+            }
+        }
+
+        for(Piece piece = 0; piece < Pieces::Count; piece++)
+        {
+            for (Position to = 0; to < Positions::Count; to++)
+            {
+                Countermoves[piece][to].Value = 0;
+            }
+        }
+    }
+
+    void NewGame()
+    {
+        for (Color color = 0; color < Colors::Count; color++)
+        {
+            for (Position from = 0; from < Positions::Count; from++)
             {
                 for (Position to = 0; to < Positions::Count; to++)
                 {
@@ -57,17 +90,9 @@ public:
                 }
             }
         }
-
-    	for(Piece piece = 0; piece < Pieces::Count; piece++)
-    	{
-            for (Position to = 0; to < Positions::Count; to++)
-            {
-                Countermoves[piece][to].Value = 0;
-            }
-    	}
     }
 };
-using ThreadVector = std::vector<ThreadData>;
+using ThreadVector = std::vector<ThreadState>;
 
 class SearchStats
 {
@@ -107,6 +132,11 @@ public:
 
     void NewGame()
     {
+        for(ThreadState& threadState : Thread)
+        {
+            threadState.NewGame();
+        }
+    	
         Global.Table.SetSize(16 * 1024 * 1024);
         Global.Table.Clear();
 
