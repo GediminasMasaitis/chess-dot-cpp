@@ -67,11 +67,10 @@
 //    return false;
 //}
 
-bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, Move& bestMove, Score& score, bool& entryExists)
+bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, TranspositionTableEntry& entry, Score& score, bool& entryExists)
 {
     score = 0;
     entryExists = false;
-    TranspositionTableEntry entry;
     ZobristKey entryKey;
 
     const bool found = State.Global.Table.TryProbe(key, &entry, &entryKey);
@@ -88,7 +87,6 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
     }
 
     entryExists = true;
-    bestMove = entry.MMove;
 
     if (entry.Depth < depth)
     {
@@ -128,7 +126,7 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
 
 void Search::StoreTranspositionTable(const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag)
 {
-    if (State.Stopper.Stopped)
+    if (Stopper.Stopped)
     {
         return;
     }
@@ -207,7 +205,7 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
     uint8_t movesEvaluated = 0;
     for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
     {
-        MoveOrdering::OrderNextMove(State, moveIndex, moves, seeScores, staticMoveScores, moveCount);
+        MoveOrdering::OrderNextMove(State, ply, moveIndex, moves, seeScores, staticMoveScores, moveCount);
         const Move move = moves[moveIndex];
         
         const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
@@ -303,7 +301,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     PlyData& plyState = threadState.Plies[ply];
     const bool rootNode = ply == 0;
     
-    if (depth > 2 && State.Stopper.ShouldStop())
+    if (depth > 2 && Stopper.ShouldStop())
     {
         const Score score = Contempt(board);
         return score;
@@ -341,10 +339,11 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     MoveScore bonus = depth * depth + depth - 1;
 
     // PROBE TRANSPOSITION TABLE
-    Move principalVariationMove = Move(0);
+    TranspositionTableEntry entry;
     bool hashEntryExists = true;
     Score probedScore;
-    const bool probeSuccess = TryProbeTranspositionTable(board.Key, depth, alpha, beta, principalVariationMove, probedScore, hashEntryExists);
+    const bool probeSuccess = TryProbeTranspositionTable(board.Key, depth, alpha, beta, entry, probedScore, hashEntryExists);
+    const Move principalVariationMove = hashEntryExists ? entry.MMove : Move(0);
     if (probeSuccess)
     {
         if (!isPrincipalVariation || (probedScore > alpha && probedScore < beta))
@@ -462,13 +461,46 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     MoveCount failedMoveCount = 0;
     for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
     {
-        MoveOrdering::OrderNextMove(State, moveIndex, moves, seeScores, staticMoveScores, moveCount);
+        MoveOrdering::OrderNextMove(State, ply, moveIndex, moves, seeScores, staticMoveScores, moveCount);
         const Move move = moves[moveIndex];
+
+        /*if(move.Value == threadState.SingularMove.Value)
+        {
+            continue;
+        }*/
+        
         const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
         if(!valid)
         {
             continue;
         }
+
+        Ply extension = 0;
+        //if
+        //(
+        //    !rootNode
+        //    && depth >= 6
+        //    //&& nullMoveAllowed
+        //    && threadState.SingularMove.Value == 0
+        //    && move.Value == principalVariationMove.Value
+        //    && entry.Flag == TranspositionTableFlags::Beta
+        //    && entry.Depth >= depth - 3
+        //    && std::abs(entry.SScore) < Constants::MateThreshold
+        //)
+        //{
+        //    const Score singularBeta = entry.SScore - 10 * depth;
+        //    const Score singularAlpha = singularBeta - 1;
+        //    const Ply singularDepth = depth / 2;
+        //    
+        //    threadState.SingularMove = move;
+        //    const Score singularScore = AlphaBeta(board, singularDepth, ply, singularAlpha, singularBeta, false, true);
+        //    threadState.SingularMove = Move(0);
+
+        //    if(singularScore < singularBeta)
+        //    {
+        //        extension++;
+        //    }
+        //}
 
         const Score seeScore = seeScores[moveIndex];
         board.DoMove(move);
@@ -528,33 +560,33 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
             }
 
 
-        	if
-        	(
+            if
+            (
                 !isPrincipalVariation
                 && threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()] < 0
             )
-        	{
+            {
                 reduction++;
-        	}
+            }
         }
         
         Score childScore;
         if(raisedAlpha)
         {
-            childScore = -AlphaBeta(board, depth - reduction - 1, ply + 1, -alpha - 1, -alpha, false, true);
+            childScore = -AlphaBeta(board, depth + extension- reduction - 1, ply + 1, -alpha - 1, -alpha, false, true);
             if(childScore > alpha)
             {
-                childScore = -AlphaBeta(board, depth - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
+                childScore = -AlphaBeta(board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
             }
         }
         else
         {
-            childScore = -AlphaBeta(board, depth - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
+            childScore = -AlphaBeta(board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
         }
 
         if (reduction > 0 && childScore > alpha)
         {
-            childScore = -AlphaBeta(board, depth - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
+            childScore = -AlphaBeta(board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
         }
         
         board.UndoMove();
@@ -570,6 +602,11 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
                 alpha = childScore;
                 raisedAlpha = true;
 
+                if(rootNode)
+                {
+                    threadState.BestMoveChanges++;
+                }
+                
                 if(childScore >= beta)
                 {
                     betaCutoff = true;
@@ -616,7 +653,11 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
                 threadState.Countermoves[previousMove.GetPiece()][previousMove.GetTo()] = bestMove;
             }
 
-            StoreTranspositionTable(board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Beta);
+            //if (threadState.SingularMove.Value == 0)
+            {
+                StoreTranspositionTable(board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Beta);
+            }
+            
             return beta;
         }
     }
@@ -631,13 +672,16 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
         return Contempt(board);
     }
 
-    if(raisedAlpha)
+    //if (threadState.SingularMove.Value == 0)
     {
-        StoreTranspositionTable(board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Exact);
-    }
-    else
-    {
-        StoreTranspositionTable(board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Alpha);
+        if (raisedAlpha)
+        {
+            StoreTranspositionTable(board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Exact);
+        }
+        else
+        {
+            StoreTranspositionTable(board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Alpha);
+        }
     }
     
     return alpha;
@@ -655,6 +699,7 @@ Score Search::Aspiration(Board& board, const Ply depth, const Score previous)
     //}
 
     (void)previous;
+    State.Thread[0].BestMoveChanges = 0;
     const Score fullSearchScore = AlphaBeta(board, depth, 0, -Constants::Inf, Constants::Inf, true, true);
     return fullSearchScore;
 }
@@ -663,11 +708,12 @@ Move Search::IterativeDeepen(Board& board)
 {
     Score score = AlphaBeta(board, 1, 0, -Constants::Inf, Constants::Inf, true, true);
     State.Global.Table.SavePrincipalVariation(board);
+    State.Stats.Elapsed = Stopper.GetElapsed();
     SearchCallbackData callbackData(board, State, 1, score);
     
     Callback(callbackData);
 
-    if (State.Stopper.ShouldStopDepthIncrease())
+    if (Stopper.ShouldStopDepthIncrease(State))
     {
         return State.Global.Table.SavedPrincipalVariation[0];
     }
@@ -677,8 +723,17 @@ Move Search::IterativeDeepen(Board& board)
         score = Aspiration(board, depth, score);
         callbackData.Depth = depth;
         callbackData._Score = score;
-
-        if(State.Stopper.ShouldStopDepthIncrease())
+        const bool pvMoveChanged = State.Global.Table.IsRootMoveChanged(board);
+    	if(pvMoveChanged)
+    	{
+            State.Thread[0].IterationsSincePvChange = 0;
+    	}
+        else
+        {
+            State.Thread[0].IterationsSincePvChange++;
+        }
+        State.Stats.Elapsed = Stopper.GetElapsed();
+        if(Stopper.ShouldStopDepthIncrease(State))
         {
             break;
         }
@@ -692,7 +747,8 @@ Move Search::IterativeDeepen(Board& board)
 
 Move Search::Run(Board& board, const SearchParameters& parameters)
 {
-    State.Stopper.Init(parameters, board.WhiteToMove);
+    Stopper.Init(parameters, board.WhiteToMove);
+    State.NewSearch();
     const auto move = IterativeDeepen(board);
     return move;
 }

@@ -978,3 +978,102 @@ Score of ChessDotCppDev vs wyldchess: 88 - 307 - 105  [0.281] 500
 ...      White vs Black: 222 - 173 - 105  [0.549] 500
 Elo difference: -163.2 +/- 29.2, LOS: 0.0 %, DrawRatio: 21.0 %
 ```
+
+Fixed "cheating" issue with remembered state:
+```
+Score of ChessDotCppDev vs mediocre: 230 - 145 - 125  [0.585] 500
+...      ChessDotCppDev playing White: 126 - 71 - 53  [0.610] 250
+...      ChessDotCppDev playing Black: 104 - 74 - 72  [0.560] 250
+...      White vs Black: 200 - 175 - 125  [0.525] 500
+Elo difference: 59.6 +/- 26.6, LOS: 100.0 %, DrawRatio: 25.0 %
+```
+
+### 1.27
+Make pawn control act the same for all pieces in eval
+
+```
+Score of ChessDotCppDev vs ChessDotCpp126: 158 - 133 - 209  [0.525] 500
+...      ChessDotCppDev playing White: 82 - 59 - 109  [0.546] 250
+...      ChessDotCppDev playing Black: 76 - 74 - 100  [0.504] 250
+...      White vs Black: 156 - 135 - 209  [0.521] 500
+Elo difference: 17.4 +/- 23.2, LOS: 92.9 %, DrawRatio: 41.8 %
+
+Score of ChessDotCppDev vs mediocre: 230 - 137 - 133  [0.593] 500
+...      ChessDotCppDev playing White: 134 - 51 - 65  [0.666] 250
+...      ChessDotCppDev playing Black: 96 - 86 - 68  [0.520] 250
+...      White vs Black: 220 - 147 - 133  [0.573] 500
+Elo difference: 65.4 +/- 26.4, LOS: 100.0 %, DrawRatio: 26.6 %
+```
+
+### 1.28
+Time control: reduce allocated time if PV move doesn't change on iterative deepening
+
+```
+Score of ChessDotCppDev vs ChessDotCpp126: 194 - 92 - 214  [0.602] 500
+...      ChessDotCppDev playing White: 116 - 42 - 92  [0.648] 250
+...      ChessDotCppDev playing Black: 78 - 50 - 122  [0.556] 250
+...      White vs Black: 166 - 120 - 214  [0.546] 500
+Elo difference: 71.9 +/- 23.1, LOS: 100.0 %, DrawRatio: 42.8 %
+
+Score of ChessDotCppDev vs mediocre: 249 - 107 - 144  [0.642] 500
+...      ChessDotCppDev playing White: 121 - 52 - 77  [0.638] 250
+...      ChessDotCppDev playing Black: 128 - 55 - 67  [0.646] 250
+...      White vs Black: 176 - 180 - 144  [0.496] 500
+Elo difference: 101.5 +/- 26.3, LOS: 100.0 %, DrawRatio: 28.8 %
+```
+
+On AVX2 build:
+```
+info depth 1 multipv 1 score cp 44 nodes 26 nps 26000 time 1 pv e2e4
+info depth 2 multipv 1 score cp 10 nodes 104 nps 104000 time 1 pv e2e4 e7e5
+info depth 3 multipv 1 score cp 32 nodes 705 nps 705000 time 1 pv e2e4 d7d5 d2d3
+info depth 4 multipv 1 score cp 8 nodes 3183 nps 3183000 time 1 pv d2d4 g8f6 e2e3 d7d5
+info depth 5 multipv 1 score cp 30 nodes 10300 nps 2575000 time 4 pv b1c3 e7e5 d2d4 b8c6 e2e3
+info depth 6 multipv 1 score cp 10 nodes 23258 nps 2584222 time 9 pv d2d4 g8f6 e2e3 e7e6 g1f3 d7d5
+info depth 7 multipv 1 score cp 21 nodes 43063 nps 2392388 time 18 pv d2d4 g8f6 e2e3 d7d5 g1f3 c8f5 f1b5 b8c6
+info depth 8 multipv 1 score cp 16 nodes 135115 nps 2329568 time 58 pv e2e4 d7d5 e4d5 d8d5 g1f3 c8f5 b1c3 d5d6
+info depth 9 multipv 1 score cp 22 nodes 268821 nps 2358078 time 114 pv e2e4 e7e6 d2d3 d7d5 g1f3 d5e4 d3e4 f8b4 c2c3 d8d1 e1d1
+info depth 10 multipv 1 score cp 24 nodes 415128 nps 2345355 time 177 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 b8c6 d1e2 c8e6 c1g5
+info depth 11 multipv 1 score cp 25 nodes 724065 nps 2291344 time 316 pv e2e4 e7e6 g1f3 d7d5 e4e5 c8d7 d2d4 f8b4 c2c3 b4a5 d1b3 a5b6
+info depth 12 multipv 1 score cp 29 nodes 1558506 nps 2333092 time 668 pv e2e4 e7e6 g1f3 d7d5 e4e5 f8b4 a2a3 b4e7 d2d4 e8f8 b1c3 c8d7
+info depth 13 multipv 1 score cp 22 nodes 3718051 nps 2233063 time 1665 pv e2e4 e7e5 f1c4 g8f6 b1c3 f8b4 g1f3 e8g8 e1g1 d7d6 d2d3 b4c3 b2c3
+info depth 14 multipv 1 score cp 11 nodes 6739971 nps 2177696 time 3095 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 d1e2 d8e7 d2d3 e4f6 e2e7 f8e7 b1c3
+info depth 15 multipv 1 score cp 28 nodes 10007168 nps 2151616 time 4651 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 d1e2 d8e7 d2d3 e4f6 b1c3 e7e2 f1e2 b8c6
+info depth 16 multipv 1 score cp 21 nodes 16749355 nps 2131774 time 7857 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 d2d4 d8e7 f1e2 b8c6 e1g1 c8f5 d4d5 c6e5
+info depth 17 multipv 1 score cp 21 nodes 31966613 nps 2126005 time 15036 pv e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5c6 d7c6 d2d3 c8g4 h2h3 g4f3 d1f3 d8f6 b1d2 e8c8 e1g1
+info depth 18 multipv 1 score cp 28 nodes 90771368 nps 2221575 time 40859 pv e2e4 e7e5 g1f3 b8c6 f1c4 g8f6 f3g5 d7d5 e4d5 f6d5 g5f7 e8f7 d1f3 f7e6 b1c3 c6b4 e1g1 d8f6 f3e4
+info depth 19 multipv 1 score cp 28 nodes 149312027 nps 2196508 time 67977 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 d1e2 d8e7 d2d3 e4f6 c1g5 c8e6 f3d4 b8c6 d4c6 b7c6 b1c3
+info depth 20 multipv 1 score cp 23 nodes 288935381 nps 2175275 time 132827 pv e2e4 e7e5 g1f3 b8c6 f1c4 f8c5 e1g1 g8f6 d2d3 e8g8 b1c3 d7d6 c3a4 c6a5 c4b5 c7c6 a4c5 c6b5 c5b3 a5b3
+```
+
+```
+Score of ChessDotCpp vs vice: 459 - 15 - 26  [0.944] 500
+...      ChessDotCpp playing White: 234 - 5 - 11  [0.958] 250
+...      ChessDotCpp playing Black: 225 - 10 - 15  [0.930] 250
+...      White vs Black: 244 - 230 - 26  [0.514] 500
+Elo difference: 490.7 +/- 59.3, LOS: 100.0 %, DrawRatio: 5.2 %
+
+Score of ChessDotCpp vs mediocre: 268 - 114 - 118  [0.654] 500
+...      ChessDotCpp playing White: 143 - 61 - 46  [0.664] 250
+...      ChessDotCpp playing Black: 125 - 53 - 72  [0.644] 250
+...      White vs Black: 196 - 186 - 118  [0.510] 500
+Elo difference: 110.6 +/- 27.6, LOS: 100.0 %, DrawRatio: 23.6 %
+
+Score of ChessDotCpp vs simplex: 325 - 94 - 81  [0.731] 500
+...      ChessDotCpp playing White: 185 - 31 - 34  [0.808] 250
+...      ChessDotCpp playing Black: 140 - 63 - 47  [0.654] 250
+...      White vs Black: 248 - 171 - 81  [0.577] 500
+Elo difference: 173.7 +/- 30.7, LOS: 100.0 %, DrawRatio: 16.2 %
+
+Score of ChessDotCpp vs cosette5: 222 - 165 - 113  [0.557] 500
+...      ChessDotCpp playing White: 116 - 74 - 60  [0.584] 250
+...      ChessDotCpp playing Black: 106 - 91 - 53  [0.530] 250
+...      White vs Black: 207 - 180 - 113  [0.527] 500
+Elo difference: 39.8 +/- 26.9, LOS: 99.8 %, DrawRatio: 22.6 %
+
+Score of ChessDotCpp vs wyldchess: 95 - 275 - 130  [0.320] 500
+...      ChessDotCpp playing White: 58 - 120 - 72  [0.376] 250
+...      ChessDotCpp playing Black: 37 - 155 - 58  [0.264] 250
+...      White vs Black: 213 - 157 - 130  [0.556] 500
+Elo difference: -130.9 +/- 27.4, LOS: 0.0 %, DrawRatio: 26.0 %
+```

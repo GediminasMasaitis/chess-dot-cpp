@@ -33,11 +33,11 @@ public:
         builder << " multipv 1";
         builder << " score cp " << std::to_string(data._Score);
         builder << " nodes " << std::to_string(data.State.Stats.Nodes);
-        auto elapsed = data.State.Stopper.GetElapsed();
-        if(elapsed == 0)
-        {
+        auto elapsed = data.State.Stats.Elapsed;
+    	if(elapsed == 0)
+    	{
             elapsed = 1;
-        }
+    	}
         auto nps = (data.State.Stats.Nodes * 1000) / elapsed;
         
         builder << " nps " << nps;

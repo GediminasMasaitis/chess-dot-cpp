@@ -254,14 +254,14 @@ public:
 
         const bool existingExact = existingEntry.Flag == TranspositionTableFlags::Exact;
         const bool newExact = flag == TranspositionTableFlags::Exact;
-    	
+        
         if (existingExact && !newExact)
         {
             return;
         }
 
-    	if(!existingExact && newExact)
-    	{
+        if(!existingExact && newExact)
+        {
             const TranspositionTableEntry entry = TranspositionTableEntry(key, move, depth, score, flag);
             _entries[index] = entry;
             return;
@@ -286,32 +286,45 @@ public:
         return exists;
     }
 
+    bool TryGetPvMove(const Board& board, Move& move) const
+    {
+        TranspositionTableEntry entry;
+        ZobristKey entryKey;
+        const bool success = TryProbe(board.Key, &entry, &entryKey);
+
+        if (!success)
+        {
+            return false;
+        }
+
+        if (board.Key != entryKey)
+        {
+            return false;
+        }
+
+        const TtFlag ttFlag = entry.Flag;
+        if (ttFlag != TranspositionTableFlags::Exact)
+        {
+            return false;
+        }
+
+        move = entry.MMove;
+        return true;
+    }
+    
     void GetPrincipalVariation(const Board& board, std::vector<Move>& principalVariation) const
     {
         Board clone = board;
         for (Ply i = 0; i < Constants::MaxDepth; i++)
         {
-            TranspositionTableEntry entry;
-            ZobristKey entryKey;
-            const bool success = TryProbe(clone.Key, &entry, &entryKey);
+            Move move = Move(0);
+            const bool success = TryGetPvMove(clone, move);
 
             if (!success)
             {
                 break;
             }
-
-            if (clone.Key != entryKey)
-            {
-                break;
-            }
-
-            const TtFlag ttFlag = entry.Flag;
-            if (ttFlag != TranspositionTableFlags::Exact)
-            {
-                break;
-            }
-
-            Move move = entry.MMove;
+            
             principalVariation.push_back(move);
             clone.DoMove(move);
         }
@@ -321,6 +334,25 @@ public:
     {
         SavedPrincipalVariation.clear();
         GetPrincipalVariation(board, SavedPrincipalVariation);
+    }
+
+    bool IsRootMoveChanged(const Board& board)
+    {
+        if(SavedPrincipalVariation.empty())
+        {
+            return true;
+        }
+    	
+        Move move = Move(0);
+        const bool success = TryGetPvMove(board, move);
+
+        if (!success)
+        {
+            return true;
+        }
+            	
+        const bool isChanged = SavedPrincipalVariation[0].Value != move.Value;
+        return isChanged;
     }
 
     void Print()

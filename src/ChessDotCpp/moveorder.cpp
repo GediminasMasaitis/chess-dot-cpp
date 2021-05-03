@@ -36,6 +36,7 @@ MoveScore CalculateStaticMoveScore(const Move move, const Score seeScore, const 
     if(takes != Pieces::Empty)
     {
         const MoveScore mvvLvaScore = MvvLva.Values[move.GetPiece()][move.GetTakesPiece()];
+        //return mvvLvaScore;
     	if(seeScore > 0)
     	{
             return mvvLvaScore;
@@ -47,14 +48,14 @@ MoveScore CalculateStaticMoveScore(const Move move, const Score seeScore, const 
         return mvvLvaScore - 2'000'000'000;
     }
     
-    const PlyData& plyData = state.Thread[0].Plies[ply];
+    const PlyData& plyState = state.Thread[0].Plies[ply];
 
-    if(move.Value == plyData.Killers[0].Value)
+    if(move.Value == plyState.Killers[0].Value)
     {
         return 90'000'000;
     }
     
-    if (move.Value == plyData.Killers[1].Value)
+    if (move.Value == plyState.Killers[1].Value)
     {
         return 80'000'000;
     }
@@ -77,7 +78,7 @@ void MoveOrdering::CalculateStaticScores(const SearchState& state, const MoveArr
     }
 }
 
-void MoveOrdering::OrderNextMove(const SearchState& state, const MoveCount currentIndex, MoveArray& moves, ScoreArray& seeScores, MoveScoreArray& staticScores, const MoveCount moveCount)
+void MoveOrdering::OrderNextMove(const SearchState& state, const Ply ply, const MoveCount currentIndex, MoveArray& moves, ScoreArray& seeScores, MoveScoreArray& staticScores, const MoveCount moveCount)
 {
     const ThreadState& threadState = state.Thread[0];
     
@@ -98,6 +99,14 @@ void MoveOrdering::OrderNextMove(const SearchState& state, const MoveCount curre
         {
             const MoveScore history = threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()];
             score = history;
+        	
+            /*const PlyData& plyState = state.Thread[0].Plies[ply];
+            const MoveScore continuation0 = plyState.CurrentContinuations[0]->Scores[move.GetPiece()][move.GetTo()];
+            const MoveScore continuation1 = plyState.CurrentContinuations[1]->Scores[move.GetPiece()][move.GetTo()];
+            const MoveScore continuation3 = plyState.CurrentContinuations[3]->Scores[move.GetPiece()][move.GetTo()];
+            const MoveScore continuation5 = plyState.CurrentContinuations[5]->Scores[move.GetPiece()][move.GetTo()];
+            score = history + 2*continuation0 + continuation1 + continuation3 + continuation5;*/
+        	
         }
     	
         if(score > bestScore)

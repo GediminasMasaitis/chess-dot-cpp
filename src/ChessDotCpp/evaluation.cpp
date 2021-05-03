@@ -238,12 +238,11 @@ void EvalKnight(const Board& board, EvaluationScores& scores, const Position pos
     const Bitboard jumps = BitboardJumps.KnightJumps[position];
     const Bitboard opponent = board.BitBoard[opp];
     const Bitboard emptyOrOpponent = (board.EmptySquares | opponent) & jumps;
-
-    const Bitboard bitboard = GetBitboard(position);
+    const Bitboard mobility = emptyOrOpponent & ~pawnControl[opp];
+    const Bitboard bitboard = GetBitboard(position);   
     if ((bitboard & pinned) == 0)
     {
-        const Bitboard uncontrolled = emptyOrOpponent & ~pawnControl[color ^ 1];
-        mob += PopCount(uncontrolled);
+        mob += PopCount(mobility);
     }
 
     const Bitboard emptyOrOpponentNearKing = emptyOrOpponent & BitboardJumps.KingExtendedJumps[opp][board.KingPositions[opp]];
@@ -289,16 +288,16 @@ void EvalBishop(const Board& board, EvaluationScores& scores, const Position pos
     *  Collect data about mobility and king attacks                           *
     **************************************************************************/
     const Bitboard slide = SlideMoveGenerator::DiagonalAntidiagonalSlide(board.AllPieces, position);
-    const Bitboard opponent = board.BitBoard[opp] & slide;
+    const Bitboard opponent = board.BitBoard[opp];
+    const Bitboard emptyOrOpponent = (board.EmptySquares | opponent) & slide;
+    const Bitboard mobility = emptyOrOpponent & ~pawnControl[opp];
     const Bitboard bitboard = GetBitboard(position);
     if ((bitboard & pinned) == 0)
     {
-        const Bitboard emptyUncontrolled = board.EmptySquares & ~pawnControl[opp] & slide;
-        mob += PopCount(emptyUncontrolled);
-        mob += PopCount(opponent);
+        mob += PopCount(mobility);
     }
-
-    const Bitboard emptyOrOpponentNearKing = (board.EmptySquares | opponent) & BitboardJumps.KingExtendedJumps[opp][board.KingPositions[opp]] & slide;
+    
+    const Bitboard emptyOrOpponentNearKing = emptyOrOpponent & BitboardJumps.KingExtendedJumps[opp][board.KingPositions[opp]];
     att += PopCount(emptyOrOpponentNearKing);
 
     scores.MidgameMobility[color] += 3 * (mob - 7);
@@ -318,7 +317,6 @@ void EvalBishop(const Board& board, EvaluationScores& scores, const Position pos
 template<Color TColor>
 void EvalRook(const Board& board, EvaluationScores& scores, const Position position, const EachColor<Bitboard>& pawnControl, const Bitboard pinned)
 {
-    (void)pawnControl; // Unused for now
     constexpr Color color = TColor;
     constexpr Color opp = color ^ 1;
     
@@ -371,10 +369,11 @@ void EvalRook(const Board& board, EvaluationScores& scores, const Position posit
     const Bitboard slide = SlideMoveGenerator::HorizontalVerticalSlide(board.AllPieces, position);
     const Bitboard opponent = board.BitBoard[opp];
     const Bitboard emptyOrOpponent = (board.EmptySquares | opponent) & slide;
+    const Bitboard mobility = emptyOrOpponent & ~pawnControl[opp];
     const Bitboard bitboard = GetBitboard(position);
     if ((bitboard & pinned) == 0)
     {
-        mob += PopCount(emptyOrOpponent);
+        mob += PopCount(mobility);
     }
 
     const Bitboard emptyOrOpponentNearKing = emptyOrOpponent & BitboardJumps.KingExtendedJumps[opp][board.KingPositions[opp]];
@@ -397,7 +396,6 @@ void EvalRook(const Board& board, EvaluationScores& scores, const Position posit
 template<Color TColor>
 void EvalQueen(const Board& board, EvaluationScores& scores, const Position position, const EachColor<Bitboard>& pawnControl, const Bitboard pinned)
 {
-    (void)pawnControl; // Unused for now
     constexpr Color color = TColor;
     constexpr Color opp = color ^ 1;
     
@@ -432,10 +430,11 @@ void EvalQueen(const Board& board, EvaluationScores& scores, const Position posi
     const Bitboard slide = SlideMoveGenerator::AllSlide(board.AllPieces, position);
     const Bitboard opponent = board.BitBoard[opp];
     const Bitboard emptyOrOpponent = (board.EmptySquares | opponent) & slide;
+    const Bitboard mobility = emptyOrOpponent & ~pawnControl[opp];
     const Bitboard bitboard = GetBitboard(position);
     if ((bitboard & pinned) == 0)
     {
-        mob += PopCount(emptyOrOpponent);
+        mob += PopCount(mobility);
     }
 
     const Bitboard emptyOrOpponentNearKing = emptyOrOpponent & BitboardJumps.KingExtendedJumps[opp][board.KingPositions[opp]];

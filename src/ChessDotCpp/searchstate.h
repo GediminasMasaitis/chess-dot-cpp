@@ -1,22 +1,64 @@
 #pragma once
 #include "board.h"
 #include "evalstate.h"
-#include "stopper.h"
 #include "searchhash.h"
 
-using KillerArray = std::array<Move, 2>;
+//class ContinuationEntry
+//{
+//public:
+//    EachPiece<EachPosition<MoveScore>> Scores{};
+//
+//    void NewSearch()
+//    {
+//        for (Piece piece = 0; piece < Pieces::Count; piece++)
+//        {
+//            for (Position to = 0; to < Positions::Count; to++)
+//            {
+//                Scores[piece][to] >>= 3;
+//            }
+//        }
+//    }
+//
+//    void NewGame()
+//    {
+//        for (Piece piece = 0; piece < Pieces::Count; piece++)
+//        {
+//            for (Position to = 0; to < Positions::Count; to++)
+//            {
+//                Scores[piece][to] = 0;
+//            }
+//        }
+//    }
+//};
+//
+//static inline ContinuationEntry EmptyContinuation{};
+
 class PlyData
 {
 public:
+    constexpr static Ply MaxContinuationCount = 6;
+    
+    using KillerArray = std::array<Move, 2>;
+    //using CurrentContinuationsType = std::array<ContinuationEntry*, MaxContinuationCount>;
+    
     KillerArray Killers;
+    //CurrentContinuationsType CurrentContinuations;
+    
 
     void NewSearch()
+    {
+        //for(Ply i = 0; i < MaxContinuationCount; i++)
+        //{
+        //    CurrentContinuations[i] = &EmptyContinuation;
+        //}
+    }
+
+    void NewGame()
     {
         Killers[0].Value = 0;
         Killers[1].Value = 0;
     }
 };
-
 using PlyDataArray = std::array<PlyData, Constants::MaxDepth>;
 
 class ThreadState
@@ -26,7 +68,12 @@ public:
     
     EachColor<EachPosition<EachPosition<MoveScore>>> History;
     EachPiece<EachPosition<EachPiece<MoveScore>>> CaptureHistory;
+    //EachPiece<EachPosition<ContinuationEntry>> AllContinuations;
     EachPiece<EachPosition<Move>> Countermoves;
+    
+    Move SingularMove;
+    MoveCount BestMoveChanges;
+    Ply IterationsSincePvChange;
     
 
     void NewSearch()
@@ -42,7 +89,7 @@ public:
             {
                 for (Position to = 0; to < Positions::Count; to++)
                 {
-                    History[color][from][to] >>= 3;
+                    History[color][from][to] /= 8;
                 }
             }
         }
@@ -53,22 +100,31 @@ public:
             {
                 for (Piece takesPiece = 0; takesPiece < Pieces::Count; takesPiece++)
                 {
-                    CaptureHistory[piece][to][takesPiece] >>= 3;
+                    CaptureHistory[piece][to][takesPiece] /= 8;
                 }
             }
         }
 
-        for(Piece piece = 0; piece < Pieces::Count; piece++)
-        {
-            for (Position to = 0; to < Positions::Count; to++)
-            {
-                Countermoves[piece][to].Value = 0;
-            }
-        }
+        //for (Piece piece = 0; piece < Pieces::Count; piece++)
+        //{
+        //    for (Position to = 0; to < Positions::Count; to++)
+        //    {
+        //        AllContinuations[piece][to].NewSearch();
+        //    }
+        //}
+
+        SingularMove = Move(0);
+        BestMoveChanges = 0;
+        IterationsSincePvChange = 0;
     }
 
     void NewGame()
     {
+        for (Ply i = 0; i < Constants::MaxDepth; i++)
+        {
+            Plies[i].NewGame();
+        }
+        
         for (Color color = 0; color < Colors::Count; color++)
         {
             for (Position from = 0; from < Positions::Count; from++)
@@ -90,6 +146,15 @@ public:
                 }
             }
         }
+
+        for (Piece piece = 0; piece < Pieces::Count; piece++)
+        {
+            for (Position to = 0; to < Positions::Count; to++)
+            {
+                Countermoves[piece][to].Value = 0;
+                //AllContinuations[piece][to].NewGame();
+            }
+        }
     }
 };
 using ThreadVector = std::vector<ThreadState>;
@@ -100,6 +165,7 @@ public:
     //static constexpr bool Enable = true;
 
     Stat Nodes = 0;
+    size_t Elapsed = 0;
     
     Stat HashMiss = 0;
     Stat HashCollision = 0;
@@ -120,14 +186,12 @@ public:
     ThreadVector Thread;
     GlobalData Global;
     SearchStats Stats;
-    SearchStopper Stopper;
 
     SearchState()
     {
         Thread = ThreadVector(1);
         Global = GlobalData();
         Stats = SearchStats();
-        Stopper = SearchStopper();
     }
 
     void NewGame()
@@ -136,7 +200,7 @@ public:
         {
             threadState.NewGame();
         }
-    	
+        
         Global.Table.SetSize(16 * 1024 * 1024);
         Global.Table.Clear();
 
@@ -149,7 +213,10 @@ public:
 
     void NewSearch()
     {
-
+        for (ThreadState& threadState : Thread)
+        {
+            threadState.NewSearch();
+        }
     }
 
     //SearchState& operator=(const SearchState&) = default;
