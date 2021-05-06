@@ -178,6 +178,7 @@ class GlobalData
 public:
     TranspositionTable Table{};
     EvalState Eval{};
+    Color ColorToMove;
 };
 
 class SearchState
@@ -211,12 +212,14 @@ public:
         Global.Eval.PawnTable.Clear();
     }
 
-    void NewSearch()
+    void NewSearch(const Board& board)
     {
         for (ThreadState& threadState : Thread)
         {
             threadState.NewSearch();
         }
+
+        Global.ColorToMove = board.ColorToMove;
     }
 
     //SearchState& operator=(const SearchState&) = default;

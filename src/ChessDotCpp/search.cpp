@@ -136,6 +136,24 @@ void Search::StoreTranspositionTable(const ZobristKey key, const Move move, cons
 
 Score Search::Contempt(const Board& board) const
 {
+    //constexpr Score midgame = -15;
+    //
+    //if (board.PieceMaterial[board.ColorToMove] < Constants::EndgameMaterial)
+    //{
+    //    return 0;
+    //}
+    
+    //Score score;
+    //if (board.ColorToMove == State.Global.ColorToMove)
+    //{
+    //    score = midgame;
+    //}
+    //else
+    //{
+    //    score = -midgame;
+    //}   
+    //return score;
+
     (void)board;
     return 0;
 }
@@ -318,6 +336,26 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
         }
     }
 
+    // MATE DISTANCE PRUNE
+    const Score currentMateScore = Constants::Mate - ply;
+    if (!rootNode)
+    {
+        if (alpha < -currentMateScore)
+        {
+            alpha = -currentMateScore;
+        }
+
+        if (beta > currentMateScore - 1)
+        {
+            beta = currentMateScore - 1;
+        }
+
+        if (alpha >= beta)
+        {
+            return alpha;
+        }
+    }
+
     // IN CHECK EXTENSION
     const Bitboard checkers = AttacksGenerator::GetCheckers(board);
     const bool inCheck = checkers != BitboardConstants::Empty;
@@ -369,8 +407,6 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
             return probedScore;
         }
     }
-    
-    const Score currentMateScore = Constants::Mate - ply;
 
     // STATIC EVALUATION PRUNING
     EachColor<Bitboard> pins;
@@ -724,10 +760,10 @@ Move Search::IterativeDeepen(Board& board)
         callbackData.Depth = depth;
         callbackData._Score = score;
         const bool pvMoveChanged = State.Global.Table.IsRootMoveChanged(board);
-    	if(pvMoveChanged)
-    	{
+        if(pvMoveChanged)
+        {
             State.Thread[0].IterationsSincePvChange = 0;
-    	}
+        }
         else
         {
             State.Thread[0].IterationsSincePvChange++;
@@ -748,7 +784,7 @@ Move Search::IterativeDeepen(Board& board)
 Move Search::Run(Board& board, const SearchParameters& parameters)
 {
     Stopper.Init(parameters, board.WhiteToMove);
-    State.NewSearch();
+    State.NewSearch(board);
     const auto move = IterativeDeepen(board);
     return move;
 }
