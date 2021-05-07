@@ -34,17 +34,17 @@ public:
         builder << " score cp " << std::to_string(data._Score);
         builder << " nodes " << std::to_string(data.State.Stats.Nodes);
         auto elapsed = data.State.Stats.Elapsed;
-    	if(elapsed == 0)
-    	{
+        if(elapsed == 0)
+        {
             elapsed = 1;
-    	}
+        }
         auto nps = (data.State.Stats.Nodes * 1000) / elapsed;
         
         builder << " nps " << nps;
         builder << " time " << elapsed;
 
         builder << " pv";
-        std::vector<Move>& principalVariation = data.State.Global.Table.SavedPrincipalVariation;
+        std::vector<Move>& principalVariation = data.State.Thread[data.Id].SavedPrincipalVariation;
         for (size_t ply = 0; ply < principalVariation.size(); ply++)
         {
             const auto& entry = principalVariation[ply];
@@ -84,17 +84,17 @@ public:
     {
         std::stringstream fenBuilder;
         bool hasMoves = false;
-    	while(!reader.eof())
-    	{
+        while(!reader.eof())
+        {
             std::string fenPart;
             reader >> fenPart;
-    		if(fenPart == "moves")
-    		{
+            if(fenPart == "moves")
+            {
                 hasMoves = true;
                 break;
-    		}
+            }
             fenBuilder << fenPart << " ";
-    	}
+        }
         
         std::string fen = fenBuilder.str();
         Fens::Parse(board, fen);
@@ -156,7 +156,7 @@ public:
         }
         
         search.Run(board, parameters);
-        const Move move = search.State.Global.Table.SavedPrincipalVariation[0];
+        const Move move = search.State.Thread[0].SavedPrincipalVariation[0];
         Out("bestmove " + move.ToPositionString());
     }
 
@@ -213,20 +213,27 @@ public:
                 return false;
             }
         }
-    	
+        
         return true;
+    }
+
+    void Init()
+    {
+        search.State.NewGame();
+        Fens::Parse(board, startPos);
     }
     
     void Run()
     {
+        Init();
         while (true)
         {
             std::string line = In();
             const bool shouldContinue = HandleInput(line);
-        	if(!shouldContinue)
-        	{
+            if(!shouldContinue)
+            {
                 break;
-        	}
+            }
         }
     }
 };

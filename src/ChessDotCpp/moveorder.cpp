@@ -24,7 +24,7 @@ public:
 
 constexpr MvvLvaClass MvvLva = MvvLvaClass();
 
-MoveScore CalculateStaticMoveScore(const Move move, const Score seeScore, const SearchState& state, const Ply ply, const Move pvMove, const Move countermove)
+MoveScore CalculateStaticMoveScore(const ThreadId threadId, const Move move, const Score seeScore, const SearchState& state, const Ply ply, const Move pvMove, const Move countermove)
 {
     const bool isPrincipalVariation = move.Value == pvMove.Value;
     if (isPrincipalVariation)
@@ -47,8 +47,9 @@ MoveScore CalculateStaticMoveScore(const Move move, const Score seeScore, const 
     	}
         return mvvLvaScore - 2'000'000'000;
     }
-    
-    const PlyData& plyState = state.Thread[0].Plies[ply];
+
+    const ThreadState& threadState = state.Thread[threadId];
+    const PlyData& plyState = threadState.Plies[ply];
 
     if(move.Value == plyState.Killers[0].Value)
     {
@@ -68,19 +69,19 @@ MoveScore CalculateStaticMoveScore(const Move move, const Score seeScore, const 
     return 0;
 }
 
-void MoveOrdering::CalculateStaticScores(const SearchState& state, const MoveArray& moves, const ScoreArray& seeScores, const MoveCount moveCount, const Ply ply, const Move pvMove, const Move countermove, MoveScoreArray& staticScores)
+void MoveOrdering::CalculateStaticScores(const ThreadId threadId, const SearchState& state, const MoveArray& moves, const ScoreArray& seeScores, const MoveCount moveCount, const Ply ply, const Move pvMove, const Move countermove, MoveScoreArray& staticScores)
 {
     for (MoveCount i = 0; i < moveCount; i++)
     {
         const Score seeScore = seeScores[i];
-        const MoveScore score = CalculateStaticMoveScore(moves[i], seeScore, state, ply, pvMove, countermove);
+        const MoveScore score = CalculateStaticMoveScore(threadId, moves[i], seeScore, state, ply, pvMove, countermove);
         staticScores[i] = score;
     }
 }
 
-void MoveOrdering::OrderNextMove(const SearchState& state, const Ply ply, const MoveCount currentIndex, MoveArray& moves, ScoreArray& seeScores, MoveScoreArray& staticScores, const MoveCount moveCount)
+void MoveOrdering::OrderNextMove(const ThreadId threadId, const SearchState& state, const Ply ply, const MoveCount currentIndex, MoveArray& moves, ScoreArray& seeScores, MoveScoreArray& staticScores, const MoveCount moveCount)
 {
-    const ThreadState& threadState = state.Thread[0];
+    const ThreadState& threadState = state.Thread[threadId];
     
     MoveScore bestScore = std::numeric_limits<MoveScore>::min();
     MoveCount bestScoreIndex = 0;

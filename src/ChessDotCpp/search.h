@@ -8,13 +8,14 @@
 class SearchCallbackData
 {
 public:
+    ThreadId Id;
     Board& Board;
     SearchState& State;
     Ply Depth;
     Score _Score;
 
-    SearchCallbackData(::Board& board, SearchState& data, Ply depth, Score score)
-        : Board(board),
+    SearchCallbackData(ThreadId threadId, ::Board& board, SearchState& data, Ply depth, Score score)
+        : Id(threadId), Board(board),
           State(data),
           Depth(depth),
           _Score(score)
@@ -29,26 +30,27 @@ class Search
 {
 private:
     SearchCallback Callback;
-    Move IterativeDeepen(Board& board);
+    void IterativeDeepen(const ThreadId threadId, Board& board);
+    void IterativeDeepenLazySmp(Board& board);
 
 public:
-    SearchState State;
-    SearchStopper Stopper;
+    SearchState State{};
+    SearchStopper Stopper{};
 
     bool TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, TranspositionTableEntry& entry, Score& score, bool& entryExists);
-    void StoreTranspositionTable(const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag);
+    void StoreTranspositionTable(const ThreadState& threadState, const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag);
     Score Contempt(const Board& board) const;
     bool IsRepetitionOr50Move(const Board& board) const;
-    Score Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score beta);
-    Score AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed);
-    Score Aspiration(Board& board, const Ply depth, const Score previous);
-    Move Run(Board& board, const SearchParameters& parameters);
+    Score Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply ply, Score alpha, Score beta);
+    Score AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed);
+    Score Aspiration(const ThreadId threadId, Board& board, const Ply depth, const Score previous);
+    void RunSingleThread(Board& board);
+    void RunMultiThread(Board& board);
+    void Run(Board& board, const SearchParameters& parameters);
 
 
     explicit Search(const SearchCallback& callback)
         : Callback(callback)
     {
-        State = SearchState();
-        Stopper = SearchStopper();
     }
 };

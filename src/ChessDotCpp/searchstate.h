@@ -1,6 +1,7 @@
 #pragma once
 #include "board.h"
 #include "evalstate.h"
+#include "options.h"
 #include "searchhash.h"
 
 //class ContinuationEntry
@@ -70,6 +71,9 @@ public:
     EachPiece<EachPosition<EachPiece<MoveScore>>> CaptureHistory;
     //EachPiece<EachPosition<ContinuationEntry>> AllContinuations;
     EachPiece<EachPosition<Move>> Countermoves;
+
+    bool StopIteration;
+    std::vector<Move> SavedPrincipalVariation{};
     
     Move SingularMove;
     MoveCount BestMoveChanges;
@@ -112,7 +116,7 @@ public:
         //        AllContinuations[piece][to].NewSearch();
         //    }
         //}
-
+        
         SingularMove = Move(0);
         BestMoveChanges = 0;
         IterationsSincePvChange = 0;
@@ -172,54 +176,81 @@ public:
     Stat HashInsufficientDepth = 0;
 };
 
+class Breadcrumb
+{
+public:
+    std::atomic<ThreadId> TThreadId;
+    std::atomic<ZobristKey> Key;
+};
 
 class GlobalData
 {
 public:
+    constexpr static size_t BreadcrumbCount = 4096;
+    constexpr static size_t BreadcrumbMask = BreadcrumbCount - 1;
+    using BreadcrumbArray = std::array<Breadcrumb, BreadcrumbCount>;
+    
     TranspositionTable Table{};
     EvalState Eval{};
     Color ColorToMove;
+    BreadcrumbArray Breadcrumbs{};
+
+    GlobalData()
+    {
+        ColorToMove = Colors::White;
+    }
+	
+    void NewGame()
+    {
+        Table.SetSize(16 * 1024 * 1024);
+        Table.Clear();
+
+        Eval.EvalTable.SetSize(16 * 1024 * 1024);
+        Eval.EvalTable.Clear();
+
+        Eval.PawnTable.SetSize(16 * 1024 * 1024);
+        Eval.PawnTable.Clear();
+    }
+
+    void NewSearch(const Board& board)
+    {
+        ColorToMove = board.ColorToMove;
+        for (auto& breadcrumb : Breadcrumbs)
+        {
+            breadcrumb.Key = 0;
+            breadcrumb.TThreadId = -1;
+        }
+    }
 };
 
 class SearchState
 {
 public:
     ThreadVector Thread;
-    GlobalData Global;
-    SearchStats Stats;
+    GlobalData Global{};
+    SearchStats Stats{};
 
     SearchState()
     {
-        Thread = ThreadVector(1);
-        Global = GlobalData();
-        Stats = SearchStats();
+        Thread = ThreadVector(Options::Threads);
     }
 
     void NewGame()
     {
+        Global.NewGame();
         for(ThreadState& threadState : Thread)
         {
             threadState.NewGame();
         }
-        
-        Global.Table.SetSize(16 * 1024 * 1024);
-        Global.Table.Clear();
-
-        Global.Eval.EvalTable.SetSize(16 * 1024 * 1024);
-        Global.Eval.EvalTable.Clear();
-
-        Global.Eval.PawnTable.SetSize(16 * 1024 * 1024);
-        Global.Eval.PawnTable.Clear();
     }
 
     void NewSearch(const Board& board)
     {
+        Global.NewSearch(board);
         for (ThreadState& threadState : Thread)
         {
             threadState.NewSearch();
         }
-
-        Global.ColorToMove = board.ColorToMove;
     }
 
     //SearchState& operator=(const SearchState&) = default;

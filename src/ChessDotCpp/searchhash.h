@@ -186,14 +186,17 @@ public:
 //    }
 //};
 
+
+//PACK(
 class TranspositionTableEntry
 {
 public:
-    Ply Depth{};
-    TtFlag Flag{};
     ZobristKey Key{};
-    Score SScore{};
     Move MMove{};
+    Score SScore{};
+    Ply Depth {};
+    TtFlag Flag {};
+    
 
     TranspositionTableEntry() = default;
 
@@ -206,6 +209,7 @@ public:
         Flag = flag;
     }
 };
+//)
 
 class TranspositionTable
 {
@@ -213,11 +217,32 @@ public:
     using TableEntries = std::unique_ptr<TranspositionTableEntry[]>;
 
     size_t _size = 0;
+    size_t _mask = 0;
     TableEntries _entries = nullptr;
+
+    static size_t GetClampedSize(size_t bytes)
+    {
+        const size_t entrySize = sizeof(TranspositionTableEntry);
+        const size_t size = bytes / entrySize;
+        if ((size & (size - 1)) == 0)
+        {
+            return size;
+        }
+
+        size_t clampedSize = static_cast<size_t>(1);
+        while (clampedSize < size)
+        {
+            clampedSize <<= 1;
+        }
+        clampedSize >>= 1;
+
+        return clampedSize;
+    }
 
     [[nodiscard]] constexpr size_t GetTableIndex(ZobristKey key) const
     {
-        const size_t index = key % _size;
+        //const size_t index = key % _size;
+        const size_t index = key & _mask;
         return index;
     }
 
@@ -226,18 +251,18 @@ public:
         return partialKey | (index & 0xFFFFULL);
     }
 
-    std::vector<Move> SavedPrincipalVariation{};
-
     void SetSize(const size_t bytes)
     {
-        const size_t newSize = bytes / sizeof(TranspositionTableEntry);
-        
+        //const size_t newSize = bytes / sizeof(TranspositionTableEntry);
+        const size_t newSize = GetClampedSize(bytes);
+
         if (_size == newSize)
         {
             return;
         }
 
         _size = newSize;
+        _mask = _size - 1;
         _entries = TableEntries(new TranspositionTableEntry[newSize]);
     }
 
@@ -330,15 +355,9 @@ public:
         }
     }
 
-    void SavePrincipalVariation(const Board& board)
+    bool IsRootMoveChanged(const Board& board, const std::vector<Move>& savedPrincipalVariation)
     {
-        SavedPrincipalVariation.clear();
-        GetPrincipalVariation(board, SavedPrincipalVariation);
-    }
-
-    bool IsRootMoveChanged(const Board& board)
-    {
-        if(SavedPrincipalVariation.empty())
+        if(savedPrincipalVariation.empty())
         {
             return true;
         }
@@ -351,7 +370,7 @@ public:
             return true;
         }
             	
-        const bool isChanged = SavedPrincipalVariation[0].Value != move.Value;
+        const bool isChanged = savedPrincipalVariation[0].Value != move.Value;
         return isChanged;
     }
 

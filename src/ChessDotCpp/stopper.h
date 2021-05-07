@@ -73,7 +73,7 @@ public:
         return Stopped;
     }
 
-    [[nodiscard]] bool ShouldStopDepthIncrease(SearchState& state)
+    [[nodiscard]] bool ShouldStopDepthIncrease(ThreadId threadId, SearchState& state)
     {
         if (Stopped)
         {
@@ -85,8 +85,9 @@ public:
             return false;
     	}
 
-        const MoveCount bestMoveChanges = state.Thread[0].BestMoveChanges;
-        const Ply iterationsSincePvChange = state.Thread[0].IterationsSincePvChange;
+        const ThreadState& threadState = state.Thread[threadId];
+        const MoveCount bestMoveChanges = threadState.BestMoveChanges;
+        const Ply iterationsSincePvChange = threadState.IterationsSincePvChange;
         size_t reduction = 0;
         if(iterationsSincePvChange > 0)
         {

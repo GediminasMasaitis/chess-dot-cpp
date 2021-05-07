@@ -1,12 +1,14 @@
 #include "search.h"
 
-
 #include "attacks.h"
 #include "movegen.h"
 #include "evaluation.h"
 #include "moveorder.h"
 #include "see.h"
 #include "stopper.h"
+#include "options.h"
+
+#include <thread>
 
 //bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, Move& bestMove, Score& score, bool& entryExists)
 //{
@@ -124,9 +126,9 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
     return false;
 }
 
-void Search::StoreTranspositionTable(const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag)
+void Search::StoreTranspositionTable(const ThreadState& threadState, const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag)
 {
-    if (Stopper.Stopped)
+    if (threadState.StopIteration || Stopper.Stopped)
     {
         return;
     }
@@ -177,12 +179,12 @@ bool Search::IsRepetitionOr50Move(const Board& board) const
     return false;
 }
 
-Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score beta)
+Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply ply, Score alpha, Score beta)
 {
-    ++State.Stats.Nodes;
-    
-    constexpr int threadId = 0;
+    ThreadState& threadState = State.Thread[threadId];
     const bool rootNode = ply == 0;
+    
+    ++State.Stats.Nodes;
     
     EachColor<Bitboard> pins;
     PinDetector::GetPinnedToKings(board, pins);
@@ -208,13 +210,13 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
     MoveGenerator::GetAllPotentialCaptures(board, checkers, pinned, moves, moveCount);
 
     const Move previousMove = rootNode ? Move(0) : board.History[board.HistoryDepth - 1].Move;
-    const Move countermove = State.Thread[threadId].Countermoves[previousMove.GetPiece()][previousMove.GetTo()];
+    const Move countermove = threadState.Countermoves[previousMove.GetPiece()][previousMove.GetTo()];
 
     ScoreArray seeScores;
     See::CalculateSeeScores(board, moves, moveCount, seeScores);
     
     MoveScoreArray staticMoveScores{};
-    MoveOrdering::CalculateStaticScores(State, moves, seeScores, moveCount, ply, Move(0), countermove, staticMoveScores);
+    MoveOrdering::CalculateStaticScores(threadId, State, moves, seeScores, moveCount, ply, Move(0), countermove, staticMoveScores);
 
     Score bestScore = -Constants::Inf;
     Move bestMove;
@@ -223,7 +225,7 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
     uint8_t movesEvaluated = 0;
     for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
     {
-        MoveOrdering::OrderNextMove(State, ply, moveIndex, moves, seeScores, staticMoveScores, moveCount);
+        MoveOrdering::OrderNextMove(threadId, State, ply, moveIndex, moves, seeScores, staticMoveScores, moveCount);
         const Move move = moves[moveIndex];
         
         const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
@@ -269,7 +271,7 @@ Score Search::Quiescence(Board& board, Ply depth, Ply ply, Score alpha, Score be
         }
 
         board.DoMove(move);
-        const Score childScore = -Quiescence(board, depth - 1, ply + 1, -beta, -alpha);
+        const Score childScore = -Quiescence(threadId, board, depth - 1, ply + 1, -beta, -alpha);
         board.UndoMove();
         movesEvaluated++;
 
@@ -312,14 +314,61 @@ void UpdateHistory(MoveScore& score, const MoveScore value)
     score += value * 32;
 }
 
-Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed)
+class SearchedPosition
 {
-    constexpr int threadId = 0;
+private:
+    Breadcrumb* _breadcrumb;
+    bool _owned;
+
+public:
+    bool OtherThread;
+    
+    SearchedPosition(SearchState& state, const ThreadId threadId, const ZobristKey key, const Ply ply)
+    {
+        _owned = false;
+        OtherThread = false;
+        
+        if(ply >= 6)
+        {
+            _breadcrumb = nullptr;
+            return;
+        }
+        
+        const size_t index = key & GlobalData::BreadcrumbMask;
+        _breadcrumb = &state.Global.Breadcrumbs[index];
+        const ThreadId ownedId = _breadcrumb->TThreadId.load(std::memory_order::relaxed);
+        if(ownedId == -1)
+        {
+            _breadcrumb->TThreadId.store(threadId, std::memory_order::relaxed);
+            _breadcrumb->Key.store(key, std::memory_order::relaxed);
+            _owned = true;
+        }
+        else if(ownedId != threadId)
+        {
+            const ZobristKey ownedKey = _breadcrumb->Key.load(std::memory_order::relaxed);
+            if(ownedKey == key)
+            {
+                OtherThread = true;
+            }
+        }
+    }
+
+    ~SearchedPosition()
+    {
+        if(_owned)
+        {
+            _breadcrumb->TThreadId.store(-1, std::memory_order::relaxed);
+        }
+    }
+};
+
+Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed)
+{
     ThreadState& threadState = State.Thread[threadId];
     PlyData& plyState = threadState.Plies[ply];
     const bool rootNode = ply == 0;
     
-    if (depth > 2 && Stopper.ShouldStop())
+    if (depth > 2 && (threadState.StopIteration || Stopper.ShouldStop()))
     {
         const Score score = Contempt(board);
         return score;
@@ -369,7 +418,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
         //EachColor<Bitboard> pins;
         //PinDetector::GetPinnedToKings(board, pins);
         //const Score eval = Evaluation::Evaluate(board, pins);
-        const Score eval = Quiescence(board, depth, ply, alpha, beta);
+        const Score eval = Quiescence(threadId, board, depth, ply, alpha, beta);
         return eval;
     }
 
@@ -446,7 +495,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
             const Ply nullDepthReduction = depth > 6 ? 3 : 2;
             const Move nullMove = Move(0, 0, Pieces::Empty);
             board.DoMove(nullMove);
-            const Score nullMoveScore = -AlphaBeta(board, depth - nullDepthReduction - 1, ply + 1, -beta, -beta + 1, false, false);
+            const Score nullMoveScore = -AlphaBeta(threadId, board, depth - nullDepthReduction - 1, ply + 1, -beta, -beta + 1, false, false);
             board.UndoMove();
             if (nullMoveScore >= beta)
             {
@@ -470,6 +519,9 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
         futilityPruning = true;
     }
 
+
+    // MOVE LOOP
+    SearchedPosition searchedPosition = SearchedPosition(State, threadId, board.Key, ply);
     const bool improving = board.HistoryDepth < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation;
     
     const Bitboard pinned = pins[board.ColorToMove];
@@ -485,7 +537,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     See::CalculateSeeScores(board, moves, moveCount, seeScores);
     
     MoveScoreArray staticMoveScores;
-    MoveOrdering::CalculateStaticScores(State, moves, seeScores, moveCount, ply, principalVariationMove, countermove, staticMoveScores);
+    MoveOrdering::CalculateStaticScores(threadId, State, moves, seeScores, moveCount, ply, principalVariationMove, countermove, staticMoveScores);
 
     Score bestScore = -Constants::Inf;
     Move bestMove;
@@ -497,7 +549,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     MoveCount failedMoveCount = 0;
     for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
     {
-        MoveOrdering::OrderNextMove(State, ply, moveIndex, moves, seeScores, staticMoveScores, moveCount);
+        MoveOrdering::OrderNextMove(threadId, State, ply, moveIndex, moves, seeScores, staticMoveScores, moveCount);
         const Move move = moves[moveIndex];
 
         /*if(move.Value == threadState.SingularMove.Value)
@@ -604,25 +656,30 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
             {
                 reduction++;
             }
+
+        	if(searchedPosition.OtherThread)
+        	{
+                reduction++;
+        	}
         }
         
         Score childScore;
         if(raisedAlpha)
         {
-            childScore = -AlphaBeta(board, depth + extension- reduction - 1, ply + 1, -alpha - 1, -alpha, false, true);
+            childScore = -AlphaBeta(threadId, board, depth + extension- reduction - 1, ply + 1, -alpha - 1, -alpha, false, true);
             if(childScore > alpha)
             {
-                childScore = -AlphaBeta(board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
+                childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
             }
         }
         else
         {
-            childScore = -AlphaBeta(board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
+            childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
         }
 
         if (reduction > 0 && childScore > alpha)
         {
-            childScore = -AlphaBeta(board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
+            childScore = -AlphaBeta(threadId, board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
         }
         
         board.UndoMove();
@@ -691,7 +748,7 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
 
             //if (threadState.SingularMove.Value == 0)
             {
-                StoreTranspositionTable(board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Beta);
+                StoreTranspositionTable(threadState, board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Beta);
             }
             
             return beta;
@@ -712,18 +769,18 @@ Score Search::AlphaBeta(Board& board, Ply depth, const Ply ply, Score alpha, Sco
     {
         if (raisedAlpha)
         {
-            StoreTranspositionTable(board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Exact);
+            StoreTranspositionTable(threadState, board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Exact);
         }
         else
         {
-            StoreTranspositionTable(board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Alpha);
+            StoreTranspositionTable(threadState, board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Alpha);
         }
     }
     
     return alpha;
 }
 
-Score Search::Aspiration(Board& board, const Ply depth, const Score previous)
+Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth, const Score previous)
 {
     //constexpr Score window = 50;
     //const Score alpha = previous - window;
@@ -735,56 +792,131 @@ Score Search::Aspiration(Board& board, const Ply depth, const Score previous)
     //}
 
     (void)previous;
-    State.Thread[0].BestMoveChanges = 0;
-    const Score fullSearchScore = AlphaBeta(board, depth, 0, -Constants::Inf, Constants::Inf, true, true);
+    State.Thread[threadId].BestMoveChanges = 0;
+    const Score fullSearchScore = AlphaBeta(threadId, board, depth, 0, -Constants::Inf, Constants::Inf, true, true);
     return fullSearchScore;
 }
 
-Move Search::IterativeDeepen(Board& board)
+void Search::IterativeDeepen(const ThreadId threadId, Board& board)
 {
-    Score score = AlphaBeta(board, 1, 0, -Constants::Inf, Constants::Inf, true, true);
-    State.Global.Table.SavePrincipalVariation(board);
-    State.Stats.Elapsed = Stopper.GetElapsed();
-    SearchCallbackData callbackData(board, State, 1, score);
+    ThreadState& threadState = State.Thread[threadId];
     
-    Callback(callbackData);
+    Score score = AlphaBeta(threadId, board, 1, 0, -Constants::Inf, Constants::Inf, true, true);
 
-    if (Stopper.ShouldStopDepthIncrease(State))
+    threadState.SavedPrincipalVariation.clear();
+    State.Global.Table.GetPrincipalVariation(board, threadState.SavedPrincipalVariation);
+    State.Stats.Elapsed = Stopper.GetElapsed();
+    SearchCallbackData callbackData(threadId, board, State, 1, score);
+
+    if (threadId == 0)
     {
-        return State.Global.Table.SavedPrincipalVariation[0];
+        Callback(callbackData);
+    }
+
+    if (Stopper.ShouldStopDepthIncrease(threadId, State))
+    {
+        return;
     }
     
     for (Ply depth = 2; depth < Constants::MaxDepth; depth++)
     {
-        score = Aspiration(board, depth, score);
+        score = Aspiration(threadId, board, depth, score);
         callbackData.Depth = depth;
         callbackData._Score = score;
-        const bool pvMoveChanged = State.Global.Table.IsRootMoveChanged(board);
+        const bool pvMoveChanged = State.Global.Table.IsRootMoveChanged(board, threadState.SavedPrincipalVariation);
         if(pvMoveChanged)
         {
-            State.Thread[0].IterationsSincePvChange = 0;
+            threadState.IterationsSincePvChange = 0;
         }
         else
         {
-            State.Thread[0].IterationsSincePvChange++;
+            threadState.IterationsSincePvChange++;
         }
         State.Stats.Elapsed = Stopper.GetElapsed();
-        if(Stopper.ShouldStopDepthIncrease(State))
+        if(Stopper.ShouldStopDepthIncrease(threadId, State))
         {
             break;
         }
 
-        State.Global.Table.SavePrincipalVariation(board);
-        Callback(callbackData);
+        threadState.SavedPrincipalVariation.clear();
+        State.Global.Table.GetPrincipalVariation(board, threadState.SavedPrincipalVariation);
+        if (threadId == 0)
+        {
+            Callback(callbackData);
+        }
     }
-
-    return State.Global.Table.SavedPrincipalVariation[0];
 }
 
-Move Search::Run(Board& board, const SearchParameters& parameters)
+void Search::IterativeDeepenLazySmp(Board& board)
+{
+    
+    ThreadState& mainThreadState = State.Thread[0];
+    Score score = AlphaBeta(0, board, 1, 0, -Constants::Inf, Constants::Inf, true, true);
+
+    mainThreadState.SavedPrincipalVariation.clear();
+    State.Global.Table.GetPrincipalVariation(board, mainThreadState.SavedPrincipalVariation);
+    
+    State.Stats.Elapsed = Stopper.GetElapsed();
+    SearchCallbackData callbackData(0, board, State, 1, score);
+    Callback(callbackData);
+
+    if (Stopper.ShouldStopDepthIncrease(0, State))
+    {
+        return;
+    }
+
+    for (Ply depth = 2; depth < Constants::MaxDepth; depth++)
+    {
+        std::vector<std::thread> threads(1);
+        for(ThreadId helperId = 1; helperId < Options::Threads; helperId++)
+        {
+            State.Thread[helperId] = State.Thread[0];
+            threads.emplace_back([this, helperId, board, depth, score]()
+            {
+                Board clone = board;
+                const Ply helperDepth = depth + helperId / 2;
+                Aspiration(helperId, clone, helperDepth, score);
+            });
+        }
+        
+        score = Aspiration(0, board, depth, score);
+
+        for (ThreadId helperId = 1; helperId < Options::Threads; helperId++)
+        {
+            State.Thread[helperId].StopIteration = true;
+        }
+
+        for (ThreadId helperId = 1; helperId < Options::Threads; helperId++)
+        {
+            threads[helperId].join();
+        }
+        
+        callbackData.Depth = depth;
+        callbackData._Score = score;
+        const bool pvMoveChanged = State.Global.Table.IsRootMoveChanged(board, mainThreadState.SavedPrincipalVariation);
+        if (pvMoveChanged)
+        {
+            mainThreadState.IterationsSincePvChange = 0;
+        }
+        else
+        {
+            mainThreadState.IterationsSincePvChange++;
+        }
+        State.Stats.Elapsed = Stopper.GetElapsed();
+        if (Stopper.ShouldStopDepthIncrease(0, State))
+        {
+            break;
+        }
+
+        mainThreadState.SavedPrincipalVariation.clear();
+        State.Global.Table.GetPrincipalVariation(board, mainThreadState.SavedPrincipalVariation);
+        Callback(callbackData);
+    }
+}
+
+void Search::Run(Board& board, const SearchParameters& parameters)
 {
     Stopper.Init(parameters, board.WhiteToMove);
     State.NewSearch(board);
-    const auto move = IterativeDeepen(board);
-    return move;
+    IterativeDeepenLazySmp(board);
 }

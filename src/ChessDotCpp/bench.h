@@ -2,12 +2,15 @@
 
 #include "common.h"
 #include "game.h"
+#include "options.h"
 
 class Bench
 {
 public:
-	static void Run()
+	static void Run(ThreadId threads)
 	{
+		ThreadId originalThreads = Options::Threads;
+		Options::Threads = threads;
 		std::vector<Fen> fens =
 		{
 			"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
@@ -26,5 +29,6 @@ public:
 		}
 		commands.push("quit");
 		Game::RunCommands(commands);
+		Options::Threads = originalThreads;
 	}
 };

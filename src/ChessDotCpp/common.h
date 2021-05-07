@@ -11,8 +11,17 @@
 #include <memory>
 #include <functional>
 #include <cstring>
+#include <atomic>
 
 #define MAYBE_UNUSED(x) ((void)(x))
+
+#ifdef __GNUC__
+#define PACK( __Declaration__ ) __Declaration__ __attribute__((__packed__))
+#endif
+
+#ifdef _MSC_VER
+#define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop))
+#endif
 
 template<class T>
 static std::string TrimNumber(const T number, double divisor, const std::string& sufffix)
