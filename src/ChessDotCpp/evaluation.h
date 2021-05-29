@@ -9,8 +9,7 @@ public:
     using Scoreboard = EachPosition<Score>;
     
 private:
-    // These are reflected, for viewing sake
-    
+
     static constexpr Scoreboard EmptyScoreboard
     {
         0,   0,   0,   0,   0,   0,   0,   0,
@@ -211,6 +210,9 @@ public:
     // TODO: Make it go up to 64
     static constexpr std::array<Score, 17> KnightPawnAdjust = { -20, -16, -12, -8, -4, 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44 };
     static constexpr std::array<Score, 17> RookPawnAdjust = { 15, 12, 9, 6, 3, 0, -3, -6, -9, -12, -15, -18, -21, -24, -27, -30, -33 };
+
+    static constexpr EachPiece<Phase> PiecePhases = { 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 4, 4, 0, 0 };
+    static constexpr Phase MaxPhase = 4 * PiecePhases[Pieces::Knight] + 4 * PiecePhases[Pieces::Bishop] + 4 * PiecePhases[Pieces::Rook] + 2 * PiecePhases[Pieces::Queen];
     
     static constexpr EachColor<Scoreboard> WeakPawn = Positions::MakeRelative(WeakPawnPcsq);
     static constexpr EachColor<Scoreboard> PassedPawn = Positions::MakeRelative(PassedPawnPcsq);

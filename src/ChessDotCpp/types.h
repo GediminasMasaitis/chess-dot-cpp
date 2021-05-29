@@ -19,7 +19,6 @@ using MoveString = std::string;
 using MoveCount = uint8_t;
 using Score = int16_t;
 using MoveScore = int32_t;
-using Phase = int32_t;
 using Tropism = int8_t;
 using ZobristKey = uint64_t;
 using Magic = uint64_t;
@@ -27,5 +26,8 @@ using Time = int32_t;
 using Stat = uint64_t;
 using TtFlag = uint8_t;
 using ThreadId = int8_t;
+
+// Evaluation
+using Phase = uint8_t;
 
 using Fen = std::string;

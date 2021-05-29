@@ -652,18 +652,18 @@ Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins, EvalSta
     pawnControl[Colors::Black] = AttacksGenerator::GetAttackedByPawns(board.BitBoard[Pieces::BlackPawn], false);
 
     scores.GamePhase =
-        board.PieceCounts[Pieces::WhiteKnight]
-        + board.PieceCounts[Pieces::WhiteBishop]
-        + 2 * board.PieceCounts[Pieces::WhiteRook]
-        + 4 * board.PieceCounts[Pieces::WhiteQueen]
-        + board.PieceCounts[Pieces::BlackKnight]
-        + board.PieceCounts[Pieces::BlackBishop]
-        + 2 * board.PieceCounts[Pieces::BlackRook]
-        + 4 * board.PieceCounts[Pieces::BlackQueen];
+        EvaluationData::PiecePhases[Pieces::WhiteKnight] *board.PieceCounts[Pieces::WhiteKnight]
+        + EvaluationData::PiecePhases[Pieces::WhiteBishop] * board.PieceCounts[Pieces::WhiteBishop]
+        + EvaluationData::PiecePhases[Pieces::WhiteRook] * board.PieceCounts[Pieces::WhiteRook]
+        + EvaluationData::PiecePhases[Pieces::WhiteQueen] * board.PieceCounts[Pieces::WhiteQueen]
+        + EvaluationData::PiecePhases[Pieces::BlackKnight] * board.PieceCounts[Pieces::BlackKnight]
+        + EvaluationData::PiecePhases[Pieces::BlackBishop] * board.PieceCounts[Pieces::BlackBishop]
+        + EvaluationData::PiecePhases[Pieces::BlackRook] * board.PieceCounts[Pieces::BlackRook]
+        + EvaluationData::PiecePhases[Pieces::BlackQueen] * board.PieceCounts[Pieces::BlackQueen];
 
-    if (scores.GamePhase > 24)
+    if (scores.GamePhase > EvaluationData::MaxPhase)
     {
-        scores.GamePhase = 24;
+        scores.GamePhase = EvaluationData::MaxPhase;
     }
 
     scores.KingShield[Colors::White] = KingShield<Colors::White>(board);
@@ -727,8 +727,8 @@ Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins, EvalSta
 
 
     const Phase midgameWeight = scores.GamePhase;
-    const Phase endgameWeight = 24 - midgameWeight;
-    scores.Result += ((midgameScore * midgameWeight) + (endgameScore * endgameWeight)) / 24;
+    const Phase endgameWeight = EvaluationData::MaxPhase - midgameWeight;
+    scores.Result += ((midgameScore * midgameWeight) + (endgameScore * endgameWeight)) / EvaluationData::MaxPhase;
 
     scores.Result += (scores.Blockages[Colors::White] - scores.Blockages[Colors::Black]);
     scores.Result += (scores.PositionalThemes[Colors::White] - scores.PositionalThemes[Colors::Black]);
