@@ -72,6 +72,13 @@ public:
     }
 };
 
+class AttackDetails
+{
+public:
+    EachPiece<Bitboard> PieceAttacks;
+    EachPosition<Bitboard> AttacksFrom;
+};
+
 template<Color TColor>
 Score KingShield(const Board& board)
 {
@@ -222,7 +229,7 @@ Tropism GetTropism(const Position sq1, const Position sq2)
 }
 
 template<Color TColor>
-void EvalKnight(const Board& board, EvaluationScores& scores, const Position position, const EachColor<Bitboard>& pawnControl, const Bitboard pinned)
+void EvalKnight(const Board& board, EvaluationScores& scores, const Position position, const AttackDetails& attacks, const Bitboard pinned)
 {
     constexpr Color color = TColor;
     constexpr Color opp = color ^ 1;
@@ -235,10 +242,10 @@ void EvalKnight(const Board& board, EvaluationScores& scores, const Position pos
     *  instead of adding actual moves.                                        *
     **************************************************************************/
 
-    const Bitboard jumps = BitboardJumps.KnightJumps[position];
+    const Bitboard attack = attacks.AttacksFrom[position];
     const Bitboard opponent = board.BitBoard[opp];
-    const Bitboard emptyOrOpponent = (board.EmptySquares | opponent) & jumps;
-    const Bitboard mobility = emptyOrOpponent & ~pawnControl[opp];
+    const Bitboard emptyOrOpponent = (board.EmptySquares | opponent) & attack;
+    const Bitboard mobility = emptyOrOpponent & ~attacks.PieceAttacks[Pieces::Pawn | opp];
     const Bitboard bitboard = GetBitboard(position);   
     if ((bitboard & pinned) == 0)
     {
@@ -276,7 +283,7 @@ void EvalKnight(const Board& board, EvaluationScores& scores, const Position pos
 }
 
 template<Color TColor>
-void EvalBishop(const Board& board, EvaluationScores& scores, const Position position, const EachColor<Bitboard>& pawnControl, const Bitboard pinned)
+void EvalBishop(const Board& board, EvaluationScores& scores, const Position position, const AttackDetails& attacks, const Bitboard pinned)
 {
     constexpr Color color = TColor;
     constexpr Color opp = color ^ 1;
@@ -287,10 +294,10 @@ void EvalBishop(const Board& board, EvaluationScores& scores, const Position pos
     /**************************************************************************
     *  Collect data about mobility and king attacks                           *
     **************************************************************************/
-    const Bitboard slide = SlideMoveGenerator::DiagonalAntidiagonalSlide(board.AllPieces, position);
+    const Bitboard attack = attacks.AttacksFrom[position];
     const Bitboard opponent = board.BitBoard[opp];
-    const Bitboard emptyOrOpponent = (board.EmptySquares | opponent) & slide;
-    const Bitboard mobility = emptyOrOpponent & ~pawnControl[opp];
+    const Bitboard emptyOrOpponent = (board.EmptySquares | opponent) & attack;
+    const Bitboard mobility = emptyOrOpponent & ~attacks.PieceAttacks[Pieces::Pawn | opp];
     const Bitboard bitboard = GetBitboard(position);
     if ((bitboard & pinned) == 0)
     {
@@ -315,7 +322,7 @@ void EvalBishop(const Board& board, EvaluationScores& scores, const Position pos
 }
 
 template<Color TColor>
-void EvalRook(const Board& board, EvaluationScores& scores, const Position position, const EachColor<Bitboard>& pawnControl, const Bitboard pinned)
+void EvalRook(const Board& board, EvaluationScores& scores, const Position position, const AttackDetails& attacks, const Bitboard pinned)
 {
     constexpr Color color = TColor;
     constexpr Color opp = color ^ 1;
@@ -366,10 +373,10 @@ void EvalRook(const Board& board, EvaluationScores& scores, const Position posit
         }
     }
 
-    const Bitboard slide = SlideMoveGenerator::HorizontalVerticalSlide(board.AllPieces, position);
+    const Bitboard attack = attacks.AttacksFrom[position];
     const Bitboard opponent = board.BitBoard[opp];
-    const Bitboard emptyOrOpponent = (board.EmptySquares | opponent) & slide;
-    const Bitboard mobility = emptyOrOpponent & ~pawnControl[opp];
+    const Bitboard emptyOrOpponent = (board.EmptySquares | opponent) & attack;
+    const Bitboard mobility = emptyOrOpponent & ~attacks.PieceAttacks[Pieces::Pawn | opp] & ~attacks.PieceAttacks[Pieces::Knight | opp] & ~attacks.PieceAttacks[Pieces::Bishop | opp];
     const Bitboard bitboard = GetBitboard(position);
     if ((bitboard & pinned) == 0)
     {
@@ -394,7 +401,7 @@ void EvalRook(const Board& board, EvaluationScores& scores, const Position posit
 }
 
 template<Color TColor>
-void EvalQueen(const Board& board, EvaluationScores& scores, const Position position, const EachColor<Bitboard>& pawnControl, const Bitboard pinned)
+void EvalQueen(const Board& board, EvaluationScores& scores, const Position position, const AttackDetails& attacks, const Bitboard pinned)
 {
     constexpr Color color = TColor;
     constexpr Color opp = color ^ 1;
@@ -427,10 +434,12 @@ void EvalQueen(const Board& board, EvaluationScores& scores, const Position posi
         if (IsPiece<color, Pieces::Knight, Positions::Rel<color, Positions::G1>()>(board)) scores.PositionalThemes[color] -= 2;
     }
 
-    const Bitboard slide = SlideMoveGenerator::AllSlide(board.AllPieces, position);
+    const Bitboard attack = attacks.AttacksFrom[position];
+    //const Bitboard attack2 = SlideMoveGenerator::AllSlide(board.AllPieces, position);
+    //assert(attack == attack2);
     const Bitboard opponent = board.BitBoard[opp];
-    const Bitboard emptyOrOpponent = (board.EmptySquares | opponent) & slide;
-    const Bitboard mobility = emptyOrOpponent & ~pawnControl[opp];
+    const Bitboard emptyOrOpponent = (board.EmptySquares | opponent) & attack;
+    const Bitboard mobility = emptyOrOpponent & ~attacks.PieceAttacks[Pieces::Pawn | opp] & ~attacks.PieceAttacks[Pieces::Knight | opp] & ~attacks.PieceAttacks[Pieces::Bishop | opp] & ~attacks.PieceAttacks[Pieces::Rook | opp];
     const Bitboard bitboard = GetBitboard(position);
     if ((bitboard & pinned) == 0)
     {
@@ -455,7 +464,7 @@ void EvalQueen(const Board& board, EvaluationScores& scores, const Position posi
 }
 
 template<Color TColor>
-void EvaluatePieces(const Board& board, EvaluationScores& scores, const EachColor<Bitboard>& pawnControl, const Bitboard pinned)
+void EvaluatePieces(const Board& board, EvaluationScores& scores, const AttackDetails& attacks, const Bitboard pinned)
 {
     constexpr Color color = TColor;
     constexpr Piece pawn = Pieces::Pawn | color;
@@ -473,7 +482,7 @@ void EvaluatePieces(const Board& board, EvaluationScores& scores, const EachColo
     while (knights != 0)
     {
         Position pos = BitScanForward(knights);
-        EvalKnight<TColor>(board, scores, pos, pawnControl, pinned);
+        EvalKnight<TColor>(board, scores, pos, attacks, pinned);
         scores.PieceSquaresMidgame[color] += EvaluationData::Midgame[knight][pos];
         scores.PieceSquaresEndgame[color] += EvaluationData::Endgame[knight][pos];
         knights &= knights - 1;
@@ -484,7 +493,7 @@ void EvaluatePieces(const Board& board, EvaluationScores& scores, const EachColo
     while (bishops != 0)
     {
         Position pos = BitScanForward(bishops);
-        EvalBishop<TColor>(board, scores, pos, pawnControl, pinned);
+        EvalBishop<TColor>(board, scores, pos, attacks, pinned);
         scores.PieceSquaresMidgame[color] += EvaluationData::Midgame[bishop][pos];
         scores.PieceSquaresEndgame[color] += EvaluationData::Endgame[bishop][pos];
         bishops &= bishops - 1;
@@ -495,7 +504,7 @@ void EvaluatePieces(const Board& board, EvaluationScores& scores, const EachColo
     while (rooks != 0)
     {
         Position pos = BitScanForward(rooks);
-        EvalRook<TColor>(board, scores, pos, pawnControl, pinned);
+        EvalRook<TColor>(board, scores, pos, attacks, pinned);
         scores.PieceSquaresMidgame[color] += EvaluationData::Midgame[rook][pos];
         scores.PieceSquaresEndgame[color] += EvaluationData::Endgame[rook][pos];
         rooks &= rooks - 1;
@@ -506,7 +515,7 @@ void EvaluatePieces(const Board& board, EvaluationScores& scores, const EachColo
     while (queens != 0)
     {
         Position pos = BitScanForward(queens);
-        EvalQueen<TColor>(board, scores, pos, pawnControl, pinned);
+        EvalQueen<TColor>(board, scores, pos, attacks, pinned);
         scores.PieceSquaresMidgame[color] += EvaluationData::Midgame[queen][pos];
         scores.PieceSquaresEndgame[color] += EvaluationData::Endgame[queen][pos];
         queens &= queens - 1;
@@ -527,19 +536,21 @@ bool IsPawnSupported(const Board& board, const Position pos)
 }
 
 template<Color TColor>
-Score EvalPawn(const Board& board, const Position position, const EachColor<Bitboard>& pawnControl, const Bitboard bitboard)
+Score EvalPawn(const Board& board, const Position position, const AttackDetails& attacks, const Bitboard bitboard)
 {
     constexpr Color side = TColor;
     constexpr Color oppo = side ^ 1;
     constexpr Piece ownPawn = Pieces::Pawn | side;
     constexpr Piece opponentPawn = Pieces::Pawn | oppo;
+    const Bitboard ownPawnControl = attacks.PieceAttacks[ownPawn];
+    const Bitboard opponentPawnControl = attacks.PieceAttacks[opponentPawn];
     
     int result = 0;
     bool flagIsPassed = true; // we will be trying to disprove that
     bool flagIsWeak = true;   // we will be trying to disprove that
     bool flagIsOpposed = false;
 
-    if ((bitboard & pawnControl[oppo]) != 0)
+    if ((bitboard & opponentPawnControl) != 0)
     {
         flagIsPassed = false;
     }
@@ -551,7 +562,7 @@ Score EvalPawn(const Board& board, const Position position, const EachColor<Bitb
     const Bitboard opponentPawnsInFront = inFront & board.BitBoard[opponentPawn];
     flagIsOpposed = opponentPawnsInFront != 0;
 
-    const Bitboard pawnControlledInFront = inFront & (pawnControl[oppo] | ownPawnsInFront | opponentPawnsInFront);
+    const Bitboard pawnControlledInFront = inFront & (opponentPawnControl | ownPawnsInFront | opponentPawnsInFront);
     flagIsPassed &= pawnControlledInFront == 0;
 
     /**************************************************************************
@@ -560,7 +571,7 @@ Score EvalPawn(const Board& board, const Position position, const EachColor<Bitb
     **************************************************************************/
 
     const Bitboard behind = InFront.ColumnSortOfBehind[side][position];
-    const Bitboard ownControlledBehind = behind & pawnControl[side];
+    const Bitboard ownControlledBehind = behind & ownPawnControl;
     flagIsWeak = ownControlledBehind == 0;
 
     /**************************************************************************
@@ -599,7 +610,7 @@ Score EvalPawn(const Board& board, const Position position, const EachColor<Bitb
     return result;
 }
 
-Score EvalPawnStructure(const Board& board, const EachColor<Bitboard>& pawnControl)
+Score EvalPawnStructure(const Board& board, const AttackDetails& attacks)
 {
     Score result = 0;
 
@@ -609,7 +620,7 @@ Score EvalPawnStructure(const Board& board, const EachColor<Bitboard>& pawnContr
         const Position position = BitScanForward(whitePawns);
         const Bitboard pawnBitboard = GetBitboard(position);
 
-        const Score pawnResult = EvalPawn<Colors::White>(board, position, pawnControl, pawnBitboard);
+        const Score pawnResult = EvalPawn<Colors::White>(board, position, attacks, pawnBitboard);
         result += pawnResult;
 
         whitePawns &= ~pawnBitboard;
@@ -621,7 +632,7 @@ Score EvalPawnStructure(const Board& board, const EachColor<Bitboard>& pawnContr
         const Position position = BitScanForward(blackPawns);
         const Bitboard pawnBitboard = GetBitboard(position);
 
-        const Score pawnResult = EvalPawn<Colors::Black>(board, position, pawnControl, pawnBitboard);
+        const Score pawnResult = EvalPawn<Colors::Black>(board, position, attacks, pawnBitboard);
         result -= pawnResult;
 
         blackPawns &= ~pawnBitboard;
@@ -630,7 +641,7 @@ Score EvalPawnStructure(const Board& board, const EachColor<Bitboard>& pawnContr
     return result;
 }
 
-Score GetPawnScore(const Board& board, const EachColor<Bitboard>& pawnControl, EvalState& state)
+Score GetPawnScore(const Board& board, const AttackDetails& attacks, EvalState& state)
 {
     Score score;
     if (state.PawnTable.TryProbe(board.PawnKey, score))
@@ -638,18 +649,86 @@ Score GetPawnScore(const Board& board, const EachColor<Bitboard>& pawnControl, E
         return score;
     }
 
-    score = EvalPawnStructure(board, pawnControl);
+    score = EvalPawnStructure(board, attacks);
     state.PawnTable.Store(board.PawnKey, score);
     return score;
+}
+
+template<Color TColor, Piece TPiece>
+void GetAttackDetailsForPieces(const Board& board, AttackDetails& attacks)
+{
+    constexpr Piece coloredPiece = TPiece | TColor;
+    const Bitboard allPieces = board.AllPieces;
+    //const Bitboard notOwnPieces = ~board.BitBoard[TColor];
+    Bitboard piecesBitboard = board.BitBoard[coloredPiece];
+    Bitboard allAttacks = BitboardConstants::Empty;
+    while (piecesBitboard != 0)
+    {
+        const Position position = BitScanForward(piecesBitboard);
+        Bitboard attack;
+        if constexpr (TPiece == Pieces::Knight)
+        {
+            attack = BitboardJumps.KnightJumps[position];
+        }
+        else if constexpr (TPiece == Pieces::Bishop)
+        {
+            attack = SlideMoveGenerator::DiagonalAntidiagonalSlide(allPieces, position);
+        }
+        else if constexpr (TPiece == Pieces::Rook)
+        {
+            attack = SlideMoveGenerator::HorizontalVerticalSlide(allPieces, position);
+        }
+        else if constexpr (TPiece == Pieces::Queen)
+        {
+            attack = SlideMoveGenerator::AllSlide(allPieces, position);
+        }
+        else if constexpr (TPiece == Pieces::King)
+        {
+            attack = BitboardJumps.KingJumps[position];
+        }
+        else
+        {
+            Throw();
+        }
+        
+        //attack &= notOwnPieces;
+        attacks.AttacksFrom[position] = attack;
+        allAttacks |= attack;
+        piecesBitboard &= piecesBitboard - 1;
+    }
+    attacks.PieceAttacks[coloredPiece] = allAttacks;
+    attacks.PieceAttacks[TColor] |= allAttacks;
+}
+
+template<Color TColor>
+void GetAttackDetailsForColor(const Board& board, AttackDetails& attacks)
+{
+    attacks.PieceAttacks[TColor] = BitboardConstants::Empty;
+    GetAttackDetailsForPieces<TColor, Pieces::Knight>(board, attacks);
+    GetAttackDetailsForPieces<TColor, Pieces::Bishop>(board, attacks);
+    GetAttackDetailsForPieces<TColor, Pieces::Rook>(board, attacks);
+    GetAttackDetailsForPieces<TColor, Pieces::Queen>(board, attacks);
+    GetAttackDetailsForPieces<TColor, Pieces::King>(board, attacks);
+
+    constexpr Piece coloredPawn = Pieces::Pawn | TColor;
+    constexpr bool forWhite = TColor == Colors::White;
+    const Bitboard pawnAttacks = AttacksGenerator::GetAttackedByPawns(board.BitBoard[coloredPawn], forWhite);
+    attacks.PieceAttacks[coloredPawn] = pawnAttacks;
+    attacks.PieceAttacks[TColor] |= pawnAttacks;
+}
+
+void GetAttackDetails(const Board& board, AttackDetails& attacks)
+{
+    GetAttackDetailsForColor<Colors::White>(board, attacks);
+    GetAttackDetailsForColor<Colors::Black>(board, attacks);
 }
 
 Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins, EvalState& state)
 {
     EvaluationScores scores = EvaluationScores();
 
-    EachColor<Bitboard> pawnControl;
-    pawnControl[Colors::White] = AttacksGenerator::GetAttackedByPawns(board.BitBoard[Pieces::WhitePawn], true);
-    pawnControl[Colors::Black] = AttacksGenerator::GetAttackedByPawns(board.BitBoard[Pieces::BlackPawn], false);
+    AttackDetails attacks;
+    GetAttackDetails(board, attacks);
 
     scores.GamePhase =
         EvaluationData::PiecePhases[Pieces::WhiteKnight] *board.PieceCounts[Pieces::WhiteKnight]
@@ -693,11 +772,11 @@ Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins, EvalSta
     scores.MaterialAdjustment[Colors::White] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteRook];
     scores.MaterialAdjustment[Colors::Black] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackRook];
 
-    const Score pawnScore = GetPawnScore(board, pawnControl, state);
+    const Score pawnScore = GetPawnScore(board, attacks, state);
     scores.Result += pawnScore;
 
-    EvaluatePieces<Colors::White>(board, scores, pawnControl, pins[Colors::White]);
-    EvaluatePieces<Colors::Black>(board, scores, pawnControl, pins[Colors::Black]);
+    EvaluatePieces<Colors::White>(board, scores, attacks, pins[Colors::White]);
+    EvaluatePieces<Colors::Black>(board, scores, attacks, pins[Colors::Black]);
 
     Score midgameScore = 0;
     midgameScore += scores.KingShield[Colors::White];

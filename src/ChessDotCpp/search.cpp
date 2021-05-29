@@ -9,6 +9,7 @@
 #include "options.h"
 
 #include <thread>
+#include <algorithm>
 
 //bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, Move& bestMove, Score& score, bool& entryExists)
 //{
@@ -362,7 +363,7 @@ public:
     }
 };
 
-Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed)
+Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool isCutNode, bool nullMoveAllowed)
 {
     ThreadState& threadState = State.Thread[threadId];
     PlyData& plyState = threadState.Plies[ply];
@@ -461,6 +462,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     EachColor<Bitboard> pins;
     PinDetector::GetPinnedToKings(board, pins);
     const Score staticScore = Evaluation::Evaluate(board, pins, State.Global.Eval);
+    const bool improving = board.HistoryDepth < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation;
     if
     (
         depth < 3
@@ -473,11 +475,29 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             Throw();
         }
 
-        const Score margin = 120 * depth; // 120? Pawn is 100
+        constexpr Score marginPerDepth = 120;  // 120? Pawn is 100
+        Score margin = marginPerDepth * depth;
+        //if(improving)
+        //{
+     //       margin += marginPerDepth;
+        //}
+        
         if (staticScore - margin >= beta)
         {
             return staticScore - margin;
         }
+    }
+
+    Move previousMove = Move(0);
+    if(!rootNode)
+    {
+        auto& previousHistory = board.History[board.HistoryDepth - 1];
+        previousMove = previousHistory.Move;
+        //if(previousMove.GetTakesPiece() == Pieces::Empty)
+        //{
+        //    auto improveBonus = std::clamp(depth * -4 * (staticScore + previousHistory.StaticEvaluation - 40), -1000, 1000);
+        //    UpdateHistory(threadState.History[previousMove.GetColorToMove()][previousMove.GetFrom()][previousMove.GetTo()], improveBonus);
+        //}
     }
     
     // NULL MOVE PRUNING
@@ -487,20 +507,18 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         && !inCheck
         && depth > 2
         && !rootNode
+        && staticScore >= beta
+        && board.PieceMaterial[board.ColorToMove] > Constants::EndgameMaterial
     )
     {
-        const Score material = board.PieceMaterial[board.ColorToMove];
-        if (material > Constants::EndgameMaterial)
+        const Ply nullDepthReduction = depth > 6 ? 3 : 2;
+        const Move nullMove = Move(0, 0, Pieces::Empty);
+        board.DoMove(nullMove);
+        const Score nullMoveScore = -AlphaBeta(threadId, board, depth - nullDepthReduction - 1, ply + 1, -beta, -beta + 1, false, !isCutNode, false);
+        board.UndoMove();
+        if (nullMoveScore >= beta)
         {
-            const Ply nullDepthReduction = depth > 6 ? 3 : 2;
-            const Move nullMove = Move(0, 0, Pieces::Empty);
-            board.DoMove(nullMove);
-            const Score nullMoveScore = -AlphaBeta(threadId, board, depth - nullDepthReduction - 1, ply + 1, -beta, -beta + 1, false, false);
-            board.UndoMove();
-            if (nullMoveScore >= beta)
-            {
-                return beta;
-            }
+            return beta;
         }
     }
 
@@ -514,6 +532,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         && !inCheck
         && std::abs(alpha) < 9000
         && staticScore + futilityMargins[depth] <= alpha
+        //&& board.PieceMaterial[board.ColorToMove] > 0
     )
     {
         futilityPruning = true;
@@ -522,7 +541,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
     // MOVE LOOP
     SearchedPosition searchedPosition = SearchedPosition(State, threadId, board.Key, ply);
-    const bool improving = board.HistoryDepth < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation;
     
     const Bitboard pinned = pins[board.ColorToMove];
     
@@ -530,7 +548,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     MoveCount moveCount = 0;
     MoveGenerator::GetAllPotentialMoves(board, checkers, pinned, moves, moveCount);
 
-    const Move previousMove = rootNode ? Move(0) : board.History[board.HistoryDepth - 1].Move;
     const Move countermove = threadState.Countermoves[previousMove.GetPiece()][previousMove.GetTo()];
 
     ScoreArray seeScores;
@@ -552,10 +569,10 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         MoveOrdering::OrderNextMove(threadId, State, ply, moveIndex, moves, seeScores, staticMoveScores, moveCount);
         const Move move = moves[moveIndex];
 
-        /*if(move.Value == threadState.SingularMove.Value)
-        {
-            continue;
-        }*/
+        //if(move.Value == threadState.SingularMove.Value)
+        //{
+        //    continue;
+        //}
         
         const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
         if(!valid)
@@ -581,12 +598,26 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //    const Ply singularDepth = depth / 2;
         //    
         //    threadState.SingularMove = move;
-        //    const Score singularScore = AlphaBeta(board, singularDepth, ply, singularAlpha, singularBeta, false, true);
+        //    const Score singularScore = AlphaBeta(threadId, board, singularDepth, ply, singularAlpha, singularBeta, false, true);
         //    threadState.SingularMove = Move(0);
 
         //    if(singularScore < singularBeta)
         //    {
         //        extension++;
+        //    }
+        //    else if(singularBeta >= beta)
+        //    {
+        //        return singularBeta;
+        //    }
+        //    else if(entry.SScore >= beta)
+        //    {
+        //        threadState.SingularMove = move;
+        //        const Score zeroWindowScore = AlphaBeta(threadId, board, singularDepth, ply, beta - 1, beta, false, true);
+        //        threadState.SingularMove = Move(0);
+        //    	if(zeroWindowScore >= beta)
+        //    	{
+        //            return beta;
+        //    	}
         //    }
         //}
 
@@ -610,6 +641,20 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
                 continue;
             }
         }
+
+        //if
+        //(
+        //    !rootNode
+        //    && depth <= 3
+        //    && !isPrincipalVariation
+        //    && move.GetPawnPromoteTo() == Pieces::Empty
+        //    && board.PieceMaterial[board.ColorToMove] > Constants::EndgameMaterial
+        //    && seeScore < depth * -256
+        //)
+        //{
+        //    board.UndoMove();
+        //    continue;
+        //}
 
         // LATE MOVE REDUCTION
         Ply reduction = 0;
@@ -647,7 +692,15 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
                 reduction--;
             }
 
-
+            //if
+            //(
+            //    isCutNode
+            //    && move.GetTakesPiece() == Pieces::Empty
+            //)
+            //{
+            //    reduction += 2;
+            //}
+            
             if
             (
                 !isPrincipalVariation
@@ -657,29 +710,32 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
                 reduction++;
             }
 
-        	if(searchedPosition.OtherThread)
-        	{
+            if(searchedPosition.OtherThread)
+            {
                 reduction++;
-        	}
+            }
         }
-        
+
+        const bool isReduced = reduction > 0;
+        const bool childCut = isReduced || !isCutNode;
         Score childScore;
+        
         if(raisedAlpha)
         {
-            childScore = -AlphaBeta(threadId, board, depth + extension- reduction - 1, ply + 1, -alpha - 1, -alpha, false, true);
+            childScore = -AlphaBeta(threadId, board, depth + extension- reduction - 1, ply + 1, -alpha - 1, -alpha, false, childCut, true);
             if(childScore > alpha)
             {
-                childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
+                childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, childCut, true);
             }
         }
         else
         {
-            childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
+            childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, childCut, true);
         }
 
         if (reduction > 0 && childScore > alpha)
         {
-            childScore = -AlphaBeta(threadId, board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
+            childScore = -AlphaBeta(threadId, board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, false, true);
         }
         
         board.UndoMove();
@@ -785,7 +841,7 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
     //constexpr Score window = 50;
     //const Score alpha = previous - window;
     //const Score beta = previous + window;
-    //const Score windowScore = AlphaBeta(board, depth, 0, alpha, beta, true, true);
+    //const Score windowScore = AlphaBeta(threadId, board, depth, 0, alpha, beta, true, true);
     //if (windowScore > alpha && windowScore < beta)
     //{
     //    return windowScore;
@@ -793,7 +849,7 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
 
     (void)previous;
     State.Thread[threadId].BestMoveChanges = 0;
-    const Score fullSearchScore = AlphaBeta(threadId, board, depth, 0, -Constants::Inf, Constants::Inf, true, true);
+    const Score fullSearchScore = AlphaBeta(threadId, board, depth, 0, -Constants::Inf, Constants::Inf, true, false, true);
     return fullSearchScore;
 }
 
@@ -801,7 +857,7 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board)
 {
     ThreadState& threadState = State.Thread[threadId];
     
-    Score score = AlphaBeta(threadId, board, 1, 0, -Constants::Inf, Constants::Inf, true, true);
+    Score score = AlphaBeta(threadId, board, 1, 0, -Constants::Inf, Constants::Inf, true, false, true);
 
     threadState.SavedPrincipalVariation.clear();
     State.Global.Table.GetPrincipalVariation(board, threadState.SavedPrincipalVariation);
@@ -851,7 +907,7 @@ void Search::IterativeDeepenLazySmp(Board& board)
 {
     
     ThreadState& mainThreadState = State.Thread[0];
-    Score score = AlphaBeta(0, board, 1, 0, -Constants::Inf, Constants::Inf, true, true);
+    Score score = AlphaBeta(0, board, 1, 0, -Constants::Inf, Constants::Inf, true, false, true);
 
     mainThreadState.SavedPrincipalVariation.clear();
     State.Global.Table.GetPrincipalVariation(board, mainThreadState.SavedPrincipalVariation);
