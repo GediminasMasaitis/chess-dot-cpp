@@ -161,6 +161,12 @@ void Fens::Parse(Board& board, Fen fen)
         fenPosition++;
         board.EnPassantRankIndex = fen[fenPosition] - '0' - 1;
     }
+    else
+    {
+        board.EnPassantFile = 0;
+        board.EnPassantFileIndex = -1;
+        board.EnPassantRankIndex = -1;
+    }
 
 
     board.SyncExtraBitBoards();

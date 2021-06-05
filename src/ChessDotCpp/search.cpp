@@ -434,7 +434,17 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     const Move principalVariationMove = hashEntryExists ? entry.MMove : Move(0);
     if (probeSuccess)
     {
-        if (!isPrincipalVariation || (probedScore > alpha && probedScore < beta))
+        bool returnTtValue = !isPrincipalVariation || (probedScore > alpha && probedScore < beta);
+        if(returnTtValue /*&& isPrincipalVariation*/)
+        {
+            board.DoMove(principalVariationMove);
+            if (IsRepetitionOr50Move(board))
+            {
+                returnTtValue = false;
+            }
+            board.UndoMove();
+        }
+        if (returnTtValue)
         {
             if (probedScore > Constants::MateThreshold)
             {
@@ -853,8 +863,13 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
     return fullSearchScore;
 }
 
-void Search::IterativeDeepen(const ThreadId threadId, Board& board)
+Score Search::IterativeDeepen(const ThreadId threadId, Board& board)
 {
+    //if(board.Key == 6348723930654332762)
+    //{
+    //    auto a = 123;
+    //}
+    
     ThreadState& threadState = State.Thread[threadId];
     
     Score score = AlphaBeta(threadId, board, 1, 0, -Constants::Inf, Constants::Inf, true, false, true);
@@ -871,10 +886,10 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board)
 
     if (Stopper.ShouldStopDepthIncrease(threadId, State))
     {
-        return;
+        return score;
     }
     
-    for (Ply depth = 2; depth < Constants::MaxDepth; depth++)
+    for (Ply depth = 2; depth < State.Global.Parameters.MaxDepth; depth++)
     {
         score = Aspiration(threadId, board, depth, score);
         callbackData.Depth = depth;
@@ -901,6 +916,7 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board)
             Callback(callbackData);
         }
     }
+    return score;
 }
 
 void Search::IterativeDeepenLazySmp(Board& board)
@@ -921,7 +937,7 @@ void Search::IterativeDeepenLazySmp(Board& board)
         return;
     }
 
-    for (Ply depth = 2; depth < Constants::MaxDepth; depth++)
+    for (Ply depth = 2; depth < State.Global.Parameters.MaxDepth; depth++)
     {
         std::vector<std::thread> threads(1);
         for(ThreadId helperId = 1; helperId < Options::Threads; helperId++)
@@ -970,9 +986,12 @@ void Search::IterativeDeepenLazySmp(Board& board)
     }
 }
 
-void Search::Run(Board& board, const SearchParameters& parameters)
+Score Search::Run(Board& board, const SearchParameters& parameters)
 {
+    //std::cout << board.Key << std::endl;
     Stopper.Init(parameters, board.WhiteToMove);
-    State.NewSearch(board);
-    IterativeDeepenLazySmp(board);
+    State.NewSearch(board, parameters);
+    //IterativeDeepenLazySmp(board);
+    Score score = IterativeDeepen(0, board);
+    return score;
 }

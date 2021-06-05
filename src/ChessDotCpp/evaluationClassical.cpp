@@ -228,6 +228,14 @@ Tropism GetTropism(const Position sq1, const Position sq2)
     return 7 - distance;
 }
 
+//template<Color TColor>
+//Bitboard GetPawnFutureAttacks(const Board& board, const AttackDetails& attacks)
+//{
+//	
+//}
+
+//Bitboard GetOutpostSquares(const Board& board)
+
 template<Color TColor>
 void EvalKnight(const Board& board, EvaluationScores& scores, const Position position, const AttackDetails& attacks, const Bitboard pinned)
 {
@@ -376,7 +384,11 @@ void EvalRook(const Board& board, EvaluationScores& scores, const Position posit
     const Bitboard attack = attacks.AttacksFrom[position];
     const Bitboard opponent = board.BitBoard[opp];
     const Bitboard emptyOrOpponent = (board.EmptySquares | opponent) & attack;
-    const Bitboard mobility = emptyOrOpponent & ~attacks.PieceAttacks[Pieces::Pawn | opp] & ~attacks.PieceAttacks[Pieces::Knight | opp] & ~attacks.PieceAttacks[Pieces::Bishop | opp];
+    const Bitboard mobility = emptyOrOpponent
+        & ~attacks.PieceAttacks[Pieces::Pawn | opp]
+        //& ~attacks.PieceAttacks[Pieces::Knight | opp]
+        //& ~attacks.PieceAttacks[Pieces::Bishop | opp]
+    ;
     const Bitboard bitboard = GetBitboard(position);
     if ((bitboard & pinned) == 0)
     {
@@ -439,7 +451,12 @@ void EvalQueen(const Board& board, EvaluationScores& scores, const Position posi
     //assert(attack == attack2);
     const Bitboard opponent = board.BitBoard[opp];
     const Bitboard emptyOrOpponent = (board.EmptySquares | opponent) & attack;
-    const Bitboard mobility = emptyOrOpponent & ~attacks.PieceAttacks[Pieces::Pawn | opp] & ~attacks.PieceAttacks[Pieces::Knight | opp] & ~attacks.PieceAttacks[Pieces::Bishop | opp] & ~attacks.PieceAttacks[Pieces::Rook | opp];
+    const Bitboard mobility = emptyOrOpponent
+        & ~attacks.PieceAttacks[Pieces::Pawn | opp]
+        //& ~attacks.PieceAttacks[Pieces::Knight | opp]
+        //& ~attacks.PieceAttacks[Pieces::Bishop | opp]
+        //& ~attacks.PieceAttacks[Pieces::Rook | opp]
+    ;
     const Bitboard bitboard = GetBitboard(position);
     if ((bitboard & pinned) == 0)
     {
@@ -831,6 +848,11 @@ Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins, EvalSta
         weaker = Colors::White;
     }
 
+    //Score kingTropism = GetTropism(board.KingPositions[Colors::White], board.KingPositions[Colors::Black]);
+    //Score materialDiff = board.PieceMaterial[Colors::White] - board.PieceMaterial[Colors::Black];
+    //Score kingProximityBonus = (materialDiff * endgameWeight * kingTropism) / (EvaluationData::MaxPhase * 20);
+    //scores.Result += kingProximityBonus;
+    
     if (board.PawnMaterial[stronger] == 0)
     {
 
@@ -891,7 +913,7 @@ Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins, EvalSta
     return scores.Result;
 }
 
-Score Evaluation::Evaluate(const Board& board, const EachColor<Bitboard>& pins, EvalState& state)
+Score ClassicEvaluation::Evaluate(const Board& board, const EachColor<Bitboard>& pins, EvalState& state)
 {
     Score score;
     if(state.EvalTable.TryProbe(board.Key, score))

@@ -14,9 +14,9 @@ public:
     Ply Depth;
     Score _Score;
 
-    SearchCallbackData(ThreadId threadId, ::Board& board, SearchState& data, Ply depth, Score score)
+    SearchCallbackData(ThreadId threadId, ::Board& board, SearchState& state, Ply depth, Score score)
         : Id(threadId), Board(board),
-          State(data),
+          State(state),
           Depth(depth),
           _Score(score)
     {
@@ -30,7 +30,7 @@ class Search
 {
 private:
     SearchCallback Callback;
-    void IterativeDeepen(const ThreadId threadId, Board& board);
+    Score IterativeDeepen(const ThreadId threadId, Board& board);
     void IterativeDeepenLazySmp(Board& board);
 
 public:
@@ -44,9 +44,9 @@ public:
     Score Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply ply, Score alpha, Score beta);
     Score AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool isCutNode, bool nullMoveAllowed);
     Score Aspiration(const ThreadId threadId, Board& board, const Ply depth, const Score previous);
-    void RunSingleThread(Board& board);
-    void RunMultiThread(Board& board);
-    void Run(Board& board, const SearchParameters& parameters);
+    //void RunSingleThread(Board& board);
+    //void RunMultiThread(Board& board);
+    Score Run(Board& board, const SearchParameters& parameters);
 
 
     explicit Search(const SearchCallback& callback)

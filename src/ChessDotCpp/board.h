@@ -49,6 +49,7 @@ public:
 	EachColor<Score> PieceMaterial;
 	Score StaticEvaluation;
 
+	bool CanCastle(const CastlingPermission permission) const;
 	void SyncExtraBitBoards();
 	void DoMove(const Move move);
 	void UndoMove();

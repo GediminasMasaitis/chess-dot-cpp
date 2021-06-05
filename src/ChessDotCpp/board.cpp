@@ -2,6 +2,11 @@
 
 #include "zobrist.h"
 
+bool Board::CanCastle(const CastlingPermission permission) const
+{
+    return (CastlingPermissions & permission) != CastlingPermissions::None;
+}
+
 void Board::SyncExtraBitBoards()
 {
     BitBoard[Colors::White] = BitBoard[Pieces::WhitePawn]

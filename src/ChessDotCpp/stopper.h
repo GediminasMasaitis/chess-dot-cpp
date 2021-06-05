@@ -4,19 +4,6 @@
 
 #include <chrono>
 
-class SearchParameters
-{
-public:
-    bool Infinite = false;
-    Ply MaxDepth = Constants::MaxDepth;
-
-    size_t WhiteTime = 10000;
-    size_t BlackTime = 10000;
-
-    size_t WhiteTimeIncrement = 100;
-    size_t BlackTimeIncrement = 100;
-};
-
 class SearchStopper
 {
 public:

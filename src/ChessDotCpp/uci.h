@@ -149,6 +149,12 @@ public:
             {
                 reader >> parameters.BlackTimeIncrement;
             }
+            else if (word == "depth")
+            {
+                uint16_t depth;
+                reader >> depth;
+                parameters.MaxDepth = static_cast<uint8_t>(depth);
+            }
             else if (word == "infinite")
             {
                 parameters.Infinite = true;

@@ -52,6 +52,8 @@ public:
     static constexpr Color Black = 1;
     
     static constexpr Color Count = 2;
+    static constexpr Color Mask = 1;
+    static constexpr Color ReflectedMask = ~Mask;
 };
 
 template<class T>

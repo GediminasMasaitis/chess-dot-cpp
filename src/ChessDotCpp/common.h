@@ -80,3 +80,18 @@ static std::string ToUserFriendly(T number)
         return numberStr;
     }
 }
+
+constexpr Rank GetRank(const Position position)
+{
+    return position >> 3;
+}
+
+constexpr File GetFile(const Position position)
+{
+    return position & 7;
+}
+
+constexpr Position GetPosition(const File file, const Rank rank)
+{
+    return static_cast<Position>(file | (rank << 3));
+}

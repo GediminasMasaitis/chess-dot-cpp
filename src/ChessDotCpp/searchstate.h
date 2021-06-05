@@ -4,6 +4,19 @@
 #include "options.h"
 #include "searchhash.h"
 
+class SearchParameters
+{
+public:
+    bool Infinite = false;
+    Ply MaxDepth = Constants::MaxDepth;
+
+    size_t WhiteTime = 10000;
+    size_t BlackTime = 10000;
+
+    size_t WhiteTimeIncrement = 100;
+    size_t BlackTimeIncrement = 100;
+};
+
 //class ContinuationEntry
 //{
 //public:
@@ -168,12 +181,26 @@ class SearchStats
 public:
     //static constexpr bool Enable = true;
 
-    Stat Nodes = 0;
-    size_t Elapsed = 0;
+    Stat Nodes;
+    size_t Elapsed;
     
-    Stat HashMiss = 0;
-    Stat HashCollision = 0;
-    Stat HashInsufficientDepth = 0;
+    Stat HashMiss;
+    Stat HashCollision;
+    Stat HashInsufficientDepth;
+
+    void NewSearch()
+    {
+        Nodes = 0;
+        Elapsed = 0;
+        HashMiss = 0;
+        HashCollision = 0;
+        HashInsufficientDepth = 0;
+    }
+
+    SearchStats()
+    {
+        NewSearch();
+    }
 };
 
 class Breadcrumb
@@ -194,12 +221,13 @@ public:
     EvalState Eval{};
     Color ColorToMove;
     BreadcrumbArray Breadcrumbs{};
+    SearchParameters Parameters{};
 
     GlobalData()
     {
         ColorToMove = Colors::White;
     }
-	
+    
     void NewGame()
     {
         Table.SetSize(16 * 1024 * 1024);
@@ -244,9 +272,11 @@ public:
         }
     }
 
-    void NewSearch(const Board& board)
+    void NewSearch(const Board& board, const SearchParameters& parameters)
     {
+        Global.Parameters = parameters;
         Global.NewSearch(board);
+        Stats.NewSearch();
         for (ThreadState& threadState : Thread)
         {
             threadState.NewSearch();

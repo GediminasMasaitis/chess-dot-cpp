@@ -5,6 +5,7 @@
 
 using Color = uint8_t;
 using Piece = uint8_t;
+using HuffmanPieceValue = uint8_t;
 using Position = uint8_t;
 using Bitboard = uint64_t;
 using File = int8_t;
