@@ -3,6 +3,7 @@
 #include "evalstate.h"
 #include "options.h"
 #include "searchhash.h"
+#include "abdada.h"
 
 class SearchParameters
 {
@@ -46,6 +47,8 @@ public:
 //};
 //
 //static inline ContinuationEntry EmptyContinuation{};
+
+
 
 class PlyData
 {
@@ -91,6 +94,7 @@ public:
     Move SingularMove;
     MoveCount BestMoveChanges;
     Ply IterationsSincePvChange;
+    Ply IterationInitialDepth;
     
 
     void NewSearch()
@@ -221,6 +225,7 @@ public:
     EvalState Eval{};
     Color ColorToMove;
     BreadcrumbArray Breadcrumbs{};
+    AbdadaTable Abdada;
     SearchParameters Parameters{};
 
     GlobalData()
@@ -242,6 +247,7 @@ public:
 
     void NewSearch(const Board& board)
     {
+        Abdada.NewSearch();
         ColorToMove = board.ColorToMove;
         for (auto& breadcrumb : Breadcrumbs)
         {

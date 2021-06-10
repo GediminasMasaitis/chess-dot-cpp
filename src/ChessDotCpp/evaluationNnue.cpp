@@ -91,5 +91,7 @@ Score EvaluationNnue::Evaluate(const Board& board, const EachColor<Bitboard>& pi
 
 void EvaluationNnue::Init()
 {
-    nncpu_init("C:/temp/nn-62ef826d1a6d.nnue");
+    //nncpu_init("C:/temp/nn-62ef826d1a6d.nnue");
+    nncpu_init("C:/Chess/TrainingOld/out/default/version_0/checkpoints/nn.nnue");
+    
 }

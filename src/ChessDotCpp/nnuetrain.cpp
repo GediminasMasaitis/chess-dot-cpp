@@ -1,9 +1,13 @@
 #include "nnuetrain.h"
 
+#include "board.h"
+#include "search.h"
 #include "fen.h"
 
 #include <thread>
 #include <fstream>
+#include <filesystem>
+#include <mutex>
 
 class BitWriter
 {
@@ -133,56 +137,156 @@ public:
     }
 };
 
-void WriteResults(const Board& board, Score score)
+class TrainState
 {
-    std::array<uint8_t, 40> data{};
-    auto writer = BitWriter(data.data());
-    Sfens::Serialize(board, writer);
-    writer.WriteBits(score, 16);
-    writer.WriteBits(0, 16);
-    writer.WriteBits(0, 16);
-    writer.WriteBits(0, 8);
-    writer.WriteBits(0, 8);
+public:
+    TrainingParameters Parameters;
+    std::ifstream Input;
+    std::mutex InputMutex;
+    std::ofstream Output;
+    std::mutex OutputMutex;
+    uint32_t PositionIndex;
+    std::chrono::high_resolution_clock::time_point TrainStart;
+    std::chrono::high_resolution_clock::time_point LastPrint;
+};
 
-    std::ofstream output = std::ofstream("C:/Chess/Training/result.bin", std::ios::out | std::ios::binary);
-    const auto dataPointer = reinterpret_cast<char*>(data.data());
-    output.write(dataPointer, 40);
-    output.close();
+//void WriteResults(const Board& board, Score score)
+//{
+//    std::array<uint8_t, 40> data{};
+//    auto writer = BitWriter(data.data());
+//    Sfens::Serialize(board, writer);
+//    writer.WriteBits(score, 16);
+//    writer.WriteBits(0, 16);
+//    writer.WriteBits(0, 16);
+//    writer.WriteBits(0, 8);
+//    writer.WriteBits(0, 8);
+//
+//    std::ofstream output = std::ofstream("C:/Chess/Training/result.bin", std::ios::out | std::ios::binary);
+//    const auto dataPointer = reinterpret_cast<char*>(data.data());
+//    output.write(dataPointer, 40);
+//    output.close();
+//}
+
+std::string HumanReadableDuration(std::chrono::seconds input_seconds)
+{
+    using namespace std::chrono;
+    typedef duration<int, std::ratio<86400>> days;
+    const auto d = duration_cast<days>(input_seconds);
+    input_seconds -= d;
+    const auto h = duration_cast<hours>(input_seconds);
+    input_seconds -= h;
+    const auto m = duration_cast<minutes>(input_seconds);
+    input_seconds -= m;
+    const auto s = duration_cast<seconds>(input_seconds);
+
+    std::stringstream ss;
+    ss.fill('0');
+    ss << d.count() << ".";
+    ss << std::setw(2);
+    ss << h.count() << ":";
+    ss << std::setw(2);
+    ss << m.count() << ":";
+    ss << std::setw(2);
+    ss << s.count();
+    return ss.str();
 }
 
-void WriteResultsPlain(const Board& board, Move move, Score score)
+void WriteResultsPlain(const Board& board, TrainState& state, SearchResults& results)
 {
-    auto fen = Fens::Serialize(board);
-    auto fixedFen = fen + " 0 0";
-    const MoveString moveStr = move.ToPositionString();
+    constexpr size_t totalPositions = 9800000;
+    const Fen fen = Fens::Serialize(board);
+    const Fen fixedFen = fen + " 0 0";
+    const MoveString moveStr = results.BestMove.ToPositionString();
+    const auto depth = static_cast<uint16_t>(results.SearchedDepth);
+    const auto now = std::chrono::high_resolution_clock::now();
+    const auto elapsed = now - state.TrainStart;
+    const auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(elapsed);
+    const auto humanReadableDuration = HumanReadableDuration(elapsedSeconds);
+    auto elapsedSecondCount = elapsedSeconds.count();
+    if(elapsedSecondCount == 0)
+    {
+        elapsedSecondCount = 1;
+    }
 
-    std::ofstream output = std::ofstream("C:/Chess/Training/result.plain");
-    output << "fen " << fixedFen << "\n";
-    output << "move " << moveStr << "\n";
-    output << "score " << score << "\n";
-    output << "ply 0\n";
-    output << "result 1\n";
-    output << "e\n";
-    output.close();
-}
-
-void SearchPosition(Search& search, Board& board)
-{
-    auto parameters = SearchParameters();
-    parameters.WhiteTime = 10000;
-    parameters.WhiteTimeIncrement = 1000;
-    parameters.BlackTime = 10000;
-    parameters.BlackTimeIncrement = 1000;
-
-    search.State.NewGame();
-    const Score score = search.Run(board, parameters);
-    const Move move = search.State.Thread[0].SavedPrincipalVariation[0];
+    std::lock_guard<std::mutex> guard(state.OutputMutex);
+    state.PositionIndex++;
+    auto completed = (static_cast<double>(state.PositionIndex) / totalPositions) * 100;
+    const auto pps = static_cast<double>(state.PositionIndex) / elapsedSecondCount;
+    const auto ppsInt = static_cast<size_t>(pps);
+    const auto remaining = totalPositions - state.PositionIndex;
+    auto estimatedSecondCount = static_cast<size_t>(remaining / pps);
+    auto estimatedSeconds = std::chrono::seconds(estimatedSecondCount);
+    auto humanReadableEstimate = HumanReadableDuration(estimatedSeconds);
+    auto secondsSinceLastPrint = std::chrono::duration_cast<std::chrono::seconds>(now - state.LastPrint);
+    auto doOut = secondsSinceLastPrint.count() >= 1;
+    if(doOut)
+    {
+        state.LastPrint = now;
+        
+        std::stringstream ss = std::stringstream();
+        ss << "[" << humanReadableDuration << "]";
+        ss << " " << std::right << std::setw(7) << state.PositionIndex;
+        ss << " (" << std::right << std::setw(3) << ppsInt << " PPS, " << std::fixed << std::setprecision(3) << completed << "%, " << humanReadableEstimate << " est.)";
+        ss << " " << std::left << std::setw(70) << fen;
+        ss << " depth " << std::left << std::setw(2) << depth;
+        ss << " move " << std::left << std::setw(5) << moveStr;
+        ss << " score " << results.SScore;
+        ss << std::endl;
+        const auto log = ss.str();
+        std::cout << log;
+    }
     
-    WriteResultsPlain(board, move, score);
+    state.Output << "fen " << fixedFen << "\n";
+    state.Output << "move " << moveStr << "\n";
+    state.Output << "score " << results.SScore << "\n";
+    state.Output << "ply " << depth <<"\n";
+    state.Output << "result 1\n";
+    state.Output << "e\n";
+    if(doOut)
+    {
+        state.Output.flush();
+    }
+}
+
+size_t ReadOffset(const std::string& path)
+{
+    if(!std::filesystem::exists(path))
+    {
+        return 0;
+    }
+    
+    auto file = std::ifstream();
+    file.open(path, std::ifstream::in);
+    size_t offset;
+    file >> offset;
+    return offset;
+}
+
+size_t WriteOffset(const std::string& path, const size_t offset)
+{
+    auto file = std::ofstream();
+    file.open(path, std::ofstream::out | std::ofstream::trunc);
+    file << offset;
+    return offset;
+}
+
+void SearchPosition(Search& search, Board& board, TrainState& state)
+{
+    search.State.NewGame();
+    SearchResults results;
+    search.Run(board, state.Parameters.SearchParams, results);
+    WriteResultsPlain(board, state, results);
     auto a = 123;
 }
 
-void RunThread()
+void GetFen(Fen& fen, TrainState& state)
+{
+    std::lock_guard<std::mutex> guard(state.InputMutex);
+    std::getline(state.Input, fen);
+    size_t offset = state.Input.tellg();
+}
+
+void RunThread(TrainState& state)
 {
     auto callback = [&](SearchCallbackData& data)
     {
@@ -190,30 +294,54 @@ void RunThread()
     };
 
     Search search = Search(callback);
-    search.State.NewGame();    
-    
-    Fen fen = "rnb1k1nr/4pp1p/3p2p1/1p1P4/2p1PN2/2P5/P4PPP/1RB1KB1R b Kkq -";
-    Board board{};
-    Fens::Parse(board, fen);
 
-    SearchPosition(search, board);
+    while (true)
+    {
+        Fen fen;
+        GetFen(fen, state);
+        //Fen fen = "rnb1k1nr/4pp1p/3p2p1/1p1P4/2p1PN2/2P5/P4PPP/1RB1KB1R b Kkq -";
+        Board board{};
+        Fens::Parse(board, fen);
+        SearchPosition(search, board, state);
+    }
 }
 
-void NnueTrainer::Run()
+void FillConsoleBuffer()
 {
-    RunThread();
-    //constexpr ThreadId threadCount = 1;
-    //auto threads = std::vector<std::thread>(threadCount);
-    //for(ThreadId threadId = 0; threadId < threadCount; threadId++)
-    //{
-    //    threads.emplace_back([&]()
-    //    {
-    //        RunThread();
-    //    });
-    //}
-    //
-    //for (ThreadId thread_id = 1; thread_id < Options::Threads; thread_id++)
-    //{
-    //    threads[thread_id].join();
-    //}
+    std::stringstream ss;
+    for(auto i = 0; i < 1000; i++)
+    {
+        ss << "\n";
+    }
+    std::cout << ss.str();
+}
+
+void NnueTrainer::Run(const TrainingParameters& parameters)
+{
+    TrainState state;
+    state.Parameters = parameters;
+    const size_t offset = ReadOffset(parameters.OffsetPath);
+    state.Input.open(parameters.InputPath, std::ifstream::in);
+    state.Input.seekg(offset);
+
+    state.Output.open(parameters.OutputPath, std::ofstream::out | std::ofstream::app);
+    state.PositionIndex = 0;
+    state.TrainStart = std::chrono::high_resolution_clock::now();
+  
+    //RunThread(state, parameters);
+    
+    constexpr ThreadId threadCount = 24;
+    auto threads = std::vector<std::thread>();
+    for(ThreadId threadId = 0; threadId < threadCount; threadId++)
+    {
+        threads.emplace_back([&]()
+        {
+            RunThread(state);
+        });
+    }
+    
+    for (ThreadId thread_id = 0; thread_id < threadCount; thread_id++)
+    {
+        threads[thread_id].join();
+    }
 }

@@ -25,13 +25,21 @@ public:
 
 using SearchCallback = std::function<void(SearchCallbackData& data)>;
 
+class SearchResults
+{
+public:
+    Ply SearchedDepth;
+    Score SScore;
+    Move BestMove;
+};
 
 class Search
 {
 private:
     SearchCallback Callback;
-    Score IterativeDeepen(const ThreadId threadId, Board& board);
-    void IterativeDeepenLazySmp(Board& board);
+    void GetSearchResults(SearchResults& results, Ply depth, Score score);
+    void IterativeDeepen(const ThreadId threadId, Board& board, SearchResults& results);
+    void IterativeDeepenLazySmp(Board& board, SearchResults& results);
 
 public:
     SearchState State{};
@@ -46,7 +54,8 @@ public:
     Score Aspiration(const ThreadId threadId, Board& board, const Ply depth, const Score previous);
     //void RunSingleThread(Board& board);
     //void RunMultiThread(Board& board);
-    Score Run(Board& board, const SearchParameters& parameters);
+    
+    void Run(Board& board, const SearchParameters& parameters, SearchResults& results);
 
 
     explicit Search(const SearchCallback& callback)

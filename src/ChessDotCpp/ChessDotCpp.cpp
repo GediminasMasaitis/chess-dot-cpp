@@ -4,7 +4,7 @@
 #include "tests.h"
 #include "uci.h"
 #include "evaluation.h"
-#include "nnuetrain.h"
+
 
 void Run(int argc, char** argv)
 {
@@ -38,15 +38,10 @@ void Test()
     //PerftSuite::Run();
 }
 
-void Train()
-{
-    NnueTrainer::Run();
-}
-
 int main(int argc, char** argv)
 {
     //Test();
-    Train();
-    //Run(argc, argv);
+    //Train();
+    Run(argc, argv);
     return 0;
 }

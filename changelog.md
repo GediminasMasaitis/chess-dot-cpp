@@ -1171,3 +1171,30 @@ Score of ChessDotCpp vs cosette5: 471 - 329 - 200  [0.571] 1000
 ...      White vs Black: 430 - 370 - 200  [0.530] 1000
 Elo difference: 49.7 +/- 19.4, LOS: 100.0 %, DrawRatio: 20.0 %
 ```
+
+### 1.31.1
+
+Fixed issue with transposition table and repetitions
+
+```
+info depth 1 multipv 1 score cp 44 nodes 26 nps 26000 time 1 pv e2e4
+info depth 2 multipv 1 score cp 10 nodes 104 nps 104000 time 1 pv e2e4 e7e5
+info depth 3 multipv 1 score cp 32 nodes 705 nps 705000 time 1 pv e2e4 d7d5 d2d3
+info depth 4 multipv 1 score cp 8 nodes 3176 nps 3176000 time 1 pv d2d4 g8f6 e2e3 d7d5
+info depth 5 multipv 1 score cp 30 nodes 10253 nps 2050600 time 5 pv b1c3 e7e5 d2d4 b8c6 e2e3
+info depth 6 multipv 1 score cp 10 nodes 23127 nps 2102454 time 11 pv d2d4 g8f6 e2e3 e7e6 g1f3 d7d5
+info depth 7 multipv 1 score cp 21 nodes 42486 nps 2124300 time 20 pv d2d4 g8f6 e2e3 d7d5 g1f3 c8f5 f1b5 b8c6
+info depth 8 multipv 1 score cp 16 nodes 134917 nps 2176080 time 62 pv e2e4 d7d5 e4d5 d8d5 g1f3 c8f5 b1c3 d5d6
+info depth 9 multipv 1 score cp 19 nodes 229221 nps 2183057 time 105 pv e2e4 b8c6 b1c3 g8f6 d2d4 d7d5 e4d5 f6d5 c3e4
+info depth 10 multipv 1 score cp 19 nodes 522411 nps 2251771 time 232 pv g1f3 g8f6 b1c3 b8c6 e2e4 e7e5 d2d4 f8b4 c1g5 d7d6
+info depth 11 multipv 1 score cp 30 nodes 1192746 nps 2258988 time 528 pv e2e4 e7e5 g1f3 g8f6 f1c4 f6e4 d2d3 e4f6 f3e5 d7d5 c4b5 c7c6
+info depth 12 multipv 1 score cp 14 nodes 1705513 nps 2212079 time 771 pv e2e4 e7e5 g1f3 g8f6 b1c3 f8b4 f1c4 b4c3 d2c3 d7d6 e1g1 f6e4
+info depth 13 multipv 1 score cp 22 nodes 2394943 nps 2165409 time 1106 pv e2e4 e7e5 g1f3 g8f6 b1c3 f8b4 f1c4 e8g8 e1g1 d7d6 d2d3 b4c3 b2c3
+info depth 14 multipv 1 score cp 25 nodes 3879466 nps 2102691 time 1845 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 d1e2 d8e7 d2d3 e4f6 c1g5 c8f5 b1c3
+info depth 15 multipv 1 score cp 25 nodes 6579618 nps 2025120 time 3249 pv e2e4 e7e5 g1f3 g8f6 f3e5 d8e7 d2d4 d7d6 e5f3 e7e4 c1e3 e4g6 b1c3 f8e7 f1b5 c7c6 f3h4
+info depth 16 multipv 1 score cp 21 nodes 12305582 nps 2001884 time 6147 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 d2d4 d8e7 f1e2 b8c6 e1g1 c8f5 d4d5 c6e5
+info depth 17 multipv 1 score cp 20 nodes 27286229 nps 1989227 time 13717 pv e2e4 e7e5 g1f3 b8c6 f1c4 g8f6 e1g1 f8c5 d2d4 c5d4 f3d4 c6d4 c1e3 d4e6 d1f3 e8g8 b1c3
+info depth 18 multipv 1 score cp 16 nodes 48485533 nps 1996768 time 24282 pv e2e4 e7e5 g1f3 b8c6 f1c4 g8f6 d2d3 f8c5 e1g1 d7d6 c1g5 e8g8 b1c3 h7h6 g5f6 d8f6 c3d5 f6d8
+info depth 19 multipv 1 score cp 23 nodes 79105877 nps 1984095 time 39870 pv e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5c6 d7c6 e1g1 c8g4 h2h3 g4f3 d1f3 d8f6 f3c3 e8c8 d2d3 d8d4 c1e3
+info depth 20 multipv 1 score cp 27 nodes 162600124 nps 1986101 time 81869 pv e2e4 e7e5 g1f3 g8f6 d2d4 f6e4 d4e5 d7d5 f1b5 c7c6 b5d3 f8b4 c2c3 b4e7 e1g1 e4c5 c1e3 e8g8 d1e2 c5d3 e2d3 c8g4
+```

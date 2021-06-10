@@ -1,6 +1,7 @@
 #pragma once
-#include "board.h"
-#include "search.h"
+#include <string>
+
+#include "searchstate.h"
 
 //class TrainingSearchResults
 //{
@@ -9,8 +10,23 @@
 //	HistoryPly HistoryPly;
 //};
 
+enum class ResultFormats : uint8_t
+{
+	Plain
+};
+
+class TrainingParameters
+{
+public:
+	std::string InputPath;
+	std::string OutputPath;
+	std::string OffsetPath;
+	ResultFormats ResultFormat;
+	SearchParameters SearchParams;
+};
+
 class NnueTrainer
 {
 public:
-	static void Run();
+	static void Run(const TrainingParameters& parameters);
 };
