@@ -171,10 +171,15 @@ void Uci::HandleUciNewGame()
 void Uci::HandleTrain(std::stringstream& reader)
 {
 	auto parameters = TrainingParameters();
+	parameters.SearchParams.WhiteTime = 1000;
+	parameters.SearchParams.WhiteTimeIncrement = 50;
+	parameters.SearchParams.BlackTime = 1000;
+	parameters.SearchParams.BlackTimeIncrement = 50;
+	//parameters.SearchParams.SkipNewSearch = true;
 	parameters.InputPath = "C:/Chess/TrainingOld/data/fishpack_wins.epd";
 	parameters.OffsetPath = "C:/Chess/TrainingOld/data/offset.txt";
 	parameters.OutputPath = "C:/Chess/TrainingOld/data/results.plain";
-	parameters.ResultFormat = ResultFormats::Plain;
+	parameters.OutputFormat = OutputFormats::Plain;
 	ReadSearchParameters(reader, parameters.SearchParams);
 	NnueTrainer::Run(parameters);
 }

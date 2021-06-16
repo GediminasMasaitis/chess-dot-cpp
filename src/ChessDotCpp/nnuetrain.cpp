@@ -137,36 +137,6 @@ public:
     }
 };
 
-class TrainState
-{
-public:
-    TrainingParameters Parameters;
-    std::ifstream Input;
-    std::mutex InputMutex;
-    std::ofstream Output;
-    std::mutex OutputMutex;
-    uint32_t PositionIndex;
-    std::chrono::high_resolution_clock::time_point TrainStart;
-    std::chrono::high_resolution_clock::time_point LastPrint;
-};
-
-//void WriteResults(const Board& board, Score score)
-//{
-//    std::array<uint8_t, 40> data{};
-//    auto writer = BitWriter(data.data());
-//    Sfens::Serialize(board, writer);
-//    writer.WriteBits(score, 16);
-//    writer.WriteBits(0, 16);
-//    writer.WriteBits(0, 16);
-//    writer.WriteBits(0, 8);
-//    writer.WriteBits(0, 8);
-//
-//    std::ofstream output = std::ofstream("C:/Chess/Training/result.bin", std::ios::out | std::ios::binary);
-//    const auto dataPointer = reinterpret_cast<char*>(data.data());
-//    output.write(dataPointer, 40);
-//    output.close();
-//}
-
 std::string HumanReadableDuration(std::chrono::seconds input_seconds)
 {
     using namespace std::chrono;
@@ -191,62 +161,137 @@ std::string HumanReadableDuration(std::chrono::seconds input_seconds)
     return ss.str();
 }
 
-void WriteResultsPlain(const Board& board, TrainState& state, SearchResults& results)
+class TrainResult
 {
-    constexpr size_t totalPositions = 9800000;
-    const Fen fen = Fens::Serialize(board);
-    const Fen fixedFen = fen + " 0 0";
-    const MoveString moveStr = results.BestMove.ToPositionString();
-    const auto depth = static_cast<uint16_t>(results.SearchedDepth);
-    const auto now = std::chrono::high_resolution_clock::now();
-    const auto elapsed = now - state.TrainStart;
-    const auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(elapsed);
-    const auto humanReadableDuration = HumanReadableDuration(elapsedSeconds);
-    auto elapsedSecondCount = elapsedSeconds.count();
-    if(elapsedSecondCount == 0)
-    {
-        elapsedSecondCount = 1;
-    }
+public:
+    Fen FFen;
+    MoveString Move;
+    Score SScore;
+    HistoryPly Ply;
+    int8_t Result;
+    char Type;
+};
 
-    std::lock_guard<std::mutex> guard(state.OutputMutex);
-    state.PositionIndex++;
-    auto completed = (static_cast<double>(state.PositionIndex) / totalPositions) * 100;
-    const auto pps = static_cast<double>(state.PositionIndex) / elapsedSecondCount;
-    const auto ppsInt = static_cast<size_t>(pps);
-    const auto remaining = totalPositions - state.PositionIndex;
-    auto estimatedSecondCount = static_cast<size_t>(remaining / pps);
-    auto estimatedSeconds = std::chrono::seconds(estimatedSecondCount);
-    auto humanReadableEstimate = HumanReadableDuration(estimatedSeconds);
-    auto secondsSinceLastPrint = std::chrono::duration_cast<std::chrono::seconds>(now - state.LastPrint);
-    auto doOut = secondsSinceLastPrint.count() >= 1;
-    if(doOut)
+class TrainingReader
+{
+    std::ifstream& Stream;
+    InputFormats Format;
+    std::mutex Mutex;
+
+public:
+    explicit TrainingReader(std::ifstream& input, InputFormats format)
+    : Stream(input), Format(format)
     {
-        state.LastPrint = now;
-        
-        std::stringstream ss = std::stringstream();
-        ss << "[" << humanReadableDuration << "]";
-        ss << " " << std::right << std::setw(7) << state.PositionIndex;
-        ss << " (" << std::right << std::setw(3) << ppsInt << " PPS, " << std::fixed << std::setprecision(3) << completed << "%, " << humanReadableEstimate << " est.)";
-        ss << " " << std::left << std::setw(70) << fen;
-        ss << " depth " << std::left << std::setw(2) << depth;
-        ss << " move " << std::left << std::setw(5) << moveStr;
-        ss << " score " << results.SScore;
-        ss << std::endl;
-        const auto log = ss.str();
-        std::cout << log;
     }
     
-    state.Output << "fen " << fixedFen << "\n";
-    state.Output << "move " << moveStr << "\n";
-    state.Output << "score " << results.SScore << "\n";
-    state.Output << "ply " << depth <<"\n";
-    state.Output << "result 1\n";
-    state.Output << "e\n";
-    if(doOut)
+    void ReadData(TrainResult& data)
     {
-        state.Output.flush();
+        std::lock_guard<std::mutex> guard(Mutex);
+        switch (Format)
+        {
+        case InputFormats::Epd:
+            std::getline(Stream, data.FFen);
+            break;
+        case InputFormats::Plain:
+            break;
+        }
+        
     }
-}
+
+    size_t GetCurrentOffset() const
+    {
+        const size_t offset = Stream.tellg();
+        return offset;
+    }
+};
+
+class TrainingWriter
+{
+    std::ofstream& Stream;
+    OutputFormats Format;
+    std::mutex Mutex;
+
+    void WriteResultsPlain(const TrainResult& result)
+    {
+        Stream << "fen " << result.FFen << "\n";
+        Stream << "move " << result.Move << "\n";
+        Stream << "score " << result.SScore << "\n";
+        Stream << "ply " << result.Ply << "\n";
+        Stream << "result 1\n";
+        Stream << "e\n";
+
+    }
+
+public:
+    TrainingWriter(std::ofstream& stream, OutputFormats format)
+        : Stream(stream), Format(format)
+    {
+    }
+
+    void WriteResults(const TrainResult& result, const bool flush)
+    {
+        switch (Format)
+        {
+        case OutputFormats::Plain:
+            WriteResultsPlain(result);
+            break;
+        }
+
+        if (flush)
+        {
+            Stream.flush();
+        }
+    }
+};
+
+class TrainingReporter
+{
+    std::mutex Mutex;
+
+public:
+    void PrintProgress()
+    {
+        
+    }
+};
+
+class TrainState
+{
+public:
+    TrainingParameters Parameters;
+    TrainingReader& Reader;
+    TrainingWriter& Writer;
+    std::mutex OutputMutex;
+    bool IsRunning;
+    size_t InputLength;
+    size_t CurrentOffset;
+    uint32_t SearchedPositions;
+    std::chrono::high_resolution_clock::time_point TrainStart;
+    std::chrono::high_resolution_clock::time_point LastPrint;
+
+
+    explicit TrainState(TrainingReader& reader, TrainingWriter& writer)
+        : Reader(reader), Writer(writer)
+    {
+    }
+};
+
+//void WriteResults(const Board& board, Score score)
+//{
+//    std::array<uint8_t, 40> data{};
+//    auto writer = BitWriter(data.data());
+//    Sfens::Serialize(board, writer);
+//    writer.WriteBits(score, 16);
+//    writer.WriteBits(0, 16);
+//    writer.WriteBits(0, 16);
+//    writer.WriteBits(0, 8);
+//    writer.WriteBits(0, 8);
+//
+//    std::ofstream output = std::ofstream("C:/Chess/Training/result.bin", std::ios::out | std::ios::binary);
+//    const auto dataPointer = reinterpret_cast<char*>(data.data());
+//    output.write(dataPointer, 40);
+//    output.close();
+//}
 
 size_t ReadOffset(const std::string& path)
 {
@@ -270,20 +315,107 @@ size_t WriteOffset(const std::string& path, const size_t offset)
     return offset;
 }
 
-void SearchPosition(Search& search, Board& board, TrainState& state)
+class TrainThreadState
 {
-    search.State.NewGame();
-    SearchResults results;
-    search.Run(board, state.Parameters.SearchParams, results);
-    WriteResultsPlain(board, state, results);
-    auto a = 123;
+public:
+    size_t SearchedPositions = 0;
+    Search& SSearch;
+
+    explicit TrainThreadState(Search& search)
+    : SSearch(search)
+    {
+    }
+};
+
+void GetOutputResults(TrainResult& inputResult, SearchResults& searchResults, TrainResult& outputResult, Board& board)
+{
+    outputResult = inputResult;
+    if (inputResult.FFen.empty())
+    {
+        const Fen fen = Fens::Serialize(board);
+        const Fen fixedFen = fen + " 0 0";
+        outputResult.FFen = fixedFen;
+    }
+    if(outputResult.Result == -2)
+    {
+        outputResult.Result = 1;
+    }
+    if(outputResult.Type == '\0')
+    {
+        outputResult.Type = 'e';
+    }
+    outputResult.Move = searchResults.BestMove.ToPositionString();
+    outputResult.SScore = searchResults.SScore;
 }
 
-void GetFen(Fen& fen, TrainState& state)
+void HandleSearchedPosition(TrainState& state, TrainThreadState& threadState, TrainResult& inputResult, Board& board, SearchResults& searchResults)
 {
-    std::lock_guard<std::mutex> guard(state.InputMutex);
-    std::getline(state.Input, fen);
-    size_t offset = state.Input.tellg();
+
+    
+}
+
+void RunIteration(TrainState& state, TrainThreadState& threadState)
+{
+    TrainResult inputResult;
+    state.Reader.ReadData(inputResult);
+    state.CurrentOffset = state.Reader.GetCurrentOffset();
+    Board board{};
+    Fens::Parse(board, inputResult.FFen);
+
+    if ((threadState.SearchedPositions & 0xFF) == 0)
+    {
+        threadState.SSearch.State.NewGame();
+    }
+    SearchResults searchResults;
+    threadState.SSearch.Run(board, state.Parameters.SearchParams, searchResults);
+    
+    //HandleSearchedPosition(state, threadState, inputResult, board, searchResults);
+
+    TrainResult outputResult;
+    GetOutputResults(inputResult, searchResults, outputResult, board);
+    threadState.SearchedPositions++;
+
+    const auto now = std::chrono::high_resolution_clock::now();
+    const auto elapsed = now - state.TrainStart;
+    const auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(elapsed);
+    const auto humanReadableDuration = HumanReadableDuration(elapsedSeconds);
+    auto elapsedSecondCount = elapsedSeconds.count();
+    if (elapsedSecondCount == 0)
+    {
+        elapsedSecondCount = 1;
+    }
+
+    std::lock_guard<std::mutex> guard(state.OutputMutex);
+    state.SearchedPositions++;
+    auto completed = (static_cast<double>(state.CurrentOffset) / state.InputLength) * 100;
+    const auto pps = static_cast<double>(state.SearchedPositions) / elapsedSecondCount;
+    const auto ppsInt = static_cast<size_t>(pps);
+    const auto remaining = state.InputLength - state.CurrentOffset;
+    auto estimatedSecondCount = static_cast<size_t>(remaining / pps);
+    auto estimatedSeconds = std::chrono::seconds(estimatedSecondCount);
+    auto humanReadableEstimate = HumanReadableDuration(estimatedSeconds);
+    auto secondsSinceLastPrint = std::chrono::duration_cast<std::chrono::seconds>(now - state.LastPrint);
+    auto doOut = secondsSinceLastPrint.count() >= 1;
+    if (doOut)
+    {
+        state.LastPrint = now;
+
+        std::stringstream ss = std::stringstream();
+        ss << "[" << humanReadableDuration << "]";
+        ss << " " << std::right << std::setw(7) << state.SearchedPositions;
+        ss << " (" << std::right << std::setw(3) << ppsInt << " PPS, " << std::fixed << std::setprecision(3) << completed << "%, " << humanReadableEstimate << " est.)";
+        ss << " " << std::left << std::setw(70) << outputResult.FFen;
+        const auto depth = static_cast<uint16_t>(searchResults.SearchedDepth);
+        ss << " depth " << std::left << std::setw(2) << depth;
+        ss << " move " << std::left << std::setw(5) << outputResult.Move;
+        ss << " score " << outputResult.SScore;
+        ss << std::endl;
+        const auto log = ss.str();
+        std::cout << log;
+    }
+
+    const bool doFlush = (state.SearchedPositions % 0xFF) == 0;
+    state.Writer.WriteResults(outputResult, doFlush);
 }
 
 void RunThread(TrainState& state)
@@ -294,15 +426,10 @@ void RunThread(TrainState& state)
     };
 
     Search search = Search(callback);
-
-    while (true)
+    TrainThreadState threadState(search);
+    while (state.IsRunning)
     {
-        Fen fen;
-        GetFen(fen, state);
-        //Fen fen = "rnb1k1nr/4pp1p/3p2p1/1p1P4/2p1PN2/2P5/P4PPP/1RB1KB1R b Kkq -";
-        Board board{};
-        Fens::Parse(board, fen);
-        SearchPosition(search, board, state);
+        RunIteration(state, threadState);
     }
 }
 
@@ -318,15 +445,23 @@ void FillConsoleBuffer()
 
 void NnueTrainer::Run(const TrainingParameters& parameters)
 {
-    TrainState state;
-    state.Parameters = parameters;
+    size_t inputLength = std::filesystem::file_size(parameters.InputPath);
     const size_t offset = ReadOffset(parameters.OffsetPath);
-    state.Input.open(parameters.InputPath, std::ifstream::in);
-    state.Input.seekg(offset);
+    std::ifstream inputStream;
+    inputStream.open(parameters.InputPath, std::ifstream::in);
+    inputStream.seekg(offset);
+    TrainingReader reader = TrainingReader(inputStream, parameters.InputFormat);
 
-    state.Output.open(parameters.OutputPath, std::ofstream::out | std::ofstream::app);
-    state.PositionIndex = 0;
+    std::ofstream outputStream;
+    outputStream.open(parameters.OutputPath, std::ofstream::out | std::ofstream::app);
+    TrainingWriter writer = TrainingWriter(outputStream, parameters.OutputFormat);
+
+    TrainState state = TrainState(reader, writer);
+    state.Parameters = parameters;
+    state.SearchedPositions = 0;
     state.TrainStart = std::chrono::high_resolution_clock::now();
+    state.IsRunning = true;
+    state.InputLength = inputLength;
   
     //RunThread(state, parameters);
     

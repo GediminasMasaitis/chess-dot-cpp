@@ -16,6 +16,8 @@ public:
 
     size_t WhiteTimeIncrement = 100;
     size_t BlackTimeIncrement = 100;
+
+    bool SkipNewSearch = false;
 };
 
 //class ContinuationEntry
@@ -225,7 +227,9 @@ public:
     EvalState Eval{};
     Color ColorToMove;
     BreadcrumbArray Breadcrumbs{};
+#if ABDADA
     AbdadaTable Abdada;
+#endif
     SearchParameters Parameters{};
 
     GlobalData()
@@ -247,13 +251,18 @@ public:
 
     void NewSearch(const Board& board)
     {
+#if ABDADA
         Abdada.NewSearch();
+#endif
         ColorToMove = board.ColorToMove;
-        for (auto& breadcrumb : Breadcrumbs)
+    	if(!Parameters.SkipNewSearch)
         {
-            breadcrumb.Key = 0;
-            breadcrumb.TThreadId = -1;
-        }
+            for (auto& breadcrumb : Breadcrumbs)
+            {
+                breadcrumb.Key = 0;
+                breadcrumb.TThreadId = -1;
+            }
+    	}
     }
 };
 
@@ -283,10 +292,13 @@ public:
         Global.Parameters = parameters;
         Global.NewSearch(board);
         Stats.NewSearch();
-        for (ThreadState& threadState : Thread)
-        {
-            threadState.NewSearch();
-        }
+    	if(!parameters.SkipNewSearch)
+    	{
+            for (ThreadState& threadState : Thread)
+            {
+                threadState.NewSearch();
+            }
+    	}
     }
 
     //SearchState& operator=(const SearchState&) = default;

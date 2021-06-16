@@ -10,18 +10,29 @@
 //	HistoryPly HistoryPly;
 //};
 
-enum class ResultFormats : uint8_t
+enum class OutputFormats : uint8_t
 {
+	Plain
+};
+
+
+enum class InputFormats : uint8_t
+{
+	Epd,
 	Plain
 };
 
 class TrainingParameters
 {
 public:
+	InputFormats InputFormat;
 	std::string InputPath;
+	
+	OutputFormats OutputFormat;
 	std::string OutputPath;
+	
 	std::string OffsetPath;
-	ResultFormats ResultFormat;
+	
 	SearchParameters SearchParams;
 };
 
