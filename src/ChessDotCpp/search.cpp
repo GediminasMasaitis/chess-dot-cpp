@@ -1001,7 +1001,7 @@ void Search::IterativeDeepenLazySmp(Board& board, SearchResults& results)
     for (depth = depth + 1; depth < State.Global.Parameters.MaxDepth; depth++)
     {
         State.Thread[0].IterationInitialDepth = depth;
-        std::vector<std::thread> threads(1);
+        auto threads = std::vector<std::thread>();
         for(ThreadId helperId = 1; helperId < Options::Threads; helperId++)
         {
             State.Thread[helperId] = State.Thread[0];
@@ -1027,7 +1027,7 @@ void Search::IterativeDeepenLazySmp(Board& board, SearchResults& results)
 
         for (ThreadId helperId = 1; helperId < Options::Threads; helperId++)
         {
-            threads[helperId].join();
+            threads[helperId-1].join();
         }
         
         callbackData.Depth = depth;
@@ -1056,9 +1056,13 @@ void Search::IterativeDeepenLazySmp(Board& board, SearchResults& results)
 
 void Search::Run(Board& board, const SearchParameters& parameters, SearchResults& results)
 {
+    if(!State.Initialized)
+    {
+        State.NewGame();
+    }
     //std::cout << board.Key << std::endl;
     Stopper.Init(parameters, board.WhiteToMove);
     State.NewSearch(board, parameters);
-    //IterativeDeepenLazySmp(board, results);
-    IterativeDeepen(0, board, results);
+    IterativeDeepenLazySmp(board, results);
+    //IterativeDeepen(0, board, results);
 }

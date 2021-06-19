@@ -149,12 +149,41 @@ void Uci::HandleGo(std::stringstream& reader)
 	Out("bestmove " + results.BestMove.ToPositionString());
 }
 
+void Uci::PrintOptions()
+{
+	Out("option name Hash type spin default " + std::to_string(Options::Hash) + " min 1 max 1024");
+	Out("option name Threads type spin default " + std::to_string(Options::Threads) + " min 1 max 64");
+}
+
 void Uci::HandleUci()
 {
 	Out("id name ChessDotCpp");
 	Out("id author Gediminas Masaitis");
 	Out("");
+	PrintOptions();
 	Out("uciok");
+}
+
+void Uci::HandleSetoption(std::stringstream& reader)
+{
+	std::string temp;
+	std::string name;
+	std::string value;
+	reader >> temp >> name >> temp >> value;
+
+	if(name.empty() || value.empty())
+	{
+		return;
+	}
+
+	if (name == "Hash") {
+		Options::Hash = static_cast<size_t>(std::stoull(value));
+	}
+	else if (name == "Threads") {
+		Options::Threads = static_cast<ThreadId>(std::stoull(value));
+	}
+	
+	auto a = 123;
 }
 
 void Uci::HandleIsReady()
@@ -205,6 +234,10 @@ bool Uci::HandleInput(const std::string& line)
 		{
 			HandleUci();
 		}
+		else if (word == "setoption")
+		{
+			HandleSetoption(reader);
+		}
 		else if (word == "ucinewgame")
 		{
 			HandleUciNewGame();
@@ -228,7 +261,6 @@ bool Uci::HandleInput(const std::string& line)
 
 void Uci::Init()
 {
-	search.State.NewGame();
 	Fens::Parse(board, startPos);
 }
 

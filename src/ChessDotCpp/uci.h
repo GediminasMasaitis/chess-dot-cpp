@@ -30,10 +30,12 @@ public:
     void HandleFen(std::stringstream& reader);
     void HandlePosition(std::stringstream& reader);
     void HandleGo(std::stringstream& reader);
+    void PrintOptions();
     void HandleUci();
     void HandleIsReady();
     void HandleUciNewGame();
     void HandleTrain(std::stringstream& reader);
+    void HandleSetoption(std::stringstream& reader);
     bool HandleInput(const std::string& line);
     void Init();
     void Run();

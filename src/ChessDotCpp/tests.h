@@ -6,6 +6,7 @@
 #include "fen.h"
 #include "magics.h"
 #include "see.h"
+#include "likeliness.h"
 #include "zobrist.h"
 
 class Tests
@@ -34,6 +35,7 @@ public:
         }
         commands.push("quit");
         Game::RunCommands(commands);
+        Likeliness::PrintStats();
     }
 
     //static void TestSfen()

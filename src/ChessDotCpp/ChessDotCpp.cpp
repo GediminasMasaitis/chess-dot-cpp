@@ -31,9 +31,9 @@ void Test()
     //Tests::TestSee();
     //Tests::TestMagics();
     //Tests::TestZobrist();
-    //Tests::TestUci();
+    Tests::TestUci();
     //Tests::TestSfen();
-    Tests::TestFenSerialize();
+    //Tests::TestFenSerialize();
     
     //PerftSuite::Run();
 }

@@ -269,17 +269,19 @@ public:
 class SearchState
 {
 public:
+    bool Initialized;
     ThreadVector Thread;
     GlobalData Global{};
     SearchStats Stats{};
 
     SearchState()
     {
-        Thread = ThreadVector(Options::Threads);
+        Initialized = false;
     }
 
     void NewGame()
     {
+        Thread = ThreadVector(Options::Threads);
         Global.NewGame();
         for(ThreadState& threadState : Thread)
         {

@@ -1,6 +1,7 @@
 #include "board.h"
 
 #include "zobrist.h"
+#include "likeliness.h"
 
 bool Board::CanCastle(const CastlingPermission permission) const
 {
@@ -275,7 +276,7 @@ void Board::UndoMove()
     }
     
     // TAKES
-    if (takesPiece > 0)
+    if(takesPiece > 0)
     {
         if (!move.GetEnPassant())
         {
