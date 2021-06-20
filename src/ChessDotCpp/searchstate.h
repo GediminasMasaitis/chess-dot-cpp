@@ -227,9 +227,6 @@ public:
     EvalState Eval{};
     Color ColorToMove;
     BreadcrumbArray Breadcrumbs{};
-#if ABDADA
-    AbdadaTable Abdada;
-#endif
     SearchParameters Parameters{};
 
     GlobalData()
@@ -251,9 +248,6 @@ public:
 
     void NewSearch(const Board& board)
     {
-#if ABDADA
-        Abdada.NewSearch();
-#endif
         ColorToMove = board.ColorToMove;
     	if(!Parameters.SkipNewSearch)
         {
@@ -287,6 +281,7 @@ public:
         {
             threadState.NewGame();
         }
+        Initialized = true;
     }
 
     void NewSearch(const Board& board, const SearchParameters& parameters)

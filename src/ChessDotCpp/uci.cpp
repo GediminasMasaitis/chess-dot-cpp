@@ -193,7 +193,7 @@ void Uci::HandleIsReady()
 
 void Uci::HandleUciNewGame()
 {
-	search.State.NewGame();
+	//search.State.NewGame();
 	Fens::Parse(board, startPos);
 }
 

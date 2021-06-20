@@ -7,7 +7,10 @@
 #include "magics.h"
 #include "see.h"
 #include "likeliness.h"
+#include "movegen.h"
+#include "tablebases.h"
 #include "zobrist.h"
+#include "fathom/tbprobe.h"
 
 class Tests
 {
@@ -90,6 +93,62 @@ public:
 
         const ZobristKey key = ZobristKeys.CalculateKey(board);
         std::cout << std::hex << key << std::endl;
+    }
+
+    static void TestRepetitions()
+    {
+        Fen fen = "3k4/6p1/2r5/8/8/8/1R4P1/3K4 w - - 0 1";
+        Board board{};
+        Fens::Parse(board, fen);
+
+        board.DoMove("b2b3");
+        board.DoMove("c6c5");
+        board.DoMove("g2g3");
+        board.DoMove("g7g6");
+        board.DoMove("b3b2");
+        board.DoMove("c5c6");
+    	
+        //const ZobristKey key = ZobristKeys.CalculateKey(board);
+        auto callback = [&](SearchCallbackData& data) { };
+        auto search = Search(callback);
+
+        auto isRepetition = search.IsRepetitionOr50Move(board);
+    	
+        std::cout << std::hex << isRepetition << std::endl;
+    }
+
+    static void TestTablebases()
+    {
+        //Fen fen = "3k4/8/2r5/8/8/8/1R4P1/3K4 w - - 0 1";
+        Fen fen = "3k4/8/2r5/8/8/8/1R3Q2/3K4 w - - 0 1";
+        //Fen fen = "8/8/5k2/8/8/8/1P6/RK3q2 w - - 0 1";
+        Board board{};
+        Fens::Parse(board, fen);
+
+        MoveArray engineMoves = MoveArray();
+        MoveCount engineMoveCount = 0;
+        MoveGenerator::GetAllPossibleMoves(board, engineMoves, engineMoveCount);
+    	
+
+        Tablebases::Init();
+        auto result = Tablebases::Probe(board);
+
+        //TbRootMoves moves;
+    	
+        //auto result = tb_probe_root
+        //(
+        //    board.BitBoard[Colors::White],
+        //    board.BitBoard[Colors::Black],
+        //    board.BitBoard[Pieces::WhiteKing] | board.BitBoard[Pieces::BlackKing],
+        //    board.BitBoard[Pieces::WhiteQueen] | board.BitBoard[Pieces::BlackQueen],
+        //    board.BitBoard[Pieces::WhiteRook] | board.BitBoard[Pieces::BlackRook],
+        //    board.BitBoard[Pieces::WhiteBishop] | board.BitBoard[Pieces::BlackBishop],
+        //    board.BitBoard[Pieces::WhiteKnight] | board.BitBoard[Pieces::BlackKnight],
+        //    board.BitBoard[Pieces::WhitePawn] | board.BitBoard[Pieces::BlackPawn],
+        //    0, 0, 0, board.WhiteToMove, false, false, &moves
+        //);
+
+        std::cout << static_cast<int16_t>(result) << std::endl;
     }
 
     static size_t RunWithTiming(const std::function<void()>& function, const size_t times)

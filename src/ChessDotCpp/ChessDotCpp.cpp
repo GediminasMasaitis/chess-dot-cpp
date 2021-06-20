@@ -4,11 +4,13 @@
 #include "tests.h"
 #include "uci.h"
 #include "evaluation.h"
+#include "tablebases.h"
 
 
 void Run(int argc, char** argv)
 {
     EvaluationNnue::Init();
+    Tablebases::Init();
     if(argc > 1)
     {
         std::string param1 = argv[1];
@@ -31,7 +33,9 @@ void Test()
     //Tests::TestSee();
     //Tests::TestMagics();
     //Tests::TestZobrist();
-    Tests::TestUci();
+    //Tests::TestRepetitions();
+    Tests::TestTablebases();
+    
     //Tests::TestSfen();
     //Tests::TestFenSerialize();
     
