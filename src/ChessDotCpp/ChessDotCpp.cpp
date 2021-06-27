@@ -34,13 +34,15 @@ void Test()
     //Tests::TestMagics();
     //Tests::TestZobrist();
     //Tests::TestRepetitions();
-    Tests::TestTablebases();
+    Tests::TestUci();
+    //Tests::TestTablebases();
     
     //Tests::TestSfen();
     //Tests::TestFenSerialize();
     
     //PerftSuite::Run();
 }
+
 
 int main(int argc, char** argv)
 {

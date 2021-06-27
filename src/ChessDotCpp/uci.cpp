@@ -153,6 +153,9 @@ void Uci::PrintOptions()
 {
 	Out("option name Hash type spin default " + std::to_string(Options::Hash) + " min 1 max 1024");
 	Out("option name Threads type spin default " + std::to_string(Options::Threads) + " min 1 max 64");
+	Out("option name TUNE_Score1 type spin default 0 min -30000 max 30000");
+	Out("option name TUNE_Ply1 type spin default 0 min -63 max 63");
+	Out("option name TUNE_Ply2 type spin default 0 min -63 max 63");
 }
 
 void Uci::HandleUci()
@@ -182,7 +185,15 @@ void Uci::HandleSetoption(std::stringstream& reader)
 	else if (name == "Threads") {
 		Options::Threads = static_cast<ThreadId>(std::stoull(value));
 	}
-	
+	else if (name == "TUNE_Score1") {
+		Options::TuneScore1 = static_cast<Score>(std::stoi(value));
+	}
+	else if (name == "TUNE_Ply1") {
+		Options::TunePly1 = static_cast<Ply>(std::stoi(value));
+	}
+	else if (name == "TUNE_Ply2") {
+		Options::TunePly2 = static_cast<Ply>(std::stoi(value));
+	}
 	auto a = 123;
 }
 

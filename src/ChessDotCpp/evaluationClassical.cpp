@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "movegen.h"
+#include "options.h"
 
 class EvaluationScores
 {
@@ -574,7 +575,7 @@ Score EvalPawn(const Board& board, const Position position, const AttackDetails&
 
     const Bitboard inFront = InFront.ColumnInFront[side][position];
     const Bitboard ownPawnsInFront = inFront & board.BitBoard[ownPawn];
-    result -= PopCount(ownPawnsInFront) * 20;
+    result += PopCount(ownPawnsInFront) * EvaluationData::DoubledPawns;
 
     const Bitboard opponentPawnsInFront = inFront & board.BitBoard[opponentPawn];
     flagIsOpposed = opponentPawnsInFront != 0;

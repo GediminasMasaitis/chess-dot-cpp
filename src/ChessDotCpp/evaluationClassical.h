@@ -2,6 +2,7 @@
 
 #include "board.h"
 #include "evalstate.h"
+#include "options.h"
 
 class EvaluationData
 {
@@ -295,6 +296,7 @@ public:
     static constexpr Score NoFianchetto = -4;
     static constexpr Score Fianchetto = 4;
     static constexpr Score Tempo = 10;
+    static constexpr Score DoubledPawns = -20;
 };
 
 class ClassicEvaluation

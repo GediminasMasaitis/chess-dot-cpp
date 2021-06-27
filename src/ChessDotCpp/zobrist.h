@@ -121,6 +121,22 @@ public:
         }
         return key;
     }
+
+    [[nodiscard]] constexpr ZobristKey GetMoveKey(const MoveValue moveValue) const
+    {
+    	if(moveValue == 0)
+    	{
+            return 0;
+    	}
+    	
+        return moveValue * 6364136223846793005ULL + 1442695040888963407ULL;
+    }
+
+    [[nodiscard]] constexpr ZobristKey GetSingularKey(const ZobristKey boardKey, const MoveValue singularValue) const
+    {
+        const auto singularKey = GetMoveKey(singularValue);
+        return boardKey ^ singularKey;
+    }
 };
 
 constexpr ZobristKeysClass ZobristKeys = ZobristKeysClass();

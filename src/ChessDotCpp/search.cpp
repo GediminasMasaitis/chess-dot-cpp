@@ -12,6 +12,8 @@
 #include <thread>
 #include <algorithm>
 
+#include "zobrist.h"
+
 //bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, Move& bestMove, Score& score, bool& entryExists)
 //{
 //    score = 0;
@@ -140,13 +142,13 @@ void Search::StoreTranspositionTable(const ThreadState& threadState, const Zobri
 
 Score Search::Contempt(const Board& board) const
 {
-    //constexpr Score midgame = -15;
-    //
-    //if (board.PieceMaterial[State.Global.ColorToMove] < Constants::EndgameMaterial)
-    //{
-    //    return 0;
-    //}
-    //
+    constexpr Score midgame = -20000;
+    
+    /*if (board.PieceMaterial[State.Global.ColorToMove] < Constants::EndgameMaterial)
+    {
+        return 0;
+    }*/
+    
     //Score score;
     //if (board.ColorToMove == State.Global.ColorToMove)
     //{
@@ -473,7 +475,8 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     TranspositionTableEntry entry;
     bool hashEntryExists = true;
     Score probedScore;
-    const bool probeSuccess = TryProbeTranspositionTable(board.Key, depth, alpha, beta, entry, probedScore, hashEntryExists);
+    const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, threadState.SingularMove.Value);
+    const bool probeSuccess = TryProbeTranspositionTable(key, depth, alpha, beta, entry, probedScore, hashEntryExists);
     const Move principalVariationMove = hashEntryExists ? entry.MMove : Move(0);
     if (probeSuccess)
     {
@@ -565,6 +568,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     )
     {
         const Ply nullDepthReduction = depth > 6 ? 3 : 2;
+        //const Ply nullDepthReduction = 1 + (depth / 4);
         const Move nullMove = Move(0, 0, Pieces::Empty);
         board.DoMove(nullMove);
         const Score nullMoveScore = -AlphaBeta(threadId, board, depth - nullDepthReduction - 1, ply + 1, -beta, -beta + 1, false, !isCutNode, false);
@@ -577,6 +581,8 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
     // FUTILITY PRUNING - DETECTION
     bool futilityPruning = false;
+    //const Score futilityPerDepth = Options::TuneScore1;
+    //std::array<Score, 4> futilityMargins{ 0, futilityPerDepth, futilityPerDepth * 2, futilityPerDepth };
     std::array<Score, 4> futilityMargins { 0, 200, 300, 500 };
     if
     (
@@ -657,7 +663,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //    const Ply singularDepth = depth / 2;
         //    
         //    threadState.SingularMove = move;
-        //    const Score singularScore = AlphaBeta(threadId, board, singularDepth, ply, singularAlpha, singularBeta, false, true);
+        //    const Score singularScore = AlphaBeta(threadId, board, singularDepth, ply, singularAlpha, singularBeta, false, isCutNode, true);
         //    threadState.SingularMove = Move(0);
 
         //    if(singularScore < singularBeta)
@@ -671,7 +677,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //    else if(entry.SScore >= beta)
         //    {
         //        threadState.SingularMove = move;
-        //        const Score zeroWindowScore = AlphaBeta(threadId, board, singularDepth, ply, beta - 1, beta, false, true);
+        //        const Score zeroWindowScore = AlphaBeta(threadId, board, singularDepth, ply, beta - 1, beta, false, isCutNode, true);
         //        threadState.SingularMove = Move(0);
         //    	if(zeroWindowScore >= beta)
         //    	{
@@ -895,7 +901,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
             //if (threadState.SingularMove.Value == 0)
             {
-                StoreTranspositionTable(threadState, board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Beta);
+                StoreTranspositionTable(threadState, key, bestMove, depth, bestScore, TranspositionTableFlags::Beta);
             }
 
             return beta;
@@ -917,11 +923,11 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     {
         if (raisedAlpha)
         {
-            StoreTranspositionTable(threadState, board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Exact);
+            StoreTranspositionTable(threadState, key, bestMove, depth, bestScore, TranspositionTableFlags::Exact);
         }
         else
         {
-            StoreTranspositionTable(threadState, board.Key, bestMove, depth, bestScore, TranspositionTableFlags::Alpha);
+            StoreTranspositionTable(threadState, key, bestMove, depth, bestScore, TranspositionTableFlags::Alpha);
         }
     }
     
