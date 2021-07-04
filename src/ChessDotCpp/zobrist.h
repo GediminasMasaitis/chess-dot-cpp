@@ -66,7 +66,7 @@ public:
         ZWhiteToMove = static_cast<ZobristKey>(rng.rand64());
     }
 
-    [[nodiscard]] constexpr ZobristKey CalculateKey(const Board& board) const
+    [[nodiscard]] constexpr ZobristKey CalculateKey(const BoardBase& board) const
     {
         ZobristKey key = 0;
         for (Position i = 0; i < Positions::Count; i++)
@@ -108,7 +108,7 @@ public:
         return key;
     }
 
-    [[nodiscard]] constexpr ZobristKey CalculatePawnKey(const Board& board) const
+    [[nodiscard]] constexpr ZobristKey CalculatePawnKey(const BoardBase& board) const
     {
         ZobristKey key = 0;
         for (Position i = 0; i < Positions::Count; i++)

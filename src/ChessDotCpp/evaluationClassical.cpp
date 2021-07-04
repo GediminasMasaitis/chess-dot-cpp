@@ -13,37 +13,36 @@ class EvaluationScores
 public:
     Score Result = 0;
     Phase GamePhase = 0; // function of piece material: 24 in opening, 0 in endgame
+
+    EachPhase<EachColor<Score>> Mobility{};
+    EachPhase<EachColor<Score>> Tropism{};
+    EachPhase<EachColor<Score>> PieceSquares{};
+    EachPhase<EachColor<Score>> MaterialAdjustment{};
     
-    EachColor<Score> MidgameMobility{};
-    EachColor<Score> EndgameMobility{};
     EachColor<Score> AttackCount{};
     EachColor<Score> AttackWeight{};
-    EachColor<Score> MidgameTropism{};
-    EachColor<Score> EndgameTropism{};
     EachColor<Score> KingShield{};
-    EachColor<Score> MaterialAdjustment{};
     EachColor<Score> Blockages{};
     EachColor<Score> PositionalThemes{};
-    EachColor<Score> PieceSquaresMidgame{};
-    EachColor<Score> PieceSquaresEndgame{};
     
     void Clear()
     {
         GamePhase = 0;
         for (Piece side = 0; side <= 1; side++)
         {
-            MidgameMobility[side] = 0;
-            EndgameMobility[side] = 0;
+            for(PhaseStage stage = EvalPhases::Midgame; stage < EvalPhases::Count; stage++)
+            {
+                Mobility[stage][side] = 0;
+                Tropism[stage][side] = 0;
+                PieceSquares[stage][side] = 0;
+                MaterialAdjustment[stage][side] = 0;
+            }
+            
             AttackCount[side] = 0;
             AttackWeight[side] = 0;
-            MidgameTropism[side] = 0;
-            EndgameTropism[side] = 0;
             KingShield[side] = 0;
-            MaterialAdjustment[side] = 0;
             Blockages[side] = 0;
             PositionalThemes[side] = 0;
-            PieceSquaresMidgame[side] = 0;
-            PieceSquaresEndgame[side] = 0;
         }
     }
 
@@ -52,24 +51,25 @@ public:
         std::cout << header << "; White: " << scores[Colors::White] << ", Black: " << scores[Colors::Black] << ", Diff: " << (scores[Colors::White] - scores[Colors::Black]) << std::endl;
     }
     
-    void Print(const Board& board)
+    void Print(const BoardBase& board)
     {
         std::cout << "Result: " << Result << std::endl;
         std::cout << "Phase: " << std::to_string(GamePhase) << std::endl;
         PrintEachColor(board.PawnMaterial, "Pawn material");
         PrintEachColor(board.PieceMaterial, "Piece material");
-        PrintEachColor(MidgameMobility, "Midgame mobility");
-        PrintEachColor(EndgameMobility, "Endgame mobility");
+        PrintEachColor(Mobility[EvalPhases::Midgame], "Midgame mobility");
+        PrintEachColor(Mobility[EvalPhases::Endgame], "Endgame mobility");
         PrintEachColor(AttackCount, "Attack count");
         PrintEachColor(AttackWeight, "Attack weight");
-        PrintEachColor(MidgameTropism, "Midgame tropism");
-        PrintEachColor(EndgameTropism, "Endgame tropism");
+        PrintEachColor(Tropism[EvalPhases::Midgame], "Midgame tropism");
+        PrintEachColor(Tropism[EvalPhases::Endgame], "Endgame tropism");
         PrintEachColor(KingShield, "King shield");
-        PrintEachColor(MaterialAdjustment, "Material adjustment");
+        PrintEachColor(MaterialAdjustment[EvalPhases::Midgame], "Midgame material adjustment");
+        PrintEachColor(MaterialAdjustment[EvalPhases::Endgame], "Endgame material adjustment");
         PrintEachColor(Blockages, "Blockages");
         PrintEachColor(PositionalThemes, "PositionalThemes");
-        PrintEachColor(PieceSquaresMidgame, "Piece squares midgame");
-        PrintEachColor(PieceSquaresEndgame, "Piece squares endgame");
+        PrintEachColor(PieceSquares[EvalPhases::Midgame], "Piece squares midgame");
+        PrintEachColor(PieceSquares[EvalPhases::Endgame], "Piece squares endgame");
     }
 };
 
@@ -81,7 +81,7 @@ public:
 };
 
 template<Color TColor>
-Score KingShield(const Board& board)
+Score KingShield(const BoardBase& board)
 {
     Score result = 0;
     
@@ -120,7 +120,7 @@ Score KingShield(const Board& board)
 }
 
 template<Color TColor, Piece TPiece, Position TPosition>
-constexpr bool IsPieceRel(const Board& board)
+constexpr bool IsPieceRel(const BoardBase& board)
 {
     constexpr Position relativePos = Positions::Rel<TColor>(TPosition);
     constexpr Piece piece = TPiece | TColor;
@@ -128,14 +128,14 @@ constexpr bool IsPieceRel(const Board& board)
 }
 
 template<Color TColor, Piece TPiece, Position TPosition>
-constexpr bool IsPiece(const Board& board)
+constexpr bool IsPiece(const BoardBase& board)
 {
     constexpr Piece piece = TPiece | TColor;
     return board.ArrayBoard[TPosition] == piece;
 }
 
 template<Color TColor>
-void BlockedPieces(const Board& board, EvaluationScores& scores)
+void BlockedPieces(const BoardBase& board, EvaluationScores& scores)
 {
     constexpr Color side = TColor;
     constexpr Color oppo = side ^ 1;
@@ -238,7 +238,7 @@ Tropism GetTropism(const Position sq1, const Position sq2)
 //Bitboard GetOutpostSquares(const Board& board)
 
 template<Color TColor>
-void EvalKnight(const Board& board, EvaluationScores& scores, const Position position, const AttackDetails& attacks, const Bitboard pinned)
+void EvalKnight(const BoardBase& board, EvaluationScores& scores, const Position position, const AttackDetails& attacks, const Bitboard pinned)
 {
     constexpr Color color = TColor;
     constexpr Color opp = color ^ 1;
@@ -269,8 +269,8 @@ void EvalKnight(const Board& board, EvaluationScores& scores, const Position pos
     *  average mobility, but  our formula of doing so is a puer guess.        *
     **************************************************************************/
 
-    scores.MidgameMobility[color] += 4 * (mob - 4);
-    scores.EndgameMobility[color] += 4 * (mob - 4);
+    scores.Mobility[EvalPhases::Midgame][color] += 4 * (mob - 4);
+    scores.Mobility[EvalPhases::Endgame][color] += 4 * (mob - 4);
 
     /**************************************************************************
     *  Save data about king attacks                                           *
@@ -287,12 +287,12 @@ void EvalKnight(const Board& board, EvaluationScores& scores, const Position pos
     **************************************************************************/
 
     const Tropism tropism = GetTropism(position, board.KingPositions[opp]);
-    scores.MidgameTropism[color] += 3 * tropism;
-    scores.EndgameTropism[color] += 3 * tropism;
+    scores.Tropism[EvalPhases::Midgame][color] += 3 * tropism;
+    scores.Tropism[EvalPhases::Endgame][color] += 3 * tropism;
 }
 
 template<Color TColor>
-void EvalBishop(const Board& board, EvaluationScores& scores, const Position position, const AttackDetails& attacks, const Bitboard pinned)
+void EvalBishop(const BoardBase& board, EvaluationScores& scores, const Position position, const AttackDetails& attacks, const Bitboard pinned)
 {
     constexpr Color color = TColor;
     constexpr Color opp = color ^ 1;
@@ -316,8 +316,8 @@ void EvalBishop(const Board& board, EvaluationScores& scores, const Position pos
     const Bitboard emptyOrOpponentNearKing = emptyOrOpponent & BitboardJumps.KingExtendedJumps[opp][board.KingPositions[opp]];
     att += PopCount(emptyOrOpponentNearKing);
 
-    scores.MidgameMobility[color] += 3 * (mob - 7);
-    scores.EndgameMobility[color] += 3 * (mob - 7);
+    scores.Mobility[EvalPhases::Midgame][color] += 3 * (mob - 7);
+    scores.Mobility[EvalPhases::Endgame][color] += 3 * (mob - 7);
 
     if (att > 0)
     {
@@ -326,12 +326,12 @@ void EvalBishop(const Board& board, EvaluationScores& scores, const Position pos
     }
 
     const Tropism tropism = GetTropism(position, board.KingPositions[opp]);
-    scores.MidgameTropism[color] += 2 * tropism;
-    scores.EndgameTropism[color] += 1 * tropism;
+    scores.Tropism[EvalPhases::Midgame][color] += 2 * tropism;
+    scores.Tropism[EvalPhases::Endgame][color] += 1 * tropism;
 }
 
 template<Color TColor>
-void EvalRook(const Board& board, EvaluationScores& scores, const Position position, const AttackDetails& attacks, const Bitboard pinned)
+void EvalRook(const BoardBase& board, EvaluationScores& scores, const Position position, const AttackDetails& attacks, const Bitboard pinned)
 {
     constexpr Color color = TColor;
     constexpr Color opp = color ^ 1;
@@ -353,8 +353,8 @@ void EvalRook(const Board& board, EvaluationScores& scores, const Position posit
         )
     )
     {
-        scores.MidgameMobility[color] += 20;
-        scores.EndgameMobility[color] += 30;
+        scores.Mobility[EvalPhases::Midgame][color] += 20;
+        scores.Mobility[EvalPhases::Endgame][color] += 30;
     }
 
     const Bitboard file = BitboardConstants::Files[sqCol];
@@ -364,8 +364,8 @@ void EvalRook(const Board& board, EvaluationScores& scores, const Position posit
         const Bitboard opponentPawnsOnFile = board.BitBoard[Pieces::Pawn | opp] & file;
         if (opponentPawnsOnFile == 0) // fully open file
         {
-            scores.MidgameMobility[color] += EvaluationData::RookOpenFile;
-            scores.EndgameMobility[color] += EvaluationData::RookOpenFile;
+            scores.Mobility[EvalPhases::Midgame][color] += EvaluationData::RookOpenFile;
+            scores.Mobility[EvalPhases::Endgame][color] += EvaluationData::RookOpenFile;
             if (std::abs(sqCol - static_cast<int8_t>(Files::Get(board.KingPositions[opp]))) < 2)
             {
                 scores.AttackWeight[color] += 1;
@@ -373,8 +373,8 @@ void EvalRook(const Board& board, EvaluationScores& scores, const Position posit
         }
         else // half open file
         {
-            scores.MidgameMobility[color] += EvaluationData::RookHalfOpenFile;
-            scores.EndgameMobility[color] += EvaluationData::RookHalfOpenFile;
+            scores.Mobility[EvalPhases::Midgame][color] += EvaluationData::RookHalfOpenFile;
+            scores.Mobility[EvalPhases::Endgame][color] += EvaluationData::RookHalfOpenFile;
             if (std::abs(sqCol - static_cast<int8_t>(Files::Get(board.KingPositions[opp]))) < 2)
             {
                 scores.AttackWeight[color] += 2;
@@ -399,8 +399,8 @@ void EvalRook(const Board& board, EvaluationScores& scores, const Position posit
     const Bitboard emptyOrOpponentNearKing = emptyOrOpponent & BitboardJumps.KingExtendedJumps[opp][board.KingPositions[opp]];
     att += PopCount(emptyOrOpponentNearKing);
 
-    scores.MidgameMobility[color] += 2 * (mob - 7);
-    scores.EndgameMobility[color] += 4 * (mob - 7);
+    scores.Mobility[EvalPhases::Midgame][color] += 2 * (mob - 7);
+    scores.Mobility[EvalPhases::Endgame][color] += 4 * (mob - 7);
 
     if (att > 0)
     {
@@ -409,12 +409,12 @@ void EvalRook(const Board& board, EvaluationScores& scores, const Position posit
     }
 
     const Tropism tropism = GetTropism(position, board.KingPositions[opp]);
-    scores.MidgameTropism[color] += 2 * tropism;
-    scores.EndgameTropism[color] += 1 * tropism;
+    scores.Tropism[EvalPhases::Midgame][color] += 2 * tropism;
+    scores.Tropism[EvalPhases::Endgame][color] += 1 * tropism;
 }
 
 template<Color TColor>
-void EvalQueen(const Board& board, EvaluationScores& scores, const Position position, const AttackDetails& attacks, const Bitboard pinned)
+void EvalQueen(const BoardBase& board, EvaluationScores& scores, const Position position, const AttackDetails& attacks, const Bitboard pinned)
 {
     constexpr Color color = TColor;
     constexpr Color opp = color ^ 1;
@@ -435,8 +435,8 @@ void EvalQueen(const Board& board, EvaluationScores& scores, const Position posi
         )
     )
     {
-        scores.MidgameMobility[color] += 5;
-        scores.EndgameMobility[color] += 10;
+        scores.Mobility[EvalPhases::Midgame][color] += 5;
+        scores.Mobility[EvalPhases::Endgame][color] += 10;
     }
 
     if ((color == Colors::White && sqRow > 1) || (color == Colors::Black && sqRow < 6))
@@ -467,8 +467,8 @@ void EvalQueen(const Board& board, EvaluationScores& scores, const Position posi
     const Bitboard emptyOrOpponentNearKing = emptyOrOpponent & BitboardJumps.KingExtendedJumps[opp][board.KingPositions[opp]];
     att += PopCount(emptyOrOpponentNearKing);
 
-    scores.MidgameMobility[color] += 1 * (mob - 14);
-    scores.EndgameMobility[color] += 2 * (mob - 14);
+    scores.Mobility[EvalPhases::Midgame][color] += 1 * (mob - 14);
+    scores.Mobility[EvalPhases::Endgame][color] += 2 * (mob - 14);
 
     if (att > 0)
     {
@@ -477,12 +477,12 @@ void EvalQueen(const Board& board, EvaluationScores& scores, const Position posi
     }
 
     const Tropism tropism = GetTropism(position, board.KingPositions[opp]);
-    scores.MidgameTropism[color] += 2 * tropism;
-    scores.EndgameTropism[color] += 4 * tropism;
+    scores.Tropism[EvalPhases::Midgame][color] += 2 * tropism;
+    scores.Tropism[EvalPhases::Endgame][color] += 4 * tropism;
 }
 
 template<Color TColor>
-void EvaluatePieces(const Board& board, EvaluationScores& scores, const AttackDetails& attacks, const Bitboard pinned)
+void EvaluatePieces(const BoardBase& board, EvaluationScores& scores, const AttackDetails& attacks, const Bitboard pinned)
 {
     constexpr Color color = TColor;
     constexpr Piece pawn = Pieces::Pawn | color;
@@ -490,8 +490,8 @@ void EvaluatePieces(const Board& board, EvaluationScores& scores, const AttackDe
     while (pawns != 0)
     {
         Position pos = BitScanForward(pawns);
-        scores.PieceSquaresMidgame[color] += EvaluationData::Midgame[pawn][pos];
-        scores.PieceSquaresEndgame[color] += EvaluationData::Endgame[pawn][pos];
+        scores.PieceSquares[EvalPhases::Midgame][color] += EvaluationData::Midgame[pawn][pos];
+        scores.PieceSquares[EvalPhases::Endgame][color] += EvaluationData::Endgame[pawn][pos];
         pawns &= pawns - 1;
     }
 
@@ -501,8 +501,8 @@ void EvaluatePieces(const Board& board, EvaluationScores& scores, const AttackDe
     {
         Position pos = BitScanForward(knights);
         EvalKnight<TColor>(board, scores, pos, attacks, pinned);
-        scores.PieceSquaresMidgame[color] += EvaluationData::Midgame[knight][pos];
-        scores.PieceSquaresEndgame[color] += EvaluationData::Endgame[knight][pos];
+        scores.PieceSquares[EvalPhases::Midgame][color] += EvaluationData::Midgame[knight][pos];
+        scores.PieceSquares[EvalPhases::Endgame][color] += EvaluationData::Endgame[knight][pos];
         knights &= knights - 1;
     }
 
@@ -512,8 +512,8 @@ void EvaluatePieces(const Board& board, EvaluationScores& scores, const AttackDe
     {
         Position pos = BitScanForward(bishops);
         EvalBishop<TColor>(board, scores, pos, attacks, pinned);
-        scores.PieceSquaresMidgame[color] += EvaluationData::Midgame[bishop][pos];
-        scores.PieceSquaresEndgame[color] += EvaluationData::Endgame[bishop][pos];
+        scores.PieceSquares[EvalPhases::Midgame][color] += EvaluationData::Midgame[bishop][pos];
+        scores.PieceSquares[EvalPhases::Endgame][color] += EvaluationData::Endgame[bishop][pos];
         bishops &= bishops - 1;
     }
 
@@ -523,8 +523,8 @@ void EvaluatePieces(const Board& board, EvaluationScores& scores, const AttackDe
     {
         Position pos = BitScanForward(rooks);
         EvalRook<TColor>(board, scores, pos, attacks, pinned);
-        scores.PieceSquaresMidgame[color] += EvaluationData::Midgame[rook][pos];
-        scores.PieceSquaresEndgame[color] += EvaluationData::Endgame[rook][pos];
+        scores.PieceSquares[EvalPhases::Midgame][color] += EvaluationData::Midgame[rook][pos];
+        scores.PieceSquares[EvalPhases::Endgame][color] += EvaluationData::Endgame[rook][pos];
         rooks &= rooks - 1;
     }
 
@@ -534,18 +534,18 @@ void EvaluatePieces(const Board& board, EvaluationScores& scores, const AttackDe
     {
         Position pos = BitScanForward(queens);
         EvalQueen<TColor>(board, scores, pos, attacks, pinned);
-        scores.PieceSquaresMidgame[color] += EvaluationData::Midgame[queen][pos];
-        scores.PieceSquaresEndgame[color] += EvaluationData::Endgame[queen][pos];
+        scores.PieceSquares[EvalPhases::Midgame][color] += EvaluationData::Midgame[queen][pos];
+        scores.PieceSquares[EvalPhases::Endgame][color] += EvaluationData::Endgame[queen][pos];
         queens &= queens - 1;
     }
 
     constexpr Piece king = Pieces::King | color;
-    scores.PieceSquaresMidgame[color] += EvaluationData::Midgame[king][board.KingPositions[color]];
-    scores.PieceSquaresEndgame[color] += EvaluationData::Endgame[king][board.KingPositions[color]];
+    scores.PieceSquares[EvalPhases::Midgame][color] += EvaluationData::Midgame[king][board.KingPositions[color]];
+    scores.PieceSquares[EvalPhases::Endgame][color] += EvaluationData::Endgame[king][board.KingPositions[color]];
 }
 
 template<Color TColor>
-bool IsPawnSupported(const Board& board, const Position pos)
+bool IsPawnSupported(const BoardBase& board, const Position pos)
 {
     const Bitboard supportMask = BitboardJumps.PawnSupportJumps[TColor][pos];
     const Bitboard pawns = board.BitBoard[Pieces::Pawn | TColor];
@@ -554,7 +554,7 @@ bool IsPawnSupported(const Board& board, const Position pos)
 }
 
 template<Color TColor>
-Score EvalPawn(const Board& board, const Position position, const AttackDetails& attacks, const Bitboard bitboard)
+Score EvalPawn(const BoardBase& board, const Position position, const AttackDetails& attacks, const Bitboard bitboard)
 {
     constexpr Color side = TColor;
     constexpr Color oppo = side ^ 1;
@@ -628,7 +628,7 @@ Score EvalPawn(const Board& board, const Position position, const AttackDetails&
     return result;
 }
 
-Score EvalPawnStructure(const Board& board, const AttackDetails& attacks)
+Score EvalPawnStructure(const BoardBase& board, const AttackDetails& attacks)
 {
     Score result = 0;
 
@@ -659,21 +659,24 @@ Score EvalPawnStructure(const Board& board, const AttackDetails& attacks)
     return result;
 }
 
-Score GetPawnScore(const Board& board, const AttackDetails& attacks, EvalState& state)
+Score GetPawnScore(const BoardBase& board, const AttackDetails& attacks, EvalState& state)
 {
     Score score;
-    if (state.PawnTable.TryProbe(board.PawnKey, score))
+    if (state.PawnTable.Enable && state.PawnTable.TryProbe(board.PawnKey, score))
     {
         return score;
     }
 
     score = EvalPawnStructure(board, attacks);
-    state.PawnTable.Store(board.PawnKey, score);
+    if(state.PawnTable.Enable)
+    {
+        state.PawnTable.Store(board.PawnKey, score);
+    }
     return score;
 }
 
 template<Color TColor, Piece TPiece>
-void GetAttackDetailsForPieces(const Board& board, AttackDetails& attacks)
+void GetAttackDetailsForPieces(const BoardBase& board, AttackDetails& attacks)
 {
     constexpr Piece coloredPiece = TPiece | TColor;
     const Bitboard allPieces = board.AllPieces;
@@ -719,7 +722,7 @@ void GetAttackDetailsForPieces(const Board& board, AttackDetails& attacks)
 }
 
 template<Color TColor>
-void GetAttackDetailsForColor(const Board& board, AttackDetails& attacks)
+void GetAttackDetailsForColor(const BoardBase& board, AttackDetails& attacks)
 {
     attacks.PieceAttacks[TColor] = BitboardConstants::Empty;
     GetAttackDetailsForPieces<TColor, Pieces::Knight>(board, attacks);
@@ -735,13 +738,13 @@ void GetAttackDetailsForColor(const Board& board, AttackDetails& attacks)
     attacks.PieceAttacks[TColor] |= pawnAttacks;
 }
 
-void GetAttackDetails(const Board& board, AttackDetails& attacks)
+void GetAttackDetails(const BoardBase& board, AttackDetails& attacks)
 {
     GetAttackDetailsForColor<Colors::White>(board, attacks);
     GetAttackDetailsForColor<Colors::Black>(board, attacks);
 }
 
-Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins, EvalState& state)
+Score EvaluateInner(const BoardBase& board, const EachColor<Bitboard>& pins, EvalState& state)
 {
     EvaluationScores scores = EvaluationScores();
 
@@ -778,17 +781,45 @@ Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins, EvalSta
         scores.Result -= EvaluationData::Tempo;
     }
 
-    if (board.PieceCounts[Pieces::WhiteBishop] > 1) scores.MaterialAdjustment[Colors::White] += EvaluationData::BishopPair;
-    if (board.PieceCounts[Pieces::BlackBishop] > 1) scores.MaterialAdjustment[Colors::Black] += EvaluationData::BishopPair;
-    if (board.PieceCounts[Pieces::WhiteKnight] > 1) scores.MaterialAdjustment[Colors::White] += EvaluationData::KnightPair;
-    if (board.PieceCounts[Pieces::BlackKnight] > 1) scores.MaterialAdjustment[Colors::Black] += EvaluationData::KnightPair;
-    if (board.PieceCounts[Pieces::WhiteRook] > 1) scores.MaterialAdjustment[Colors::White] += EvaluationData::RookPair;
-    if (board.PieceCounts[Pieces::BlackRook] > 1) scores.MaterialAdjustment[Colors::Black] += EvaluationData::RookPair;
+    if (board.PieceCounts[Pieces::WhiteBishop] > 1)
+    {
+        scores.MaterialAdjustment[EvalPhases::Midgame][Colors::White] += EvaluationData::BishopPair[EvalPhases::Midgame];
+        scores.MaterialAdjustment[EvalPhases::Endgame][Colors::White] += EvaluationData::BishopPair[EvalPhases::Endgame];
+    }
+    if (board.PieceCounts[Pieces::BlackBishop] > 1)
+    {
+        scores.MaterialAdjustment[EvalPhases::Midgame][Colors::Black] += EvaluationData::BishopPair[EvalPhases::Midgame];
+        scores.MaterialAdjustment[EvalPhases::Endgame][Colors::Black] += EvaluationData::BishopPair[EvalPhases::Endgame];
+    }
+    if (board.PieceCounts[Pieces::WhiteKnight] > 1)
+    {
+        scores.MaterialAdjustment[EvalPhases::Midgame][Colors::White] += EvaluationData::KnightPair[EvalPhases::Midgame];
+        scores.MaterialAdjustment[EvalPhases::Endgame][Colors::White] += EvaluationData::KnightPair[EvalPhases::Endgame];
+    }
+    if (board.PieceCounts[Pieces::BlackKnight] > 1)
+    {
+        scores.MaterialAdjustment[EvalPhases::Midgame][Colors::Black] += EvaluationData::KnightPair[EvalPhases::Midgame];
+        scores.MaterialAdjustment[EvalPhases::Endgame][Colors::Black] += EvaluationData::KnightPair[EvalPhases::Endgame];
+    }
+    if (board.PieceCounts[Pieces::WhiteRook] > 1)
+    {
+        scores.MaterialAdjustment[EvalPhases::Midgame][Colors::White] += EvaluationData::RookPair[EvalPhases::Midgame];
+        scores.MaterialAdjustment[EvalPhases::Endgame][Colors::White] += EvaluationData::RookPair[EvalPhases::Endgame];
+    }
+    if (board.PieceCounts[Pieces::BlackRook] > 1)
+    {
+        scores.MaterialAdjustment[EvalPhases::Midgame][Colors::Black] += EvaluationData::RookPair[EvalPhases::Midgame];
+        scores.MaterialAdjustment[EvalPhases::Endgame][Colors::Black] += EvaluationData::RookPair[EvalPhases::Endgame];
+    }
 
-    scores.MaterialAdjustment[Colors::White] += EvaluationData::KnightPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteKnight];
-    scores.MaterialAdjustment[Colors::Black] += EvaluationData::KnightPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackKnight];
-    scores.MaterialAdjustment[Colors::White] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteRook];
-    scores.MaterialAdjustment[Colors::Black] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackRook];
+    scores.MaterialAdjustment[EvalPhases::Midgame][Colors::White] += EvaluationData::KnightPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteKnight];
+    scores.MaterialAdjustment[EvalPhases::Endgame][Colors::White] += EvaluationData::KnightPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteKnight];
+    scores.MaterialAdjustment[EvalPhases::Midgame][Colors::Black] += EvaluationData::KnightPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackKnight];
+    scores.MaterialAdjustment[EvalPhases::Endgame][Colors::Black] += EvaluationData::KnightPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackKnight];
+    scores.MaterialAdjustment[EvalPhases::Midgame][Colors::White] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteRook];
+    scores.MaterialAdjustment[EvalPhases::Endgame][Colors::White] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteRook];
+    scores.MaterialAdjustment[EvalPhases::Midgame][Colors::Black] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackRook];
+    scores.MaterialAdjustment[EvalPhases::Endgame][Colors::Black] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackRook];
 
     const Score pawnScore = GetPawnScore(board, attacks, state);
     scores.Result += pawnScore;
@@ -803,25 +834,26 @@ Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins, EvalSta
     midgameScore -= board.PieceMaterial[Colors::Black];
     midgameScore += board.PawnMaterial[Colors::White];
     midgameScore -= board.PawnMaterial[Colors::Black];
-    midgameScore += scores.PieceSquaresMidgame[Colors::White];
-    midgameScore -= scores.PieceSquaresMidgame[Colors::Black];
-    midgameScore += scores.MidgameMobility[Colors::White];
-    midgameScore -= scores.MidgameMobility[Colors::Black];
-    midgameScore += scores.MidgameTropism[Colors::White];
-    midgameScore -= scores.MidgameTropism[Colors::Black];
+    midgameScore += scores.PieceSquares[EvalPhases::Midgame][Colors::White];
+    midgameScore -= scores.PieceSquares[EvalPhases::Midgame][Colors::Black];
+    midgameScore += scores.Mobility[EvalPhases::Midgame][Colors::White];
+    midgameScore -= scores.Mobility[EvalPhases::Midgame][Colors::Black];
+    midgameScore += scores.MaterialAdjustment[EvalPhases::Midgame][Colors::White];
+    midgameScore -= scores.MaterialAdjustment[EvalPhases::Midgame][Colors::Black];
 
     Score endgameScore = 0;
     endgameScore += board.PieceMaterial[Colors::White];
     endgameScore -= board.PieceMaterial[Colors::Black];
     endgameScore += board.PawnMaterial[Colors::White];
     endgameScore -= board.PawnMaterial[Colors::Black];
-    endgameScore += scores.PieceSquaresEndgame[Colors::White];
-    endgameScore -= scores.PieceSquaresEndgame[Colors::Black];
-    endgameScore += scores.EndgameMobility[Colors::White];
-    endgameScore -= scores.EndgameMobility[Colors::Black];
-    endgameScore += scores.EndgameTropism[Colors::White];
-    endgameScore -= scores.EndgameTropism[Colors::Black];
-
+    endgameScore += scores.PieceSquares[EvalPhases::Endgame][Colors::White];
+    endgameScore -= scores.PieceSquares[EvalPhases::Endgame][Colors::Black];
+    endgameScore += scores.Mobility[EvalPhases::Endgame][Colors::White];
+    endgameScore -= scores.Mobility[EvalPhases::Endgame][Colors::Black];
+    endgameScore += scores.Tropism[EvalPhases::Endgame][Colors::White];
+    endgameScore -= scores.Tropism[EvalPhases::Endgame][Colors::Black];
+    endgameScore += scores.MaterialAdjustment[EvalPhases::Endgame][Colors::White];
+    endgameScore -= scores.MaterialAdjustment[EvalPhases::Endgame][Colors::Black];
 
     const Phase midgameWeight = scores.GamePhase;
     const Phase endgameWeight = EvaluationData::MaxPhase - midgameWeight;
@@ -829,7 +861,6 @@ Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins, EvalSta
 
     scores.Result += (scores.Blockages[Colors::White] - scores.Blockages[Colors::Black]);
     scores.Result += (scores.PositionalThemes[Colors::White] - scores.PositionalThemes[Colors::Black]);
-    scores.Result += (scores.MaterialAdjustment[Colors::White] - scores.MaterialAdjustment[Colors::Black]);
 
     if (scores.AttackCount[Colors::White] < 2 || board.PieceCounts[Pieces::WhiteQueen] == 0) scores.AttackWeight[Colors::White] = 0;
     if (scores.AttackCount[Colors::Black] < 2 || board.PieceCounts[Pieces::BlackQueen] == 0) scores.AttackWeight[Colors::Black] = 0;
@@ -914,16 +945,20 @@ Score EvaluateInner(const Board& board, const EachColor<Bitboard>& pins, EvalSta
     return scores.Result;
 }
 
-Score ClassicEvaluation::Evaluate(const Board& board, const EachColor<Bitboard>& pins, EvalState& state)
+Score ClassicEvaluation::Evaluate(const BoardBase& board, const EachColor<Bitboard>& pins, EvalState& state)
 {
     Score score;
-    if(state.EvalTable.TryProbe(board.Key, score))
+    if(state.EvalTable.Enable && state.EvalTable.TryProbe(board.Key, score))
     {
         return score;
     }
     
     score = EvaluateInner(board, pins, state);
-    state.EvalTable.Store(board.Key, score);
+    if (state.EvalTable.Enable)
+    {
+        state.EvalTable.Store(board.Key, score);
+    }
+    
 
     /*auto clone = board;
     clone.FlipColors();

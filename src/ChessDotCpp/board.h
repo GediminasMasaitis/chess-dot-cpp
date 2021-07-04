@@ -12,22 +12,18 @@ public:
 	CastlingPermission CastlingPermission;
 	File EnPassantFileIndex;
 	Rank EnPassantRankIndex;
-	Ply FiftyMoveRule;
+	HistoryPly FiftyMoveRule;
+	Score StaticEvaluation;
 	ZobristKey Key;
 	ZobristKey PawnKey;
-	Score StaticEvaluation;
 };
 
-class Board
+class BoardBase
 {
 public:
 	Color ColorToMove;
 	bool WhiteToMove;
 	CastlingPermission CastlingPermissions;
-	
-	std::array<UndoMove, Constants::MaxHistory> History;
-	HistoryPly HistoryDepth;
-	HistoryPly FiftyMoveRuleIndex;
 
 	//Bitboard WhitePieces;
 	//Bitboard BlackPieces;
@@ -51,13 +47,24 @@ public:
 
 	bool CanCastle(const CastlingPermission permission) const;
 	void SyncExtraBitBoards();
-	void DoMove(const Move move);
-	void UndoMove();
 
 	[[nodiscard]] Move FromPositionString(const MoveString& moveString) const;
-	void DoMove(const MoveString& moveString);
 
 	void FlipColors();
+};
+
+class Board : public BoardBase
+{
+public:
+	std::array<UndoMove, Constants::MaxHistory> History;
+	HistoryPly HistoryDepth;
+	HistoryPly FiftyMoveRuleIndex;
+	
+	void DoMove(const Move move);
+	void DoMove(const MoveString& moveString);
+	void UndoMove();
+
+	Board();
 };
 
 class CastleRevocationClass

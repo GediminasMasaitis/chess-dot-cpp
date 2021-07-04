@@ -142,23 +142,24 @@ void Search::StoreTranspositionTable(const ThreadState& threadState, const Zobri
 
 Score Search::Contempt(const Board& board) const
 {
-    constexpr Score midgame = -20000;
+    /*constexpr Score midgame = -(Constants::Mate + 200);
+    constexpr Score midgame = -15;
     
-    /*if (board.PieceMaterial[State.Global.ColorToMove] < Constants::EndgameMaterial)
+    if (board.PieceMaterial[State.Global.ColorToMove] < Constants::EndgameMaterial)
     {
         return 0;
-    }*/
+    }
     
-    //Score score;
-    //if (board.ColorToMove == State.Global.ColorToMove)
-    //{
-    //    score = midgame;
-    //}
-    //else
-    //{
-    //    score = -midgame;
-    //}   
-    //return score;
+    Score score;
+    if (board.ColorToMove == State.Global.ColorToMove)
+    {
+        score = midgame;
+    }
+    else
+    {
+        score = -midgame;
+    }   
+    return score;*/
 
     (void)board;
     return 0;
@@ -404,32 +405,32 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     }
 
     // TB PROBE
-    if(Tablebases::CanProbe(board))
-    {
-        if (rootNode)
-        {
-            bool success = TablebaseRootSearch(board);
-            if (success)
-            {
-                return Constants::TablebaseMate;
-            }
-        }
-        else
-        {
-            auto result = Tablebases::Probe(board);
-            switch (result)
-            {
-            case TablebaseResult::Win:
-                return Constants::TablebaseMate;
-            case TablebaseResult::Draw:
-                return Contempt(board);
-            case TablebaseResult::Loss:
-                return -Constants::TablebaseMate;
-            case TablebaseResult::Unknown:
-                break;
-            }
-        }
-    }
+    //if(Tablebases::CanProbe(board))
+    //{
+    //    if (rootNode)
+    //    {
+    //        bool success = TablebaseRootSearch(board);
+    //        if (success)
+    //        {
+    //            return Constants::TablebaseMate;
+    //        }
+    //    }
+    //    else
+    //    {
+    //        auto result = Tablebases::Probe(board);
+    //        switch (result)
+    //        {
+    //        case TablebaseResult::Win:
+    //            return Constants::TablebaseMate;
+    //        case TablebaseResult::Draw:
+    //            return Contempt(board);
+    //        case TablebaseResult::Loss:
+    //            return -Constants::TablebaseMate;
+    //        case TablebaseResult::Unknown:
+    //            break;
+    //        }
+    //    }
+    //}
 
     // MATE DISTANCE PRUNE
     const Score currentMateScore = Constants::Mate - ply;

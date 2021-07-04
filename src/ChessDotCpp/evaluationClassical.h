@@ -4,7 +4,19 @@
 #include "evalstate.h"
 #include "options.h"
 
-class EvaluationData
+class EvalPhases
+{
+public:
+    static constexpr PhaseStage Midgame = 0;
+    static constexpr PhaseStage Endgame = 1;
+
+    static constexpr PhaseStage Count = 2;
+};
+
+template<class T>
+using EachPhase = std::array<T, EvalPhases::Count>;
+
+class EvaluationDataMain
 {
 public:
     using Scoreboard = EachPosition<Score>;
@@ -273,9 +285,13 @@ public:
         500, 500, 500, 500, 500, 500, 500, 500, 500, 500
     };
 
-    static constexpr Score BishopPair = 30;
-    static constexpr Score KnightPair = -8;
-    static constexpr Score RookPair = -16;
+    static constexpr EachPhase<Score> BishopPair = { 30, 30 };
+    static constexpr EachPhase<Score> KnightPair = { -8, -8 };
+    static constexpr EachPhase<Score> RookPair = { -16, -16 };
+
+    /*static constexpr EachPhase<Score> BishopPair = { 25, 35 };
+    static constexpr EachPhase<Score> KnightPair = { -25, 4 };
+    static constexpr EachPhase<Score> RookPair = { -81, 38 };*/
 
     static constexpr Score RookOpenFile = 10;
     static constexpr Score RookHalfOpenFile = 5;
@@ -299,9 +315,38 @@ public:
     static constexpr Score DoubledPawns = -20;
 };
 
+class EvaluationDataTune : public EvaluationDataMain
+{
+public:
+    static inline std::array<Score, 100> TuneScores { };
+
+    //static inline EachPhase<Score> RookPair{ };
+    //static inline Score RookOpenFile;
+    //static inline Score RookHalfOpenFile;
+
+    static void Sync()
+    {
+        //RookPair[EvalPhases::Midgame] = TuneScores[0];
+        //RookPair[EvalPhases::Endgame] = TuneScores[1];
+        //RookOpenFile = TuneScores[0];
+        //RookHalfOpenFile = TuneScores[1];
+    }
+    
+    static void SetInitial()
+    {
+        TuneScores[0] = EvaluationDataMain::RookPair[EvalPhases::Midgame];
+        TuneScores[1] = EvaluationDataMain::RookPair[EvalPhases::Endgame];
+
+        //TuneScores[0] = EvaluationDataMain::RookOpenFile;
+        //TuneScores[1] = EvaluationDataMain::RookHalfOpenFile;
+    }
+};
+
+using EvaluationData = EvaluationDataTune;
+
 class ClassicEvaluation
 {
 public:
-    static Score Evaluate(const Board& board, const EachColor<Bitboard>& pins, EvalState& state);
+    static Score Evaluate(const BoardBase& board, const EachColor<Bitboard>& pins, EvalState& state);
 };
 

@@ -26,7 +26,7 @@ Piece TryParsePiece(char ch)
     }
 }
 
-void SyncMaterial(Board& board)
+void SyncMaterial(BoardBase& board)
 {
     for (Piece piece = 0; piece < Pieces::Count; piece++)
     {
@@ -43,10 +43,22 @@ void SyncMaterial(Board& board)
     }
 }
 
-void Fens::Parse(Board& board, Fen fen)
+template<class TBoard>
+void Fens::Parse(TBoard& board, Fen fen)
 {
-    board = Board();
-    fen = std::regex_replace(fen, std::regex("/"), "");
+    board = TBoard();
+    //fen = std::regex_replace(fen, std::regex("/"), "");
+    auto cleanedFen = Fen();
+    cleanedFen.reserve(fen.size());
+	for (auto i : fen)
+	{
+        if (i != '/')
+        {
+            cleanedFen += i;
+        }
+	}
+
+    
     //board.ArrayBoard = new Piece[64];
     //board.BitBoard = new ulong[13];
     //board.CastlingPermissions = CastlingPermission.None;
@@ -54,10 +66,10 @@ void Fens::Parse(Board& board, Fen fen)
 
     Position boardPosition = 0;
     size_t fenPosition = 0;
-    for (; fenPosition < fen.size(); fenPosition++)
+    for (; fenPosition < cleanedFen.size(); fenPosition++)
     {
         Position fixedBoardPosition = (7 - boardPosition / 8) * 8 + boardPosition % 8;
-        auto ch = fen[fenPosition];
+        auto ch = cleanedFen[fenPosition];
         const Piece piece = TryParsePiece(ch);
         if (piece != Pieces::Empty)
         {
@@ -92,7 +104,7 @@ void Fens::Parse(Board& board, Fen fen)
     }
 
     fenPosition++;
-    switch (fen[fenPosition])
+    switch (cleanedFen[fenPosition])
     {
     case 'w':
         board.ColorToMove = Colors::White;
@@ -110,13 +122,13 @@ void Fens::Parse(Board& board, Fen fen)
 
     for (auto i = 0; i < 4; i++)
     {
-        if (fenPosition >= fen.size())
+        if (fenPosition >= cleanedFen.size())
         {
             break;
         }
         
         bool done = false;
-        switch (fen[fenPosition])
+        switch (cleanedFen[fenPosition])
         {
         case 'K':
             board.CastlingPermissions |= CastlingPermissions::WhiteKing;
@@ -148,9 +160,9 @@ void Fens::Parse(Board& board, Fen fen)
     }
 
     fenPosition++;
-    if (fenPosition < fen.size() && fen[fenPosition] != '-')
+    if (fenPosition < cleanedFen.size() && cleanedFen[fenPosition] != '-')
     {
-        auto lower = tolower(fen[fenPosition]);
+        auto lower = tolower(cleanedFen[fenPosition]);
         auto file = static_cast<File>(lower - 0x61);
         //var rank = fen[fenPosition] - 0x30;
         if (file >= 0 && file < 8)
@@ -159,7 +171,7 @@ void Fens::Parse(Board& board, Fen fen)
             board.EnPassantFile = BitboardConstants::Files[file];
         }
         fenPosition++;
-        board.EnPassantRankIndex = fen[fenPosition] - '0' - 1;
+        board.EnPassantRankIndex = cleanedFen[fenPosition] - '0' - 1;
     }
     else
     {
@@ -168,6 +180,7 @@ void Fens::Parse(Board& board, Fen fen)
         board.EnPassantRankIndex = -1;
     }
 
+    // TODO
 
     board.SyncExtraBitBoards();
     SyncMaterial(board);
@@ -196,7 +209,11 @@ char PieceToChar(Piece piece)
     }
 }
 
-Fen Fens::Serialize(const Board& board)
+template void Fens::Parse(BoardBase& board, Fen fen);
+template void Fens::Parse(Board& board, Fen fen);
+
+template<class TBoard>
+Fen Fens::Serialize(const TBoard& board)
 {
     auto builder = std::stringstream();
     for (int i = 7; i >= 0; i--)
@@ -272,3 +289,5 @@ Fen Fens::Serialize(const Board& board)
     return fen;
 }
 
+template Fen Fens::Serialize(const BoardBase& board);
+template Fen Fens::Serialize(const Board& board);

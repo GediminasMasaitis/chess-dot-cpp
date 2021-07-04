@@ -5,8 +5,8 @@
 class PinDetector
 {
 public:
-	static Bitboard GetPinned(const Board& board, Piece color, Position pos);
-	static void GetPinnedToKings(const Board& board, EachColor<Bitboard>& pins);
+	static Bitboard GetPinned(const BoardBase& board, Piece color, Position pos);
+	static void GetPinnedToKings(const BoardBase& board, EachColor<Bitboard>& pins);
 };
 
 using PinPaths = std::array<Bitboard, 64>;

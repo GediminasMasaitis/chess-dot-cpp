@@ -20,7 +20,7 @@ Bitboard HorizontalVerticalXray(const Bitboard allPieces, Bitboard ownPieces, co
 	return xrayAttacks;
 }
 
-Bitboard PinDetector::GetPinned(const Board& board, Color color, Position pos)
+Bitboard PinDetector::GetPinned(const BoardBase& board, Color color, Position pos)
 {
 	const Color opponentColor = static_cast<Color>(color ^ 1);
 	Bitboard pinned = 0ULL;
@@ -48,7 +48,7 @@ Bitboard PinDetector::GetPinned(const Board& board, Color color, Position pos)
 	return pinned;
 }
 
-void PinDetector::GetPinnedToKings(const Board& board, EachColor<Bitboard>& pins)
+void PinDetector::GetPinnedToKings(const BoardBase& board, EachColor<Bitboard>& pins)
 {
 	pins[Colors::White] = GetPinned(board, Colors::White, board.KingPositions[Colors::White]);
 	pins[Colors::Black] = GetPinned(board, Colors::Black, board.KingPositions[Colors::Black]);

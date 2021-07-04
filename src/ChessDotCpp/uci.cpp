@@ -1,6 +1,8 @@
 #include "uci.h"
 
-#include "nnuetrain.h"
+
+#include "trainclassical.h"
+#include "trainnnue.h"
 
 void Uci::OnCallback(SearchCallbackData& data) const
 {
@@ -45,7 +47,7 @@ void Uci::HandleMoves(std::stringstream& reader)
 
 void Uci::HandleStartpos(std::stringstream& reader)
 {
-	Fens::Parse(board, startPos);
+	Fens::Parse(board, StartingFen);
 	if (!reader.eof())
 	{
 		std::string type;
@@ -94,7 +96,7 @@ void Uci::HandlePosition(std::stringstream& reader)
 	}
 	else if (type == "moves")
 	{
-		Fens::Parse(board, startPos);
+		Fens::Parse(board, StartingFen);
 		HandleMoves(reader);
 	}
 	else if (type == "fen")
@@ -205,10 +207,10 @@ void Uci::HandleIsReady()
 void Uci::HandleUciNewGame()
 {
 	//search.State.NewGame();
-	Fens::Parse(board, startPos);
+	Fens::Parse(board, StartingFen);
 }
 
-void Uci::HandleTrain(std::stringstream& reader)
+void Uci::HandleRescore(std::stringstream& reader)
 {
 	auto parameters = TrainingParameters();
 	parameters.SearchParams.WhiteTime = 1000;
@@ -216,12 +218,22 @@ void Uci::HandleTrain(std::stringstream& reader)
 	parameters.SearchParams.BlackTime = 1000;
 	parameters.SearchParams.BlackTimeIncrement = 50;
 	//parameters.SearchParams.SkipNewSearch = true;
-	parameters.InputPath = "C:/Chess/TrainingOld/data/fishpack_wins.epd";
+	parameters.InputFormat = InputFormats::Plain;
+	parameters.InputPath = "C:/Chess/TrainingOld/data/gensfen_multipvdiff_100_d6_0_0_0.plain";
 	parameters.OffsetPath = "C:/Chess/TrainingOld/data/offset.txt";
 	parameters.OutputPath = "C:/Chess/TrainingOld/data/results.plain";
 	parameters.OutputFormat = OutputFormats::Plain;
 	ReadSearchParameters(reader, parameters.SearchParams);
 	NnueTrainer::Run(parameters);
+}
+
+void Uci::HandleTrain(std::stringstream& reader)
+{
+	auto parameters = ClassicalTrainingParameters();
+	parameters.InputFormat = InputFormats::Plain;
+	//parameters.InputPath = "C:/Chess/TrainingOld/data/gensfen_multipvdiff_100_d6_0_0_0.plain";
+	parameters.InputPath = "C:/Chess/TrainingOld/data/results.plain";
+	ClassicalTrainer::Run(parameters);
 }
 
 bool Uci::HandleInput(const std::string& line)
@@ -257,6 +269,10 @@ bool Uci::HandleInput(const std::string& line)
 		{
 			HandleIsReady();
 		}
+		else if (word == "rescore")
+		{
+			HandleRescore(reader);
+		}
 		else if (word == "train")
 		{
 			HandleTrain(reader);
@@ -272,7 +288,7 @@ bool Uci::HandleInput(const std::string& line)
 
 void Uci::Init()
 {
-	Fens::Parse(board, startPos);
+	Fens::Parse(board, StartingFen);
 }
 
 void Uci::Run()

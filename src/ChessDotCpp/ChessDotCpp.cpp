@@ -4,6 +4,7 @@
 #include "tests.h"
 #include "uci.h"
 #include "evaluation.h"
+#include "perft.h"
 #include "tablebases.h"
 
 
@@ -27,25 +28,27 @@ void Run(int argc, char** argv)
 
 void Test()
 {
-    //std::cout << sizeof(TranspositionTableEntry) << std::endl;
+    //std::cout << sizeof(UndoMove) << std::endl;
     //Game::RunTestCommands();
 
     //Tests::TestSee();
     //Tests::TestMagics();
     //Tests::TestZobrist();
     //Tests::TestRepetitions();
-    Tests::TestUci();
+    //Tests::TestUci();
+    //Tests::TestEval();
     //Tests::TestTablebases();
     
     //Tests::TestSfen();
     //Tests::TestFenSerialize();
     
-    //PerftSuite::Run();
+    //PerftRunner::Run(Uci::StartingFen, 6);
 }
 
 
 int main(int argc, char** argv)
 {
+    //std::cout << sizeof(BoardBase) << std::endl;
     //Test();
     //Train();
     Run(argc, argv);

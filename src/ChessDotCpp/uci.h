@@ -9,7 +9,7 @@
 class Uci
 {
 public:
-    static inline std::string startPos = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    static inline Fen StartingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     using InType = std::function<std::string()>;
     using OutType = std::function<void(std::string)>;
@@ -34,6 +34,7 @@ public:
     void HandleUci();
     void HandleIsReady();
     void HandleUciNewGame();
+    void HandleRescore(std::stringstream& reader);
     void HandleTrain(std::stringstream& reader);
     void HandleSetoption(std::stringstream& reader);
     bool HandleInput(const std::string& line);

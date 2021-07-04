@@ -3,12 +3,12 @@
 #include "zobrist.h"
 #include "likeliness.h"
 
-bool Board::CanCastle(const CastlingPermission permission) const
+bool BoardBase::CanCastle(const CastlingPermission permission) const
 {
     return (CastlingPermissions & permission) != CastlingPermissions::None;
 }
 
-void Board::SyncExtraBitBoards()
+void BoardBase::SyncExtraBitBoards()
 {
     BitBoard[Colors::White] = BitBoard[Pieces::WhitePawn]
         | BitBoard[Pieces::WhiteKnight]
@@ -329,7 +329,13 @@ void Board::UndoMove()
     SyncExtraBitBoards();
 }
 
-Move Board::FromPositionString(const MoveString& moveString) const
+Board::Board(): BoardBase(), History()
+{
+    HistoryDepth = 0;
+    FiftyMoveRuleIndex = 0;
+}
+
+Move BoardBase::FromPositionString(const MoveString& moveString) const
 {
     const Position from = Move::TextToPosition(moveString.substr(0, 2));
     const Position to = Move::TextToPosition(moveString.substr(2, 2));
@@ -385,7 +391,7 @@ void Board::DoMove(const MoveString& moveString)
     DoMove(move);
 }
 
-void Board::FlipColors()
+void BoardBase::FlipColors()
 {
     ArrayBoard = Positions::MakeReflected(ArrayBoard);
 

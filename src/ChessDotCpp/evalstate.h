@@ -25,6 +25,7 @@ public:
 
     size_t _size = 0;
     TableEntries _entries = nullptr;
+    bool Enable = true;
 
     [[nodiscard]] constexpr size_t GetTableIndex(ZobristKey key) const
     {

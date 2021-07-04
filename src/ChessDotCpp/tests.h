@@ -10,6 +10,7 @@
 #include "movegen.h"
 #include "tablebases.h"
 #include "zobrist.h"
+#include "evaluation.h"
 #include "fathom/tbprobe.h"
 
 class Tests
@@ -28,9 +29,9 @@ public:
 
         std::vector<Fen> moveses =
         {
-            "f2f4 d7d5 g1f3 g8f6 b2b3 g7g6 c1b2 f8g7 e2e3 e8g8 f1e2 c7c5 e1g1 b8c6 f3e5 d8d6 e5c6 d6c6 e2f3 c8f5 d2d3 h7h6 d1d2 g6g5 f4g5 h6g5 c2c4 c6d7 c4d5 g5g4 f3e2 d7d5 e3e4 f6e4 d3e4 d5d2 b1d2 g7b2 e4f5 b2d4 g1h1 d4a1 f1a1 a8d8 d2e4 d8d4 e4c5 b7b6 c5d3 f8c8 h1g1 d4e4 e2f1 c8c2 a2a3 g8g7 d3b4 c2d2 a1c1 e4f4 b4c6 g7f6 c1e1 f4f5 c6e7 f5a5 a3a4 a5c5 f1c4 d2d7 e7g8 f6g7 e1e8 d7d2 g8e7 c5e5 c4f1 f7f6 e8g8 g7f7 g8g4 e5e7 f1c4 f7e8 g1f1 e8d8 g4f4 e7h7 h2h3 d8e7 f4f2 d2f2 f1f2 e7d6 f2f3 d6e5 f3e2 f6f5 e2f3 a7a5 f3e3 f5f4 e3f3 h7d7 h3h4 d7h7 g2g3 f4g3 f3g3 e5e4 c4e2 h7g7 e2g4 e4d4 g3f4 g7e7 g4f3 e7h7 f4g3 h7d7 f3e2 d4e3 e2g4 d7d3 h4h5 e3e4 g3h4 d3b3 h5h6 b3d3 h6h7 d3d8 h4g5 e4e5 g5g6 d8e8 g4d7 e8d8 d7f5 d8a8 f5g4 a8b8 g4h5 e5e6 g6g7 b8b7 g7g6 b7b8 h5e2 e6e5 e2c4 b8h8 g6g7 h8h7 g7h7 e5f5 c4e2 f5f6 h7h6 f6f5 e2d3 f5e5 h6g5 e5d4 d3f1 d4e5 g5g6 e5e6 f1c4 e6d6 g6f5 d6c5 c4f1 c5d6 f1b5 d6d5 f5f6 d5d6 f6f5 d6d5 f5f6 d5d6 b5d3 d6d5 f6e7 d5c6"
+            "c2c4 c7c5 g1f3 g8f6 g2g3 b7b6 f1g2 c8b7 b1c3 e7e6 e1g1 f8e7 d2d4 c5d4 d1d4 d7d6 f1d1 a7a6 d4d3 e8g8 c1g5 b8d7 d3c2 d8c7 b2b3 h7h6 g5f4 g7g5 f4e3 f6g4 e3c1 f7f5 h2h3 g4e5 f3e5 d7e5 g2b7 c7b7 f2f4 e5g6 e2e4 g5f4 c1f4 g6f4 g3f4 f5e4 c3e4 a8d8 d1f1 d6d5 c4d5 e6d5 e4g3 e7c5 g1h2 g8h8 a1e1 d5d4 e1e6 d4d3 c2c3 c5d4 e6h6 h8g7 c3c6 b7c6 h6c6 d3d2 f1d1 d4e3 f4f5 e3f4 h2g2 f4g3 g2g3 f8f5 c6b6 a6a5 b6c6 f5e5 c6c7 g7f6 c7c2 e5g5 g3h2 g5d5 h3h4 f6g6 h2g3 g6h5 g3f4 d8d6 c2c4 d6d7 f4e3 d5d3 e3f2 d3d6 c4e4 d7c7 f2e2 c7c2 e4e5 h5h4 a2a4 h4g4 e5a5 g4f4 a5b5 c2a2 b5b4 f4e5 b4b8 a2c2 b3b4 d6d4 a4a5 e5e6 a5a6 c2a2 b4b5 d4h4 e2e3 h4h2 b8e8 e6d7 e8g8 a2a3 e3d4 d7e6 d4c5 a3a2 c5b4 e6f7 g8g3 h2h4 b4b3 h4a4 d1f1 f7e6 g3e3 e6d5 e3d3 d5e5 d3d2 a4a3 b3b4 a3a4 b4c3 a4a3 c3b4 a3a4 b4c3 a4a3"
         };
-    	
+        
         std::queue<std::string> commands = std::queue<std::string>();
         commands.push("uci");
         commands.push("ucinewgame");
@@ -39,15 +40,34 @@ public:
         {
             commands.push("position startpos moves " + moves);
             commands.push("isready");
-            //commands.push("go wtime 60000 winc 600 btime 60000 binc 600");
-            //commands.push("go infinite depth 10");
-            commands.push("go wtime 70 btime 107 winc 50 binc 50");
+            commands.push("go wtime 60000 winc 600 btime 60000 binc 600");
+            //commands.push("go infinite depth 3");
+            //commands.push("go wtime 70 btime 107 winc 50 binc 50");
         }
         commands.push("quit");
         Game::RunCommands(commands);
         Likeliness::PrintStats();
     }
 
+    static void TestEval()
+    {
+        Fen fen = "rnbqkb1r/pppppppp/8/8/8/8/PPPPPPPP/RNBQK1NR w KQkq - 0 1";
+        Board board{};
+        Fens::Parse(board, fen);
+
+        EvalState state{};
+        state.EvalTable.SetSize(16 * 1024 * 1024);
+        state.EvalTable.Clear();
+
+        state.PawnTable.SetSize(16 * 1024 * 1024);
+        state.PawnTable.Clear();
+
+        EachColor<Bitboard> pins;
+        PinDetector::GetPinnedToKings(board, pins);
+        const auto score = Evaluation::Evaluate(board, pins, state);
+        std::cout << score << std::endl;
+    }
+    
     //static void TestSfen()
     //{
     //    Fen fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -114,13 +134,13 @@ public:
         board.DoMove("g7g6");
         board.DoMove("b3b2");
         board.DoMove("c5c6");
-    	
+        
         //const ZobristKey key = ZobristKeys.CalculateKey(board);
         auto callback = [&](SearchCallbackData& data) { };
         auto search = Search(callback);
 
         auto isRepetition = search.IsRepetitionOr50Move(board);
-    	
+        
         std::cout << std::hex << isRepetition << std::endl;
     }
 
@@ -135,13 +155,13 @@ public:
         MoveArray engineMoves = MoveArray();
         MoveCount engineMoveCount = 0;
         MoveGenerator::GetAllPossibleMoves(board, engineMoves, engineMoveCount);
-    	
+        
 
         Tablebases::Init();
         auto result = Tablebases::Probe(board);
 
         //TbRootMoves moves;
-    	
+        
         //auto result = tb_probe_root
         //(
         //    board.BitBoard[Colors::White],

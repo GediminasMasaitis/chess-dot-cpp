@@ -1,4 +1,4 @@
-#include "nnuetrain.h"
+#include "trainnnue.h"
 
 #include "board.h"
 #include "search.h"
@@ -8,6 +8,9 @@
 #include <fstream>
 #include <filesystem>
 #include <mutex>
+
+#include "evaluation.h"
+#include "movegen.h"
 
 class BitWriter
 {
@@ -137,113 +140,6 @@ public:
     }
 };
 
-std::string HumanReadableDuration(std::chrono::seconds input_seconds)
-{
-    using namespace std::chrono;
-    typedef duration<int, std::ratio<86400>> days;
-    const auto d = duration_cast<days>(input_seconds);
-    input_seconds -= d;
-    const auto h = duration_cast<hours>(input_seconds);
-    input_seconds -= h;
-    const auto m = duration_cast<minutes>(input_seconds);
-    input_seconds -= m;
-    const auto s = duration_cast<seconds>(input_seconds);
-
-    std::stringstream ss;
-    ss.fill('0');
-    ss << d.count() << ".";
-    ss << std::setw(2);
-    ss << h.count() << ":";
-    ss << std::setw(2);
-    ss << m.count() << ":";
-    ss << std::setw(2);
-    ss << s.count();
-    return ss.str();
-}
-
-class TrainResult
-{
-public:
-    Fen FFen;
-    MoveString Move;
-    Score SScore;
-    HistoryPly Ply;
-    int8_t Result;
-    char Type;
-};
-
-class TrainingReader
-{
-    std::ifstream& Stream;
-    InputFormats Format;
-    std::mutex Mutex;
-
-public:
-    explicit TrainingReader(std::ifstream& input, InputFormats format)
-    : Stream(input), Format(format)
-    {
-    }
-    
-    void ReadData(TrainResult& data)
-    {
-        std::lock_guard<std::mutex> guard(Mutex);
-        switch (Format)
-        {
-        case InputFormats::Epd:
-            std::getline(Stream, data.FFen);
-            break;
-        case InputFormats::Plain:
-            break;
-        }
-        
-    }
-
-    size_t GetCurrentOffset() const
-    {
-        const size_t offset = Stream.tellg();
-        return offset;
-    }
-};
-
-class TrainingWriter
-{
-    std::ofstream& Stream;
-    OutputFormats Format;
-    std::mutex Mutex;
-
-    void WriteResultsPlain(const TrainResult& result)
-    {
-        Stream << "fen " << result.FFen << "\n";
-        Stream << "move " << result.Move << "\n";
-        Stream << "score " << result.SScore << "\n";
-        Stream << "ply " << result.Ply << "\n";
-        Stream << "result 1\n";
-        Stream << "e\n";
-
-    }
-
-public:
-    TrainingWriter(std::ofstream& stream, OutputFormats format)
-        : Stream(stream), Format(format)
-    {
-    }
-
-    void WriteResults(const TrainResult& result, const bool flush)
-    {
-        switch (Format)
-        {
-        case OutputFormats::Plain:
-            WriteResultsPlain(result);
-            break;
-        }
-
-        if (flush)
-        {
-            Stream.flush();
-        }
-    }
-};
-
 class TrainingReporter
 {
     std::mutex Mutex;
@@ -350,14 +246,18 @@ void GetOutputResults(TrainResult& inputResult, SearchResults& searchResults, Tr
 
 void HandleSearchedPosition(TrainState& state, TrainThreadState& threadState, TrainResult& inputResult, Board& board, SearchResults& searchResults)
 {
-
     
 }
 
-void RunIteration(TrainState& state, TrainThreadState& threadState)
+bool RunIteration(TrainState& state, TrainThreadState& threadState)
 {
     TrainResult inputResult;
-    state.Reader.ReadData(inputResult);
+    auto readSuccess = state.Reader.ReadData(inputResult);
+    if(!readSuccess)
+    {
+        return false;
+    }
+    
     state.CurrentOffset = state.Reader.GetCurrentOffset();
     Board board{};
     Fens::Parse(board, inputResult.FFen);
@@ -416,7 +316,9 @@ void RunIteration(TrainState& state, TrainThreadState& threadState)
 
     const bool doFlush = (state.SearchedPositions % 0xFF) == 0;
     state.Writer.WriteResults(outputResult, doFlush);
+    return true;
 }
+
 
 void RunThread(TrainState& state)
 {
@@ -427,9 +329,14 @@ void RunThread(TrainState& state)
 
     Search search = Search(callback);
     TrainThreadState threadState(search);
+
     while (state.IsRunning)
     {
-        RunIteration(state, threadState);
+        bool success = RunIteration(state, threadState);
+        if(!success)
+        {
+            return;
+        }
     }
 }
 
@@ -448,6 +355,8 @@ void NnueTrainer::Run(const TrainingParameters& parameters)
     size_t inputLength = std::filesystem::file_size(parameters.InputPath);
     const size_t offset = ReadOffset(parameters.OffsetPath);
     std::ifstream inputStream;
+    //auto inputBuffer = std::array<char, 64*1024>();
+    //inputStream.rdbuf()->pubsetbuf(inputBuffer.data(), inputBuffer.size());
     inputStream.open(parameters.InputPath, std::ifstream::in);
     inputStream.seekg(offset);
     TrainingReader reader = TrainingReader(inputStream, parameters.InputFormat);
@@ -455,7 +364,7 @@ void NnueTrainer::Run(const TrainingParameters& parameters)
     std::ofstream outputStream;
     outputStream.open(parameters.OutputPath, std::ofstream::out | std::ofstream::app);
     TrainingWriter writer = TrainingWriter(outputStream, parameters.OutputFormat);
-
+    
     TrainState state = TrainState(reader, writer);
     state.Parameters = parameters;
     state.SearchedPositions = 0;
@@ -465,7 +374,7 @@ void NnueTrainer::Run(const TrainingParameters& parameters)
   
     //RunThread(state, parameters);
     
-    constexpr ThreadId threadCount = 24;
+    constexpr ThreadId threadCount = 12;
     auto threads = std::vector<std::thread>();
     for(ThreadId threadId = 0; threadId < threadCount; threadId++)
     {

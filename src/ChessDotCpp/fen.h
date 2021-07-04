@@ -7,6 +7,9 @@
 class Fens
 {
 public:
-	static void Parse(Board& board, Fen fen);
-	static Fen Serialize(const Board& board);
+	template<class TBoard>
+	static void Parse(TBoard& board, Fen fen);
+
+	template<class TBoard>
+	static Fen Serialize(const TBoard& board);
 };

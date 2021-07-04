@@ -13,7 +13,7 @@ using Rank = int8_t;
 using Diagonal = int8_t;
 using Antidialgonal = int8_t;
 using Ply = int8_t;
-using HistoryPly = uint16_t;
+using HistoryPly = int16_t;
 using CastlingPermission = uint8_t;
 using MoveValue = uint32_t;
 using MoveString = std::string;
@@ -31,5 +31,6 @@ using AbdadaMoveKey = uint64_t;
 
 // Evaluation
 using Phase = uint8_t;
+using PhaseStage = uint8_t;
 
 using Fen = std::string;
