@@ -318,31 +318,50 @@ public:
 class EvaluationDataTune : public EvaluationDataMain
 {
 public:
-    static inline std::array<Score, 100> TuneScores { };
+    static inline std::array<Score, 11> TuneScores { };
 
-    //static inline EachPhase<Score> RookPair{ };
-    //static inline Score RookOpenFile;
-    //static inline Score RookHalfOpenFile;
+    static inline EachPhase<Score> BishopPair{ };
+    static inline EachPhase<Score> KnightPair{ };
+    static inline EachPhase<Score> RookPair{ };
+    static inline Score RookOpenFile;
+    static inline Score RookHalfOpenFile;
+    static inline Score KingShieldRank2;
+    static inline Score KingShieldRank3;
+    static inline Score DoubledPawns;
 
     static void Sync()
     {
-        //RookPair[EvalPhases::Midgame] = TuneScores[0];
-        //RookPair[EvalPhases::Endgame] = TuneScores[1];
-        //RookOpenFile = TuneScores[0];
-        //RookHalfOpenFile = TuneScores[1];
+        BishopPair[EvalPhases::Midgame] = TuneScores[0];
+        BishopPair[EvalPhases::Endgame] = TuneScores[1];
+        KnightPair[EvalPhases::Midgame] = TuneScores[2];
+        KnightPair[EvalPhases::Endgame] = TuneScores[3];
+        RookPair[EvalPhases::Midgame] = TuneScores[4];
+        RookPair[EvalPhases::Endgame] = TuneScores[5];
+        RookOpenFile = TuneScores[6];
+        RookHalfOpenFile = TuneScores[7];
+        KingShieldRank2 = TuneScores[8];
+        KingShieldRank3 = TuneScores[9];
+        DoubledPawns = TuneScores[10];
     }
     
     static void SetInitial()
     {
-        TuneScores[0] = EvaluationDataMain::RookPair[EvalPhases::Midgame];
-        TuneScores[1] = EvaluationDataMain::RookPair[EvalPhases::Endgame];
-
-        //TuneScores[0] = EvaluationDataMain::RookOpenFile;
-        //TuneScores[1] = EvaluationDataMain::RookHalfOpenFile;
+        TuneScores[0] = EvaluationDataMain::BishopPair[EvalPhases::Midgame];
+        TuneScores[1] = EvaluationDataMain::BishopPair[EvalPhases::Endgame];
+        TuneScores[2] = EvaluationDataMain::KnightPair[EvalPhases::Midgame];
+        TuneScores[3] = EvaluationDataMain::KnightPair[EvalPhases::Endgame];
+        TuneScores[4] = EvaluationDataMain::RookPair[EvalPhases::Midgame];
+        TuneScores[5] = EvaluationDataMain::RookPair[EvalPhases::Endgame];
+        TuneScores[6] = EvaluationDataMain::RookOpenFile;
+        TuneScores[7] = EvaluationDataMain::RookHalfOpenFile;
+        TuneScores[8] = EvaluationDataMain::KingShieldRank2;
+        TuneScores[9] = EvaluationDataMain::KingShieldRank3;
+        TuneScores[10] = EvaluationDataMain::DoubledPawns;
     }
 };
 
-using EvaluationData = EvaluationDataTune;
+using EvaluationData = EvaluationDataMain;
+//using EvaluationData = EvaluationDataTune;
 
 class ClassicEvaluation
 {

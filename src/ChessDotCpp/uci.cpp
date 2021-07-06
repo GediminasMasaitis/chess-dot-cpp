@@ -219,7 +219,8 @@ void Uci::HandleRescore(std::stringstream& reader)
 	parameters.SearchParams.BlackTimeIncrement = 50;
 	//parameters.SearchParams.SkipNewSearch = true;
 	parameters.InputFormat = InputFormats::Plain;
-	parameters.InputPath = "C:/Chess/TrainingOld/data/gensfen_multipvdiff_100_d6_0_0_0.plain";
+	//parameters.InputPath = "C:/Chess/TrainingOld/data/gensfen_multipvdiff_100_d6_0_0_0.plain";
+	parameters.InputPath = "C:/Chess/TrainingOld/data/gensfen_multipvdiff_100_d6_0_0.plain";
 	parameters.OffsetPath = "C:/Chess/TrainingOld/data/offset.txt";
 	parameters.OutputPath = "C:/Chess/TrainingOld/data/results.plain";
 	parameters.OutputFormat = OutputFormats::Plain;

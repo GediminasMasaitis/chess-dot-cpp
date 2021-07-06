@@ -83,16 +83,16 @@ public:
     }
 };
 
-Score GetError(Score expected, Score calculated)
+int32_t GetError(Score expected, Score calculated)
 {
-    const Score error = static_cast<Score>(std::abs(expected - calculated));
-    return error;
+    const Score mean = static_cast<Score>(std::abs(expected - calculated));
+    const int32_t square = mean * mean;
+    return mean;
+    return square;
 }
 
-double RunIteration(ClassicalTrainerState& state, size_t iteration)
+double RunIteration(ClassicalTrainerState& state, const std::vector<size_t>& parameterIndices, size_t iteration)
 {
-    //BoardCacheEntry<BoardBase> entry;
-    //while(state.Cache.NextEntry(entry))
 
     std::atomic_int64_t totalError = 0;
     const auto iterationStart = std::chrono::high_resolution_clock::now();
@@ -123,7 +123,7 @@ double RunIteration(ClassicalTrainerState& state, size_t iteration)
                 PinDetector::GetPinnedToKings(entry.Board, pins);
                 const Score staticScore = Evaluation::Evaluate(entry.Board, pins, state.Eval);
 
-                const Score error = GetError(entry.Result.SScore, staticScore);
+                const auto error = GetError(entry.Result.SScore, staticScore);
                 //std::lock_guard<std::mutex> guard(mutex);
                 totalError += error;
             }
@@ -135,29 +135,6 @@ double RunIteration(ClassicalTrainerState& state, size_t iteration)
         threads[thread_id].join();
     }
 
-    //BoardCacheEntry<BoardBase> entry;
-    //EachColor<Bitboard> pins;
-    //while (true)
-    //{
-    //    const bool success = state.Cache.NextEntry(entry);
-    //    if (!success)
-    //    {
-    //        break;
-    //    }
-
-    //    if (std::abs(entry.Result.SScore) > 1000)
-    //    {
-    //        continue;
-    //    }
-
-    //    PinDetector::GetPinnedToKings(entry.Board, pins);
-    //    const Score staticScore = Evaluation::Evaluate(entry.Board, pins, state.Eval);
-
-    //    const Score error = GetError(entry.Result.SScore, staticScore);
-    //    std::lock_guard<std::mutex> guard(mutex);
-    //    totalError += error;
-    //}
-
     const double averageError = static_cast<double>(totalError) / state.Cache.Entries.size();
     
     const auto iterationEnd = std::chrono::high_resolution_clock::now();
@@ -168,8 +145,10 @@ double RunIteration(ClassicalTrainerState& state, size_t iteration)
     std::stringstream ss = std::stringstream();
     ss << "[" << humanReadableDuration << "]";
     ss << " " << std::right << std::setw(5) << iteration;
-    ss << ", S1: " << std::right << std::setw(2) << EvaluationData::TuneScores[0];
-    ss << ", S2: " << std::right << std::setw(2) << EvaluationData::TuneScores[1];
+    for (auto parameterIndex : parameterIndices)
+    {
+        ss << ", P" << parameterIndex << ": " << std::right << std::setw(2) << EvaluationDataTune::TuneScores[parameterIndex];
+    }
     ss << " Total error: " << std::right << std::setw(10) << totalError;
     ss << ", Avg error: " << std::right << std::setw(2) << averageError;
     ss << std::endl;
@@ -179,27 +158,17 @@ double RunIteration(ClassicalTrainerState& state, size_t iteration)
     return averageError;
 }
 
-class TrainIterationResult
+class TrainIterationResult2D
 {
 public:
     std::vector<Score> Parameters;
     double Error;
 };
 
-void RunInner(ClassicalTrainerState& state)
+void Descend2D(ClassicalTrainerState& state)
 {
-    std::vector<TrainIterationResult> results;
-    size_t iteration = 0;
-
-    EvaluationData::SetInitial();
-    EvaluationData::Sync();
-
-    TrainIterationResult minResult;
-    minResult.Error = RunIteration(state, iteration++);
-    minResult.Parameters = { EvaluationData::TuneScores[0], EvaluationData::TuneScores[1] };
-
     constexpr Score learningRate = 1;
-    const auto offsetses = std::array<std::array<Score, 2>, 8>
+    constexpr auto offsetses = std::array<std::array<Score, 2>, 8>
     {
         std::array<Score, 2>{ -learningRate, -learningRate },
         std::array<Score, 2>{ -learningRate, 0 },
@@ -210,14 +179,21 @@ void RunInner(ClassicalTrainerState& state)
         std::array<Score, 2>{ learningRate, 0 },
         std::array<Score, 2>{ learningRate, learningRate },
     };
-    
+
+    std::vector<TrainIterationResult2D> results;
+    size_t iteration = 0;
+    TrainIterationResult2D minResult;
+    const auto parameterIndices = std::vector<size_t>{ 0,1 };
+    minResult.Error = RunIteration(state, parameterIndices, iteration++);
+    minResult.Parameters = { EvaluationDataTune::TuneScores[0], EvaluationDataTune::TuneScores[1] };
+
     while (true)
     {
-        std::vector<TrainIterationResult> iterationResults;
+        std::vector<TrainIterationResult2D> iterationResults;
         for (auto offsets : offsetses)
         {
-            EvaluationData::TuneScores[0] = minResult.Parameters[0] + offsets[0];
-            EvaluationData::TuneScores[1] = minResult.Parameters[1] + offsets[1];
+            EvaluationDataTune::TuneScores[0] = minResult.Parameters[0] + offsets[0];
+            EvaluationDataTune::TuneScores[1] = minResult.Parameters[1] + offsets[1];
 
             auto skip = false;
             for (auto& otherResult : results)
@@ -225,31 +201,31 @@ void RunInner(ClassicalTrainerState& state)
                 skip = true;
                 for (size_t i = 0; i < otherResult.Parameters.size(); i++)
                 {
-                    if(EvaluationData::TuneScores[i] != otherResult.Parameters[i])
+                    if (EvaluationDataTune::TuneScores[i] != otherResult.Parameters[i])
                     {
                         skip = false;
                         break;
                     }
                 }
-                if(skip)
+                if (skip)
                 {
                     break;
                 }
             }
-            if(skip)
+            if (skip)
             {
                 continue;
             }
-            
-            EvaluationData::Sync();
-            TrainIterationResult newResult;
-            newResult.Error = RunIteration(state, iteration++);
-            newResult.Parameters = std::vector<Score>{ EvaluationData::TuneScores[0], EvaluationData::TuneScores[1] };
+
+            EvaluationDataTune::Sync();
+            TrainIterationResult2D newResult;
+            newResult.Error = RunIteration(state, parameterIndices, iteration++);
+            newResult.Parameters = std::vector<Score>{ EvaluationDataTune::TuneScores[0], EvaluationDataTune::TuneScores[1] };
             iterationResults.push_back(newResult);
             results.push_back(newResult);
         }
-        
-        TrainIterationResult minIterationResult = minResult;
+
+        TrainIterationResult2D minIterationResult = minResult;
         for (auto result : iterationResults)
         {
             if (result.Error < minIterationResult.Error)
@@ -257,43 +233,48 @@ void RunInner(ClassicalTrainerState& state)
                 minIterationResult = result;
             }
         }
-        
-        if(minIterationResult.Error == minResult.Error)
+
+        if (minIterationResult.Error == minResult.Error)
         {
             break;
         }
         minResult = minIterationResult;
     }
-    
-    std::cout << std::endl << "Min: " << minResult.Parameters[0] << ";" << minResult.Parameters[1] << ";" << minResult.Error << std::endl;
 
-    return;
-    
-    results.clear();
-    
+    std::cout << std::endl << "Min: " << minResult.Parameters[0] << ";" << minResult.Parameters[1] << ";" << minResult.Error << std::endl;
+}
+
+void FullErrorPlane(ClassicalTrainerState& state)
+{
+    std::vector<TrainIterationResult2D> results;
+    size_t iteration = 0;
+    const auto parameterIndices = std::vector<size_t>{ 0, 1 };
+    TrainIterationResult2D minResult;
+    minResult.Error = RunIteration(state, parameterIndices, iteration++);
+    minResult.Parameters = { EvaluationDataTune::TuneScores[0], EvaluationDataTune::TuneScores[1] };
+
     constexpr Score window = 50;
     constexpr Score increment = 5;
-    for(Score score1 = minResult.Parameters[0] - window; score1 <= minResult.Parameters[0] + window; score1 += increment)
+    for (Score score1 = minResult.Parameters[0] - window; score1 <= minResult.Parameters[0] + window; score1 += increment)
     {
         for (Score score2 = minResult.Parameters[1] - window; score2 <= minResult.Parameters[1] + window; score2 += increment)
         {
-            EvaluationData::TuneScores[0] = score1;
-            EvaluationData::TuneScores[1] = score2;
-            EvaluationData::Sync();
-            TrainIterationResult result;
-            result.Error = RunIteration(state, iteration++);
+            EvaluationDataTune::TuneScores[0] = score1;
+            EvaluationDataTune::TuneScores[1] = score2;
+            EvaluationDataTune::Sync();
+            TrainIterationResult2D result;
+            result.Error = RunIteration(state, parameterIndices, iteration++);
             result.Parameters = std::vector<Score>{ score1, score2 };
             results.push_back(result);
         }
     }
 
     std::stringstream ss;
-    
-    minResult.Error = 9999999999;
-    for(auto result : results)
+
+    for (auto result : results)
     {
         ss << result.Parameters[0] << ";" << result.Parameters[1] << ";" << result.Error << std::endl;
-        if(result.Error < minResult.Error)
+        if (result.Error < minResult.Error)
         {
             minResult = result;
         }
@@ -304,6 +285,107 @@ void RunInner(ClassicalTrainerState& state)
     out << ss.str() << std::endl;
     out.flush();
     out.close();
+}
+
+double DescendParameterStep(ClassicalTrainerState& state, size_t& iteration, size_t parameterIndex, int& direction, double previousError)
+{
+    const auto parameterIndices = std::vector<size_t>{ parameterIndex };
+    const Score initialParameter = EvaluationDataTune::TuneScores[parameterIndex];
+    const auto initialError = direction == 0 ? RunIteration(state, parameterIndices, iteration++) : previousError;
+
+    EvaluationDataTune::TuneScores[parameterIndex] = initialParameter + 1;
+    EvaluationDataTune::Sync();
+    const auto increaseError = (direction == 0 || direction == 1) ? RunIteration(state, parameterIndices, iteration++) : 999999999;
+
+    EvaluationDataTune::TuneScores[parameterIndex] = initialParameter - 1;
+    EvaluationDataTune::Sync();
+    const auto decreaseError = (direction == 0 || direction == -1) ? RunIteration(state, parameterIndices, iteration++) : 999999999;
+
+    if (decreaseError < initialError && decreaseError <= increaseError)
+    {
+        direction = -1;
+        return decreaseError;
+    }
+    else if (increaseError < initialError)
+    {
+        EvaluationDataTune::TuneScores[parameterIndex] = initialParameter + 1;
+        EvaluationDataTune::Sync();
+        direction = 1;
+        return increaseError;
+    }
+    else
+    {
+        EvaluationDataTune::TuneScores[parameterIndex] = initialParameter;
+        EvaluationDataTune::Sync();
+        direction = 0;
+        return initialError;
+    }
+}
+
+void MultipleDescendAllParameters(ClassicalTrainerState& state, size_t& iteration)
+{
+    bool anyChanged = true;
+    while(anyChanged)
+    {
+        anyChanged = false;
+        for(size_t parameterIndex = 0; parameterIndex < EvaluationDataTune::TuneScores.size(); parameterIndex++)
+        {
+            auto direction = 0;
+            DescendParameterStep(state, iteration, parameterIndex, direction, 0);
+            anyChanged |= direction != 0;
+        }
+    }
+
+    for (size_t parameterIndex = 0; parameterIndex < EvaluationDataTune::TuneScores.size(); parameterIndex++)
+    {
+        std::cout << "P" << parameterIndex << ": " << EvaluationDataTune::TuneScores[parameterIndex] << std::endl;
+    }
+}
+
+bool SingularDescendAllParameters(ClassicalTrainerState& state, size_t& iteration)
+{
+    bool anyChanged = false;
+    for (size_t parameterIndex = 0; parameterIndex < EvaluationDataTune::TuneScores.size(); parameterIndex++)
+    {
+        auto direction = 0;
+        auto error = DescendParameterStep(state, iteration, parameterIndex, direction, 0);
+        while (direction != 0)
+        {
+            error = DescendParameterStep(state, iteration, parameterIndex, direction, error);
+            if(direction)
+            {
+                anyChanged = true;
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+
+    for (size_t parameterIndex = 0; parameterIndex < EvaluationDataTune::TuneScores.size(); parameterIndex++)
+    {
+        std::cout << "P" << parameterIndex << ": " << EvaluationDataTune::TuneScores[parameterIndex] << std::endl;
+    }
+    return anyChanged;
+}
+
+void RunInner(ClassicalTrainerState& state)
+{
+    EvaluationDataTune::SetInitial();
+    EvaluationDataTune::Sync();
+
+    size_t iteration = 0;
+    for(auto i = 0; i < 10; i++)
+    {
+        const auto changed = SingularDescendAllParameters(state, iteration);
+        if(!changed)
+        {
+            break;
+        }
+    }
+    MultipleDescendAllParameters(state, iteration);
+    //Descend2D(state);
 }
 
 void ClassicalTrainer::Run(const ClassicalTrainingParameters& parameters)
