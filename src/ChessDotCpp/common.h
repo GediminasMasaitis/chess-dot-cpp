@@ -121,3 +121,11 @@ constexpr Position GetPosition(const File file, const Rank rank)
 {
     return static_cast<Position>(file | (rank << 3));
 }
+
+enum class GameOutcome : int8_t
+{
+    Unknown,
+    Win,
+    Draw,
+    Loss
+};

@@ -1,3 +1,17 @@
+Engines tested against:
+
+| Name | Version | ELO |
+| --- | --- | --- |
+| TSCP | 1.81 | 1723 |
+| Vice | 1.0 | 2044 |
+| mediocre | 0.5 | 2319 |
+| simplex | 0.9.8 | 2407 |
+| cosette | 5.0 | 2493 |
+| wyldchess | 1.51 | 2629 |
+| glaurung | 2.2 | 2916 |
+
+
+
 ### 1.0.1
 Initial release
 
@@ -1199,25 +1213,20 @@ info depth 19 multipv 1 score cp 23 nodes 79105877 nps 1984095 time 39870 pv e2e
 info depth 20 multipv 1 score cp 27 nodes 162600124 nps 1986101 time 81869 pv e2e4 e7e5 g1f3 g8f6 d2d4 f6e4 d4e5 d7d5 f1b5 c7c6 b5d3 f8b4 c2c3 b4e7 e1g1 e4c5 c1e3 e8g8 d1e2 c5d3 e2d3 c8g4
 ```
 
+Endgames:
 ```
-info depth 1 multipv 1 score cp 44 nodes 26 nps 26000 time 1 pv e2e4
-info depth 2 multipv 1 score cp 10 nodes 104 nps 104000 time 1 pv e2e4 e7e5
-info depth 3 multipv 1 score cp 32 nodes 434 nps 434000 time 1 pv e2e4 d7d5 d2d3
-info depth 4 multipv 1 score cp 10 nodes 1713 nps 1713000 time 1 pv d2d4 d7d5 e2e3 e7e6
-info depth 5 multipv 1 score cp 23 nodes 4446 nps 1482000 time 3 pv d2d4 d7d5 e2e3 e7e6 f1b5 c8d7
-info depth 6 multipv 1 score cp 5 nodes 12642 nps 2107000 time 6 pv d2d4 d7d5 e2e3 e7e6 f1d3 g8f6
-info depth 7 multipv 1 score cp 15 nodes 22142 nps 2214200 time 10 pv d2d4 d7d5 e2e3 e7e6 g1f3 f8d6 f1d3
-info depth 8 multipv 1 score cp 11 nodes 46096 nps 2004173 time 23 pv d2d4 d7d5 c1f4 e7e6 e2e3 g8f6 f1b5 c8d7 b1c3
-info depth 9 multipv 1 score cp 16 nodes 93137 nps 2024717 time 46 pv d2d4 d7d5 e2e3 e7e6 g1f3 g8f6 f1d3 f8b4 c1d2 b8c6
-info depth 10 multipv 1 score cp 19 nodes 215986 nps 2018560 time 107 pv d2d4 d7d5 e2e3 e7e6 g1f3 g8f6 f1b5 c7c6 b5d3 f8b4 c1d2 b4d6
-info depth 11 multipv 1 score cp 22 nodes 749536 nps 2105438 time 356 pv e2e4 b8c6 d2d4 e7e6 g1f3 d7d5 e4e5 f8e7 f1b5 e8f8
-info depth 12 multipv 1 score cp 17 nodes 1387646 nps 2118543 time 655 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 g8f6 f1d3 f8b4 c2c3 d8e7 c1e3 b4d6
-info depth 13 multipv 1 score cp 17 nodes 2185357 nps 2083276 time 1049 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 g8f6 f1d3 f8d6 e1g1 e8g8 f3e5
-info depth 14 multipv 1 score cp 10 nodes 5635043 nps 2042422 time 2759 pv e2e4 e7e5 g1f3 g8f6 b1c3 b8c6 f1b5 f8b4 e1g1 e8g8 b5c6 d7c6 f3e5 b4c3
-info depth 15 multipv 1 score cp 15 nodes 9678333 nps 2011709 time 4811 pv e2e4 e7e6 g1f3 d7d5 e4e5 d5d4 f1b5 c8d7 b5d7 d8d7 e1g1 b8c6 d2d3 e8c8 c1f4 f8c5 b1d2
-info depth 16 multipv 1 score cp 12 nodes 17814343 nps 1996452 time 8923 pv e2e4 e7e5 g1f3 g8f6 b1c3 b8c6 d2d4 e5d4 f3d4 f8b4 d4c6 d7c6 d1d8 e8d8 c1g5 b4c3 b2c3 c8e6
-info depth 17 multipv 1 score cp 14 nodes 26154810 nps 1978577 time 13219 pv e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5c6 d7c6 e1g1 c8g4 h2h3 g4f3 d1f3 d8f6 f3b3 e8c8 d2d3
-info depth 18 multipv 1 score cp 17 nodes 52606089 nps 2012936 time 26134 pv e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5c6 d7c6 e1g1 c8g4 h2h3 g4f3 d1f3 d8f6 f3c3 e8c8 d2d3 c8b8
-info depth 19 multipv 1 score cp 21 nodes 103318958 nps 1973129 time 52363 pv e2e4 e7e6 g1f3 d7d5 e4e5 g8e7 d2d4 e7f5 f1d3 f8e7 c2c3 e8g8 e1g1 b8c6 c1f4 c8d7 b1d2 a7a6 d2b3
-info depth 20 multipv 1 score cp 25 nodes 175269619 nps 1956046 time 89604 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8b4 c2c3 b4d6 f1d3 g8e7 d1c2 e7g6 c1g5 d6e7 g5e3 e8g8 e1g1 c8d7 b1a3
+Score of ChessDotCpp vs cosette5: 347 - 462 - 146  [0.440] 955
+...      ChessDotCpp playing White: 176 - 229 - 73  [0.445] 478
+...      ChessDotCpp playing Black: 171 - 233 - 73  [0.435] 477
+...      White vs Black: 409 - 400 - 146  [0.505] 955
+Elo difference: -42.0 +/- 20.4, LOS: 0.0 %, DrawRatio: 15.3 %
+```
+
+Silver:
+```
+Score of ChessDotCpp vs cosette5: 389 - 414 - 197  [0.487] 1000
+...      ChessDotCpp playing White: 210 - 182 - 108  [0.528] 500
+...      ChessDotCpp playing Black: 179 - 232 - 89  [0.447] 500
+...      White vs Black: 442 - 361 - 197  [0.540] 1000
+Elo difference: -8.7 +/- 19.3, LOS: 18.9 %, DrawRatio: 19.7 %
 ```

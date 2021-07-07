@@ -233,7 +233,7 @@ void Uci::HandleTrain(std::stringstream& reader)
 	auto parameters = ClassicalTrainingParameters();
 	parameters.InputFormat = InputFormats::Plain;
 	//parameters.InputPath = "C:/Chess/TrainingOld/data/gensfen_multipvdiff_100_d6_0_0_0.plain";
-	parameters.InputPath = "C:/Chess/TrainingOld/data/results.plain";
+	parameters.InputPath = "C:/Chess/TrainingOld/data/results2.plain";
 	ClassicalTrainer::Run(parameters);
 }
 

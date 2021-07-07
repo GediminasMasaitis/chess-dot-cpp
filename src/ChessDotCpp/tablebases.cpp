@@ -15,14 +15,14 @@ bool Tablebases::CanProbe(const Board& board)
 }
 
 
-TablebaseResult Tablebases::Probe(const Board& board)
+GameOutcome Tablebases::Probe(const Board& board)
 {
     //const auto canProbe = CanProbe(board);
     //if (!canProbe)
     //{
     //    return TablebaseResult::Unknown;
     //}
-	
+    
     const HistoryPly rule50 = board.HistoryDepth - board.FiftyMoveRuleIndex;
     const auto externalResult = tb_probe_wdl
     (
@@ -40,25 +40,25 @@ TablebaseResult Tablebases::Probe(const Board& board)
         board.WhiteToMove // white to move
     );
 
-    TablebaseResult result;
+    GameOutcome result;
     
     switch (externalResult)
     {
     case TB_LOSS:
     case TB_BLESSED_LOSS:
-        result = TablebaseResult::Loss;
+        result = GameOutcome::Loss;
         break;
     case TB_DRAW:
-        result = TablebaseResult::Draw;
+        result = GameOutcome::Draw;
         break;
     case TB_CURSED_WIN:
     case TB_WIN:
-        result = TablebaseResult::Win;
+        result = GameOutcome::Win;
         break;
     case TB_RESULT_FAILED:
     default:
         Throw();
-        result = TablebaseResult::Loss;
+        result = GameOutcome::Loss;
         break;
     }
 
@@ -92,11 +92,11 @@ bool Tablebases::ProbeRoot(const Board& board, Move& tbMove)
     tbMove = Move(0);
 
  //   const auto canProbe = CanProbe(board);
-	//if(!canProbe)
-	//{
+    //if(!canProbe)
+    //{
  //       return false;
-	//}
-	
+    //}
+    
     const HistoryPly rule50 = board.HistoryDepth - board.FiftyMoveRuleIndex;
     auto extraResults = std::array<unsigned, TB_MAX_MOVES>{};
     const auto externalResult = tb_probe_root
@@ -142,10 +142,10 @@ bool Tablebases::ProbeRoot(const Board& board, Move& tbMove)
         {
             continue;
         }
-    	if(move.GetPawnPromoteTo() != promote)
-    	{
-    		continue;
-    	}
+        if(move.GetPawnPromoteTo() != promote)
+        {
+            continue;
+        }
 
         tbMove = move;
         break;

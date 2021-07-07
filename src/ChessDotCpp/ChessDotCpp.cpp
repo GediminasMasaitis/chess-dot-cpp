@@ -41,6 +41,7 @@ void Test()
     
     //Tests::TestSfen();
     //Tests::TestFenSerialize();
+    Tests::TestPgnParse();
     
     //PerftRunner::Run(Uci::StartingFen, 6);
 }

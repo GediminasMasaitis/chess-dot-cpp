@@ -11,6 +11,7 @@
 #include "tablebases.h"
 #include "zobrist.h"
 #include "evaluation.h"
+#include "pgn.h"
 #include "fathom/tbprobe.h"
 
 class Tests
@@ -79,6 +80,15 @@ public:
 
     //    auto a = 123;
     //}
+
+    static void TestPgnParse()
+    {
+        std::ifstream file;
+        file.open("C:\\Chess\\Runners\\CuteChess\\out.pgn");
+        std::vector<BoardBase> boards{};
+        Pgns::ParseMultiple(file, boards);
+        file.close();
+    }
 
     static void TestFenSerialize()
     {
