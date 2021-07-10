@@ -32,5 +32,6 @@ using AbdadaMoveKey = uint64_t;
 // Evaluation
 using Phase = uint8_t;
 using PhaseStage = uint8_t;
+using PhaseScore = int32_t;
 
 using Fen = std::string;

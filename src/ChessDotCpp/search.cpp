@@ -937,13 +937,43 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
 Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth, const Score previous)
 {
-    //constexpr Score window = 50;
-    //const Score alpha = previous - window;
-    //const Score beta = previous + window;
-    //const Score windowScore = AlphaBeta(threadId, board, depth, 0, alpha, beta, true, true);
-    //if (windowScore > alpha && windowScore < beta)
+    //constexpr Score window = 20;
+    //constexpr Score widen = 20;
+    //Score alpha = -Constants::Inf;
+    //Score beta = Constants::Inf;
+    //if (depth > 6)
     //{
-    //    return windowScore;
+    //    alpha = previous - window;
+    //    beta = previous + window;
+    //}
+
+    //while (true)
+    //{
+    //    if (alpha < -3500) alpha = -Constants::Inf;
+    //    if (beta > 3500) beta = Constants::Inf;
+
+    //    const Score score = AlphaBeta(threadId, board, depth, 0, alpha, beta, true, false, true);
+
+    //    // Failed low, relax lower bound and search again
+    //    if (score <= alpha)
+    //    {
+    //        alpha = static_cast<Score>(std::max(alpha - widen, -Constants::Inf));
+    //        beta = (alpha + 3 * beta) / 4;
+    //        //depth = thread->depth;
+
+    //        // Failed high, relax upper bound and search again
+    //    }
+    //    else if (score >= beta)
+    //    {
+    //        beta = static_cast<Score>(std::min(static_cast<Score>(beta + widen), Constants::Inf));
+    //        //depth -= (abs(score) < TBWIN_IN_MAX);
+
+    //        // Score within the bounds is accepted as correct
+    //    }
+    //    else
+    //    {
+    //        return score;
+    //    }
     //}
 
     (void)previous;

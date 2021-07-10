@@ -12,6 +12,7 @@ void Run(int argc, char** argv)
 {
     EvaluationNnue::Init();
     Tablebases::Init();
+    Eval2::InitEvalMasks();
     if(argc > 1)
     {
         std::string param1 = argv[1];
@@ -36,12 +37,12 @@ void Test()
     //Tests::TestZobrist();
     //Tests::TestRepetitions();
     //Tests::TestUci();
-    //Tests::TestEval();
+    Tests::TestEval();
     //Tests::TestTablebases();
     
     //Tests::TestSfen();
     //Tests::TestFenSerialize();
-    Tests::TestPgnParse();
+    //Tests::TestPgnParse();
     
     //PerftRunner::Run(Uci::StartingFen, 6);
 }

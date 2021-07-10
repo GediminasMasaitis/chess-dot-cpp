@@ -285,6 +285,18 @@ public:
         500, 500, 500, 500, 500, 500, 500, 500, 500, 500
     };
 
+    /*static constexpr EachPhase<EachPiece<Score>> Material
+    {
+        EachPiece<Score> { 0, 0, 0, 0, 100, 100, 420, 420, 425, 425, 585, 585, 1418, 1418, 0, 0 },
+        EachPiece<Score> { 0, 0, 0, 0, 174, 174, 516, 516, 527, 527, 926, 926, 1702, 1702, 0, 0 }
+    };*/
+
+    static constexpr EachPhase<EachPiece<Score>> Material
+    {
+        EachPiece<Score> { 0, 0, 0, 0, 100, 100, 325, 325, 335, 335, 500, 500, 975, 975, 0, 0 },
+        EachPiece<Score> { 0, 0, 0, 0, 100, 100, 325, 325, 335, 335, 500, 500, 975, 975, 0, 0 }
+    };
+
     static constexpr EachPhase<Score> BishopPair = { 30, 30 };
     static constexpr EachPhase<Score> KnightPair = { -8, -8 };
     static constexpr EachPhase<Score> RookPair = { -16, -16 };
@@ -368,4 +380,3 @@ class ClassicEvaluation
 public:
     static Score Evaluate(const BoardBase& board, const EachColor<Bitboard>& pins, EvalState& state);
 };
-

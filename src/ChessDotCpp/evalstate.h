@@ -6,12 +6,12 @@ struct EvalHashTableEntry
 {
 public:
     ZobristKey Key;
-    Score SScore;
+    PhaseScore SScore;
 
 
     EvalHashTableEntry() = default;
 
-    EvalHashTableEntry(const ZobristKey key, const Score score)
+    EvalHashTableEntry(const ZobristKey key, const PhaseScore score)
     {
         Key = key;
         SScore = score;
@@ -52,14 +52,14 @@ public:
         std::memset(_entries.get(), 0, bytesToClear);
     }
 
-    void Store(ZobristKey key, Score score)
+    void Store(ZobristKey key, PhaseScore score)
     {
         const size_t index = GetTableIndex(key);
         const EvalHashTableEntry entry = EvalHashTableEntry(key, score);
         _entries[index] = entry;
     }
 
-    bool TryProbe(ZobristKey key, Score& score)
+    bool TryProbe(ZobristKey key, PhaseScore& score)
     {
         const size_t index = GetTableIndex(key);
         const EvalHashTableEntry& entry = _entries[index];
