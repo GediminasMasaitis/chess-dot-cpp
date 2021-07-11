@@ -6,6 +6,6 @@
 class EvaluationNnue
 {
 public:
-    static Score Evaluate(const Board& board, const EachColor<Bitboard>& pins, EvalState& state);
+    static Score Evaluate(const BoardBase& board, const EachColor<Bitboard>& pins, EvalState& state);
     static void Init();
 };

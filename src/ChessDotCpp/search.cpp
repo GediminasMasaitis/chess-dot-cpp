@@ -142,24 +142,24 @@ void Search::StoreTranspositionTable(const ThreadState& threadState, const Zobri
 
 Score Search::Contempt(const Board& board) const
 {
-    /*constexpr Score midgame = -(Constants::Mate + 200);
-    constexpr Score midgame = -15;
-    
-    if (board.PieceMaterial[State.Global.ColorToMove] < Constants::EndgameMaterial)
-    {
-        return 0;
-    }
-    
-    Score score;
-    if (board.ColorToMove == State.Global.ColorToMove)
-    {
-        score = midgame;
-    }
-    else
-    {
-        score = -midgame;
-    }   
-    return score;*/
+    //constexpr Score midgame = -(Constants::Mate + 200);
+    //constexpr Score midgame = -15;
+    //
+    //if (board.PieceMaterial[State.Global.ColorToMove] < Constants::EndgameMaterial)
+    //{
+    //    return 0;
+    //}
+    //
+    //Score score;
+    //if (board.ColorToMove == State.Global.ColorToMove)
+    //{
+    //    score = midgame;
+    //}
+    //else
+    //{
+    //    score = -midgame;
+    //}   
+    //return score;
 
     (void)board;
     return 0;
@@ -386,6 +386,8 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     ThreadState& threadState = State.Thread[threadId];
     PlyData& plyState = threadState.Plies[ply];
     const bool rootNode = ply == 0;
+    const bool zeroWindow = alpha == beta - 1;
+    //assert(isPrincipalVariation == !zeroWindow);
     
     if (depth > 2 && (threadState.StopIteration || Stopper.ShouldStop()))
     {
@@ -518,7 +520,13 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     // STATIC EVALUATION PRUNING
     EachColor<Bitboard> pins;
     PinDetector::GetPinnedToKings(board, pins);
-    const Score staticScore = Evaluation::Evaluate(board, pins, State.Global.Eval);
+    Score staticScore = Evaluation::Evaluate(board, pins, State.Global.Eval);
+    //if (hashEntryExists && entry.Flag & (probedScore > staticScore ? TranspositionTableFlags::Beta : TranspositionTableFlags::Alpha))
+    //{
+    //    staticScore = probedScore;
+    //}
+    board.StaticEvaluation = staticScore;
+
     const bool improving = board.HistoryDepth < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation;
     if
     (
@@ -527,11 +535,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         && !inCheck
     )
     {
-        if (!(std::abs(beta - 1) > -Constants::Mate + 100))
-        {
-            Throw();
-        }
-
         constexpr Score marginPerDepth = 120;  // 120? Pawn is 100
         Score margin = marginPerDepth * depth;
         //if(improving)
@@ -564,8 +567,8 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         && !inCheck
         && depth > 2
         && !rootNode
-        /*&& staticScore >= beta
-        && board.PieceMaterial[board.ColorToMove] > Constants::EndgameMaterial*/
+        //&& staticScore >= beta
+        //&& board.PieceMaterial[board.ColorToMove] > Constants::EndgameMaterial
     )
     {
         const Ply nullDepthReduction = depth > 6 ? 3 : 2;
@@ -688,6 +691,16 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //}
 
         const Score seeScore = seeScores[moveIndex];
+
+        //if (!rootNode)
+        //{
+        //    const Ply lmrDepth = depth - SearchData.Reductions[isPrincipalVariation ? 1 : 0][depth][movesEvaluated];
+        //    if (lmrDepth < 7 && seeScore < -50 * depth)
+        //    {
+        //        continue;
+        //    }
+        //}
+
         board.DoMove(move);
 
         //if(parentResult != TablebaseResult::Unknown)
@@ -743,8 +756,9 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         (
             movesEvaluated > 1
             && (!rootNode || movesEvaluated > 3)
+            //&& (!isPrincipalVariation || movesEvaluated > 3)
             && depth >= 3
-            && !inCheck
+            //&& !inCheck
             && move.Value != plyState.Killers[0].Value
             && move.Value != plyState.Killers[1].Value
             //&& move.Value != countermove.Value
@@ -759,6 +773,19 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             {
                 reduction++;
             }
+
+            //if
+            //(
+            //    reduction > 0
+            //    &&
+            //    (
+            //        move.Value == plyState.Killers[0].Value
+            //        || move.Value == plyState.Killers[1].Value
+            //    )
+            //)
+            //{
+            //    reduction--;
+            //}
 
             //if
             //(
@@ -818,22 +845,25 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         const bool childCut = isReduced || !isCutNode;
         Score childScore;
 
-        if (raisedAlpha)
+        if (movesEvaluated > 0)
         {
             childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -alpha - 1, -alpha, false, childCut, true);
-            if (childScore > alpha)
+            if (!zeroWindow && childScore > alpha)
             {
                 childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, childCut, true);
+            }
+            if (reduction > 0 && childScore > alpha)
+            {
+                childScore = -AlphaBeta(threadId, board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, childCut, true);
             }
         }
         else
         {
             childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, childCut, true);
-        }
-
-        if (reduction > 0 && childScore > alpha)
-        {
-            childScore = -AlphaBeta(threadId, board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, false, true);
+            if (reduction > 0 && childScore > alpha)
+            {
+                childScore = -AlphaBeta(threadId, board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, false, true);
+            }
         }
         
         board.UndoMove();

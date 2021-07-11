@@ -4,7 +4,7 @@
 
 static constexpr EachPiece<int> PieceMap { 0, 0, 0, 0, wpawn, bpawn, wknight, bknight, wbishop, bbishop, wrook, brook, wqueen, bqueen, wking, bking };
 
-void SetAllPieces(const Board& board, NncpuPosition& position)
+void SetAllPieces(const BoardBase& board, NncpuPosition& position)
 {
     position.squares[0] = board.KingPositions[Colors::White];
     position.squares[1] = board.KingPositions[Colors::Black];
@@ -34,7 +34,7 @@ void SetAllPieces(const Board& board, NncpuPosition& position)
     }*/
 }
 
-void UpdateCurrentPosition(const Board& board, NncpuPosition& position)
+void UpdateCurrentPosition(const BoardBase& board, NncpuPosition& position)
 {
     position.player = board.ColorToMove;
 
@@ -57,7 +57,7 @@ void UpdateCurrentPosition(const Board& board, NncpuPosition& position)
     //_position.NnueCount = nnueEntryIndex;
 }
 
-Score EvaluateInner(const Board& board)
+Score EvaluateInner(const BoardBase& board)
 {
     NNCPUdata data;
     NncpuPosition position;
@@ -75,7 +75,7 @@ Score EvaluateInner(const Board& board)
     return score;
 }
 
-Score EvaluationNnue::Evaluate(const Board& board, const EachColor<Bitboard>& pins, EvalState& state)
+Score EvaluationNnue::Evaluate(const BoardBase& board, const EachColor<Bitboard>& pins, EvalState& state)
 {
     PhaseScore score;
     if (state.EvalTable.TryProbe(board.Key, score))
@@ -91,7 +91,7 @@ Score EvaluationNnue::Evaluate(const Board& board, const EachColor<Bitboard>& pi
 
 void EvaluationNnue::Init()
 {
-    //nncpu_init("C:/temp/nn-62ef826d1a6d.nnue");
-    nncpu_init("C:/Chess/TrainingOld/out/default/version_0/checkpoints/nn.nnue");
+    nncpu_init("C:/temp/nn-62ef826d1a6d.nnue");
+    //nncpu_init("C:/Chess/TrainingOld/out/default/version_0/checkpoints/nn.nnue");
     
 }
