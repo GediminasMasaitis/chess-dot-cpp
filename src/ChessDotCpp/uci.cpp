@@ -30,7 +30,6 @@ void Uci::OnCallback(SearchCallbackData& data) const
 		const auto& entry = principalVariation[ply];
 		builder << " " << entry.ToPositionString();
 	}
-
 	Out(builder.str());
 }
 

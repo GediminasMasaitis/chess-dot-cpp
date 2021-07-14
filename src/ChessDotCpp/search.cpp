@@ -1052,6 +1052,7 @@ void Search::IterativeDeepenLazySmp(Board& board, SearchResults& results)
     State.Stats.Elapsed = Stopper.GetElapsed();
     SearchCallbackData callbackData(0, board, State, 1, score);
     Callback(callbackData);
+    //State.Global.Table.PrintOccupancy();
 
     if (Stopper.ShouldStopDepthIncrease(0, State))
     {
@@ -1107,6 +1108,7 @@ void Search::IterativeDeepenLazySmp(Board& board, SearchResults& results)
         mainThreadState.SavedPrincipalVariation.clear();
         State.Global.Table.GetPrincipalVariation(board, mainThreadState.SavedPrincipalVariation);
         Callback(callbackData);
+        //State.Global.Table.PrintOccupancy();
     }
     GetSearchResults(results, depth, score);
 }

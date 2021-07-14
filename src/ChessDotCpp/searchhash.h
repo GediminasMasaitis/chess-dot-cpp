@@ -188,7 +188,7 @@ public:
 
 
 //PACK(
-class TranspositionTableEntry
+class /*alignas(64)*/ TranspositionTableEntry
 {
 public:
     ZobristKey Key{};
@@ -292,10 +292,10 @@ public:
             return;
         }
 
-        /*if (existingEntry.Key == key && existingEntry.Depth > depth)
+        if (existingEntry.Key == key && existingEntry.Depth > depth * 2)
         {
             return;
-        }*/
+        }
 
         const TranspositionTableEntry entry = TranspositionTableEntry(key, move, depth, score, flag);
         _entries[index] = entry;
@@ -372,6 +372,31 @@ public:
             	
         const bool isChanged = savedPrincipalVariation[0].Value != move.Value;
         return isChanged;
+    }
+
+    void PrintOccupancy()
+    {
+        const auto samples = 65536;
+        const auto gapSize = _size / samples;
+        std::array<int64_t, 4> counts{};
+        for (auto i = 0; i < _size; i += gapSize)
+        {
+            counts[_entries[i].Flag]++;
+        }
+
+        std::array<double, 4> percentages{};
+        for(TtFlag flag = 0; flag < 4; flag++)
+        {
+            percentages[flag] = static_cast<double>(counts[flag] * 100) / static_cast<double>(samples);
+        }
+
+        std::stringstream ss;
+        ss << "None: " << std::fixed << std::setprecision(3) << percentages[TranspositionTableFlags::None] << "%";
+        ss << ", Alpha: " << std::fixed << std::setprecision(3) << percentages[TranspositionTableFlags::Alpha] << "%";
+        ss << ", Beta: " << std::fixed << std::setprecision(3) << percentages[TranspositionTableFlags::Beta] << "%";
+        ss << ", Exact: " << std::fixed << std::setprecision(3) << percentages[TranspositionTableFlags::Exact] << "%";
+        ss << std::endl;
+        std::cout << ss.str();
     }
 
     void Print()
