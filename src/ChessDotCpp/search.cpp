@@ -162,7 +162,7 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
     See::CalculateSeeScores(board, moves, moveCount, seeScores);
     
     MoveScoreArray staticMoveScores{};
-    MoveOrdering::CalculateStaticScores(threadId, State, moves, seeScores, moveCount, ply, Move(0), countermove, staticMoveScores);
+    MoveOrdering::CalculateStaticScores(threadId, State, moves, seeScores, moveCount, ply, Move(0), countermove, staticMoveScores, board);
 
     Score bestScore = -Constants::Inf;
     Move bestMove;
@@ -171,7 +171,7 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
     uint8_t movesEvaluated = 0;
     for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
     {
-        MoveOrdering::OrderNextMove(threadId, State, ply, moveIndex, moves, seeScores, staticMoveScores, moveCount);
+        MoveOrdering::OrderNextMove(threadId, State, ply, moveIndex, moves, seeScores, staticMoveScores, moveCount, board);
         const Move move = moves[moveIndex];
         
         const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
@@ -308,13 +308,14 @@ void UpdateHistoryEntry(MoveScore& score, const MoveScore value)
     score += value * 32;
 }
 
-void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply ply, MoveArray& attemptedMoves, MoveCount attemptedMoveCount, Move bestMove)
+void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply ply, MoveArray& attemptedMoves, MoveCount attemptedMoveCount, Move bestMove, bool betaCutoff)
 {
     auto& threadState = State.Thread[threadId];
     auto& plyState = threadState.Plies[ply];
 
     const bool isCapture = bestMove.GetTakesPiece() != Pieces::Empty;
-    const Move previousMove = board.HistoryDepth > 0 ? board.History[board.HistoryDepth - 1].Move : Move(0);
+    const Move previousMove1 = board.HistoryDepth > 0 ? board.History[board.HistoryDepth - 1].Move : Move(0);
+    const Move previousMove2 = board.HistoryDepth > 1 ? board.History[board.HistoryDepth - 2].Move : Move(0);
     //const Score bonus = static_cast<Score>(depth * depth);
     const MoveScore bonus = depth * depth + depth - 1;
 
@@ -325,13 +326,26 @@ void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply
     else
     {
         UpdateHistoryEntry(threadState.History[bestMove.GetColorToMove()][bestMove.GetFrom()][bestMove.GetTo()], bonus);
-        if (bestMove.Value != plyState.Killers[0].Value)
+        if (previousMove1.Value != 0)
         {
-            plyState.Killers[1] = plyState.Killers[0];
-            plyState.Killers[0] = bestMove;
-            threadState.Countermoves[previousMove.GetPiece()][previousMove.GetTo()] = bestMove;
+            UpdateHistoryEntry(threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[bestMove.GetPiece()][bestMove.GetTo()], bonus);
+        }
+        if (previousMove2.Value != 0)
+        {
+            UpdateHistoryEntry(threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[bestMove.GetPiece()][bestMove.GetTo()], bonus);
+        }
+        UpdateHistoryEntry(threadState.History[bestMove.GetColorToMove()][bestMove.GetFrom()][bestMove.GetTo()], bonus);
+        if(betaCutoff)
+        {
+            if (bestMove.Value != plyState.Killers[0].Value)
+            {
+                plyState.Killers[1] = plyState.Killers[0];
+                plyState.Killers[0] = bestMove;
+            }
+            threadState.Countermoves[previousMove1.GetPiece()][previousMove1.GetTo()] = bestMove;
         }
     }
+    
 
     for (MoveCount moveIndex = 0; moveIndex < attemptedMoveCount; moveIndex++)
     {
@@ -523,6 +537,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     if
     (
         nullMoveAllowed
+        && !rootNode
         && !inCheck
         && depth > 2
         && staticScore >= beta
@@ -631,7 +646,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     moveCount = 0;
     MoveGenerator::GetAllPotentialMoves(board, checkers, pinned, moves, moveCount);
     See::CalculateSeeScores(board, moves, moveCount, seeScores);
-    MoveOrdering::CalculateStaticScores(threadId, State, moves, seeScores, moveCount, ply, principalVariationMove, countermove, staticMoveScores);
+    MoveOrdering::CalculateStaticScores(threadId, State, moves, seeScores, moveCount, ply, principalVariationMove, countermove, staticMoveScores, board);
 
     Score bestScore = -Constants::Inf;
     Move bestMove;
@@ -644,7 +659,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     
     for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
     {
-        MoveOrdering::OrderNextMove(threadId, State, ply, moveIndex, moves, seeScores, staticMoveScores, moveCount);
+        MoveOrdering::OrderNextMove(threadId, State, ply, moveIndex, moves, seeScores, staticMoveScores, moveCount, board);
         const Move move = moves[moveIndex];
         
         //if(move.Value == threadState.SingularMove.Value)
@@ -898,7 +913,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
     if (raisedAlpha)
     {
-        UpdateHistory(threadId, board, depth, ply, failedMoves, failedMoveCount, bestMove);
+        UpdateHistory(threadId, board, depth, ply, failedMoves, failedMoveCount, bestMove, betaCutoff);
         if(betaCutoff)
         {
             StoreTranspositionTable(threadState, key, bestMove, depth, bestScore, TranspositionTableFlags::Beta);

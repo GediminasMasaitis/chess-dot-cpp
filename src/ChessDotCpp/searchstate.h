@@ -20,33 +20,33 @@ public:
     bool SkipNewSearch = false;
 };
 
-//class ContinuationEntry
-//{
-//public:
-//    EachPiece<EachPosition<MoveScore>> Scores{};
-//
-//    void NewSearch()
-//    {
-//        for (Piece piece = 0; piece < Pieces::Count; piece++)
-//        {
-//            for (Position to = 0; to < Positions::Count; to++)
-//            {
-//                Scores[piece][to] >>= 3;
-//            }
-//        }
-//    }
-//
-//    void NewGame()
-//    {
-//        for (Piece piece = 0; piece < Pieces::Count; piece++)
-//        {
-//            for (Position to = 0; to < Positions::Count; to++)
-//            {
-//                Scores[piece][to] = 0;
-//            }
-//        }
-//    }
-//};
+class ContinuationEntry
+{
+public:
+    EachPiece<EachPosition<MoveScore>> Scores{};
+
+    void NewSearch()
+    {
+        for (Piece piece = 0; piece < Pieces::Count; piece++)
+        {
+            for (Position to = 0; to < Positions::Count; to++)
+            {
+                Scores[piece][to] >>= 3;
+            }
+        }
+    }
+
+    void NewGame()
+    {
+        for (Piece piece = 0; piece < Pieces::Count; piece++)
+        {
+            for (Position to = 0; to < Positions::Count; to++)
+            {
+                Scores[piece][to] = 0;
+            }
+        }
+    }
+};
 //
 //static inline ContinuationEntry EmptyContinuation{};
 
@@ -87,7 +87,7 @@ public:
     
     EachColor<EachPosition<EachPosition<MoveScore>>> History;
     EachPiece<EachPosition<EachPiece<MoveScore>>> CaptureHistory;
-    //EachPiece<EachPosition<ContinuationEntry>> AllContinuations;
+    EachPiece<EachPosition<ContinuationEntry>> AllContinuations;
     EachPiece<EachPosition<Move>> Countermoves;
 
     bool StopIteration;
@@ -128,13 +128,13 @@ public:
             }
         }
 
-        //for (Piece piece = 0; piece < Pieces::Count; piece++)
-        //{
-        //    for (Position to = 0; to < Positions::Count; to++)
-        //    {
-        //        AllContinuations[piece][to].NewSearch();
-        //    }
-        //}
+        for (Piece piece = 0; piece < Pieces::Count; piece++)
+        {
+            for (Position to = 0; to < Positions::Count; to++)
+            {
+                AllContinuations[piece][to].NewSearch();
+            }
+        }
         
         SingularMove = Move(0);
         BestMoveChanges = 0;
@@ -175,7 +175,7 @@ public:
             for (Position to = 0; to < Positions::Count; to++)
             {
                 Countermoves[piece][to].Value = 0;
-                //AllContinuations[piece][to].NewGame();
+                AllContinuations[piece][to].NewGame();
             }
         }
     }

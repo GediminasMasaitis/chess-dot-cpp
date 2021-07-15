@@ -24,7 +24,7 @@ public:
 
 constexpr MvvLvaClass MvvLva = MvvLvaClass();
 
-MoveScore CalculateStaticMoveScore(const ThreadId threadId, const Move move, const Score seeScore, const SearchState& state, const Ply ply, const Move pvMove, const Move countermove)
+MoveScore CalculateStaticMoveScore(const ThreadId threadId, const Move move, const Score seeScore, const SearchState& state, const Ply ply, const Move pvMove, const Move countermove, const Board& board)
 {
     const bool isPrincipalVariation = move.Value == pvMove.Value;
     if (isPrincipalVariation)
@@ -32,24 +32,25 @@ MoveScore CalculateStaticMoveScore(const ThreadId threadId, const Move move, con
         return 1'000'000'000;
     }
 
+    const ThreadState& threadState = state.Thread[threadId];
+    const PlyData& plyState = threadState.Plies[ply];
+
     const Piece takes = move.GetTakesPiece();
     if(takes != Pieces::Empty)
     {
-        const MoveScore mvvLvaScore = MvvLva.Values[move.GetPiece()][move.GetTakesPiece()];
+        const MoveScore mvvLvaScore = MvvLva.Values[move.GetPiece()][takes];
         //return mvvLvaScore;
+        const Score captureHistory = threadState.CaptureHistory[move.GetPiece()][move.GetTo()][takes];
     	if(seeScore > 0)
     	{
-            return mvvLvaScore;
+            return mvvLvaScore + captureHistory;
     	}
     	if(seeScore == 0)
     	{
-            return mvvLvaScore / 2;
+            return (mvvLvaScore / 2) + captureHistory;
     	}
-        return mvvLvaScore - 2'000'000'000;
+        return (mvvLvaScore - 2'000'000'000) + captureHistory;
     }
-
-    const ThreadState& threadState = state.Thread[threadId];
-    const PlyData& plyState = threadState.Plies[ply];
 
     if(move.Value == plyState.Killers[0].Value)
     {
@@ -66,49 +67,65 @@ MoveScore CalculateStaticMoveScore(const ThreadId threadId, const Move move, con
         return 70'000'000;
     }
 
-    return 0;
+    const Move previousMove1 = board.HistoryDepth > 0 ? board.History[board.HistoryDepth - 1].Move : Move(0);
+    const Move previousMove2 = board.HistoryDepth > 1 ? board.History[board.HistoryDepth - 2].Move : Move(0);
+
+    const MoveScore history = threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()];
+    const MoveScore continuation1 = threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[move.GetPiece()][move.GetTo()];
+    const MoveScore continuation2 = threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[move.GetPiece()][move.GetTo()];
+    const MoveScore score = history + continuation1 + continuation2;
+
+    return score;
 }
 
-void MoveOrdering::CalculateStaticScores(const ThreadId threadId, const SearchState& state, const MoveArray& moves, const ScoreArray& seeScores, const MoveCount moveCount, const Ply ply, const Move pvMove, const Move countermove, MoveScoreArray& staticScores)
+void MoveOrdering::CalculateStaticScores(const ThreadId threadId, const SearchState& state, const MoveArray& moves, const ScoreArray& seeScores, const MoveCount moveCount, const Ply ply, const Move pvMove, const Move countermove, MoveScoreArray& staticScores, const Board& board)
 {
     for (MoveCount i = 0; i < moveCount; i++)
     {
         const Score seeScore = seeScores[i];
-        const MoveScore score = CalculateStaticMoveScore(threadId, moves[i], seeScore, state, ply, pvMove, countermove);
+        const MoveScore score = CalculateStaticMoveScore(threadId, moves[i], seeScore, state, ply, pvMove, countermove, board);
         staticScores[i] = score;
     }
 }
 
-void MoveOrdering::OrderNextMove(const ThreadId threadId, const SearchState& state, const Ply ply, const MoveCount currentIndex, MoveArray& moves, ScoreArray& seeScores, MoveScoreArray& staticScores, const MoveCount moveCount)
+void MoveOrdering::OrderNextMove(const ThreadId threadId, const SearchState& state, const Ply ply, const MoveCount currentIndex, MoveArray& moves, ScoreArray& seeScores, MoveScoreArray& staticScores, const MoveCount moveCount, const Board& board)
 {
     const ThreadState& threadState = state.Thread[threadId];
     
     MoveScore bestScore = std::numeric_limits<MoveScore>::min();
     MoveCount bestScoreIndex = 0;
-    
+
+
+
     for(MoveCount i = currentIndex; i < moveCount; i++)
     {
         const MoveScore staticScore = staticScores[i];
         MoveScore score = staticScore;
-        const Move move = moves[i];
+        //const Move move = moves[i];
     	
-        if(move.GetTakesPiece() != Pieces::Empty)
-        {
-            score += threadState.CaptureHistory[move.GetPiece()][move.GetTo()][move.GetTakesPiece()];
-        }
-        else if(score == 0)
-        {
-            const MoveScore history = threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()];
-            score = history;
-        	
-            /*const PlyData& plyState = state.Thread[0].Plies[ply];
-            const MoveScore continuation0 = plyState.CurrentContinuations[0]->Scores[move.GetPiece()][move.GetTo()];
-            const MoveScore continuation1 = plyState.CurrentContinuations[1]->Scores[move.GetPiece()][move.GetTo()];
-            const MoveScore continuation3 = plyState.CurrentContinuations[3]->Scores[move.GetPiece()][move.GetTo()];
-            const MoveScore continuation5 = plyState.CurrentContinuations[5]->Scores[move.GetPiece()][move.GetTo()];
-            score = history + 2*continuation0 + continuation1 + continuation3 + continuation5;*/
-        	
-        }
+        //if(move.GetTakesPiece() != Pieces::Empty)
+        //{
+        //    score += threadState.CaptureHistory[move.GetPiece()][move.GetTo()][move.GetTakesPiece()];
+        //}
+        //else if(score == 0)
+        //{
+        //    
+
+        //    //if(continuation2 > 0)
+        //    //{
+        //    //    auto a = 123;
+        //    //}
+
+        //    
+        //	
+        //    /*const PlyData& plyState = state.Thread[0].Plies[ply];
+        //    const MoveScore continuation0 = plyState.CurrentContinuations[0]->Scores[move.GetPiece()][move.GetTo()];
+        //    const MoveScore continuation1 = plyState.CurrentContinuations[1]->Scores[move.GetPiece()][move.GetTo()];
+        //    const MoveScore continuation3 = plyState.CurrentContinuations[3]->Scores[move.GetPiece()][move.GetTo()];
+        //    const MoveScore continuation5 = plyState.CurrentContinuations[5]->Scores[move.GetPiece()][move.GetTo()];
+        //    score = history + 2*continuation0 + continuation1 + continuation3 + continuation5;*/
+        //	
+        //}
     	
         if(score > bestScore)
         {
