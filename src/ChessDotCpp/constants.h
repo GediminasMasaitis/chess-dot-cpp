@@ -632,7 +632,7 @@ static constexpr BetweenBitboardsClass BetweenBitboards = BetweenBitboardsClass(
 class SearchDataClass
 {
 public:
-    using ReductionsTableType = std::array< std::array<EachDepth<EachMove<Ply>>, 2>, 2>;
+    using ReductionsTableType = std::array<std::array<EachDepth<EachMove<Ply>>, 2>, 2>;
 
     ReductionsTableType Reductions{};
 

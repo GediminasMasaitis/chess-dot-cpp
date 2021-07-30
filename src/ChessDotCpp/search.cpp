@@ -171,7 +171,7 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
     uint8_t movesEvaluated = 0;
     for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
     {
-        MoveOrdering::OrderNextMove(threadId, State, ply, moveIndex, moves, seeScores, staticMoveScores, moveCount, board);
+        MoveOrdering::OrderNextMove(moveIndex, moves, seeScores, staticMoveScores, moveCount);
         const Move move = moves[moveIndex];
         
         const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
@@ -531,7 +531,8 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         }
     }
 
-    Move previousMove = rootNode ? Move(0) : board.History[board.HistoryDepth - 1].Move;
+    Move previousMove1 = !rootNode ? board.History[board.HistoryDepth - 1].Move : Move(0);
+    Move previousMove2 = board.HistoryDepth > 1 ? board.History[board.HistoryDepth - 2].Move : Move(0);
         
     // NULL MOVE PRUNING
     if
@@ -560,7 +561,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     MoveCount moveCount = 0;
     ScoreArray seeScores;
     MoveScoreArray staticMoveScores;
-    const Move countermove = threadState.Countermoves[previousMove.GetPiece()][previousMove.GetTo()];
+    const Move countermove = threadState.Countermoves[previousMove1.GetPiece()][previousMove1.GetTo()];
 
     // PROBCUT
     //if (
@@ -659,7 +660,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     
     for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
     {
-        MoveOrdering::OrderNextMove(threadId, State, ply, moveIndex, moves, seeScores, staticMoveScores, moveCount, board);
+        MoveOrdering::OrderNextMove(moveIndex, moves, seeScores, staticMoveScores, moveCount);
         const Move move = moves[moveIndex];
         
         //if(move.Value == threadState.SingularMove.Value)
@@ -744,14 +745,18 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //}
 
         board.DoMove(move);
-        
+
+        const Piece takesPiece = move.GetTakesPiece();
+        const bool capture = takesPiece != Pieces::Empty;
+        const Piece pawnPromoteTo = move.GetPawnPromoteTo();
+        const bool promotion = pawnPromoteTo != Pieces::Empty;
         // FUTILITY PRUNING
         if
         (
             futilityPruning
             && movesEvaluated > 0
-            && move.GetTakesPiece() == Pieces::Empty
-            && move.GetPawnPromoteTo() == Pieces::Empty
+            && takesPiece == Pieces::Empty
+            && pawnPromoteTo == Pieces::Empty
         )
         {
             const Position opponentKingPos = board.KingPositions[board.ColorToMove];
@@ -776,11 +781,11 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             && move.Value != plyState.Killers[1].Value
             //&& move.Value != countermove.Value
             && seeScore <= 0
-            && move.GetPawnPromoteTo() == Pieces::Empty
+            && pawnPromoteTo == Pieces::Empty
         )
         {
             const auto pvReductionIndex = isPrincipalVariation ? 1 : 0;
-            const auto captureReductionIndex = move.GetTakesPiece() == Pieces::Empty ? 0 : 1;
+            const auto captureReductionIndex = takesPiece == Pieces::Empty ? 0 : 1;
             reduction = SearchData.Reductions[pvReductionIndex][captureReductionIndex][depth][movesEvaluated];
 
             if (!isPrincipalVariation && !improving && reduction > 1)
@@ -811,7 +816,11 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             //    reduction++;
             //}
 
-            MoveScore moveScore = threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()] + threadState.CaptureHistory[move.GetPiece()][move.GetTo()][move.GetTakesPiece()];
+            MoveScore moveScore = capture
+                ? threadState.CaptureHistory[move.GetPiece()][move.GetTo()][takesPiece]
+                : threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()]
+                  + threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[move.GetPiece()][move.GetTo()]
+                  + threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[move.GetPiece()][move.GetTo()];
             if
             (
                 reduction > 0
