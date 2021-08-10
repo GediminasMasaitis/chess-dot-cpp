@@ -31,7 +31,7 @@ public:
         GamePhase = 0;
         for (Piece side = 0; side <= 1; side++)
         {
-            for(PhaseStage stage = EvalPhases::Midgame; stage < EvalPhases::Count; stage++)
+            for(PhaseStage stage = PhaseStages::Midgame; stage < PhaseStages::Count; stage++)
             {
                 Material[stage][side] = 0;
                 Mobility[stage][side] = 0;
@@ -59,19 +59,19 @@ public:
         std::cout << "Phase: " << std::to_string(GamePhase) << std::endl;
         PrintEachColor(board.PawnMaterial, "Pawn material");
         PrintEachColor(board.PieceMaterial, "Piece material");
-        PrintEachColor(Mobility[EvalPhases::Midgame], "Midgame mobility");
-        PrintEachColor(Mobility[EvalPhases::Endgame], "Endgame mobility");
+        PrintEachColor(Mobility[PhaseStages::Midgame], "Midgame mobility");
+        PrintEachColor(Mobility[PhaseStages::Endgame], "Endgame mobility");
         PrintEachColor(AttackCount, "Attack count");
         PrintEachColor(AttackWeight, "Attack weight");
-        PrintEachColor(Tropism[EvalPhases::Midgame], "Midgame tropism");
-        PrintEachColor(Tropism[EvalPhases::Endgame], "Endgame tropism");
+        PrintEachColor(Tropism[PhaseStages::Midgame], "Midgame tropism");
+        PrintEachColor(Tropism[PhaseStages::Endgame], "Endgame tropism");
         PrintEachColor(KingShield, "King shield");
-        PrintEachColor(MaterialAdjustment[EvalPhases::Midgame], "Midgame material adjustment");
-        PrintEachColor(MaterialAdjustment[EvalPhases::Endgame], "Endgame material adjustment");
+        PrintEachColor(MaterialAdjustment[PhaseStages::Midgame], "Midgame material adjustment");
+        PrintEachColor(MaterialAdjustment[PhaseStages::Endgame], "Endgame material adjustment");
         PrintEachColor(Blockages, "Blockages");
         PrintEachColor(PositionalThemes, "PositionalThemes");
-        PrintEachColor(PieceSquares[EvalPhases::Midgame], "Piece squares midgame");
-        PrintEachColor(PieceSquares[EvalPhases::Endgame], "Piece squares endgame");
+        PrintEachColor(PieceSquares[PhaseStages::Midgame], "Piece squares midgame");
+        PrintEachColor(PieceSquares[PhaseStages::Endgame], "Piece squares endgame");
     }
 };
 
@@ -271,8 +271,8 @@ void EvalKnight(const BoardBase& board, EvaluationScores& scores, const Position
     *  average mobility, but  our formula of doing so is a puer guess.        *
     **************************************************************************/
 
-    scores.Mobility[EvalPhases::Midgame][color] += 4 * (mob - 4);
-    scores.Mobility[EvalPhases::Endgame][color] += 4 * (mob - 4);
+    scores.Mobility[PhaseStages::Midgame][color] += 4 * (mob - 4);
+    scores.Mobility[PhaseStages::Endgame][color] += 4 * (mob - 4);
 
     /**************************************************************************
     *  Save data about king attacks                                           *
@@ -289,8 +289,8 @@ void EvalKnight(const BoardBase& board, EvaluationScores& scores, const Position
     **************************************************************************/
 
     const Tropism tropism = GetTropism(position, board.KingPositions[opp]);
-    scores.Tropism[EvalPhases::Midgame][color] += 3 * tropism;
-    scores.Tropism[EvalPhases::Endgame][color] += 3 * tropism;
+    scores.Tropism[PhaseStages::Midgame][color] += 3 * tropism;
+    scores.Tropism[PhaseStages::Endgame][color] += 3 * tropism;
 }
 
 template<Color TColor>
@@ -318,8 +318,8 @@ void EvalBishop(const BoardBase& board, EvaluationScores& scores, const Position
     const Bitboard emptyOrOpponentNearKing = emptyOrOpponent & BitboardJumps.KingExtendedJumps[opp][board.KingPositions[opp]];
     att += PopCount(emptyOrOpponentNearKing);
 
-    scores.Mobility[EvalPhases::Midgame][color] += 3 * (mob - 7);
-    scores.Mobility[EvalPhases::Endgame][color] += 3 * (mob - 7);
+    scores.Mobility[PhaseStages::Midgame][color] += 3 * (mob - 7);
+    scores.Mobility[PhaseStages::Endgame][color] += 3 * (mob - 7);
 
     if (att > 0)
     {
@@ -328,8 +328,8 @@ void EvalBishop(const BoardBase& board, EvaluationScores& scores, const Position
     }
 
     const Tropism tropism = GetTropism(position, board.KingPositions[opp]);
-    scores.Tropism[EvalPhases::Midgame][color] += 2 * tropism;
-    scores.Tropism[EvalPhases::Endgame][color] += 1 * tropism;
+    scores.Tropism[PhaseStages::Midgame][color] += 2 * tropism;
+    scores.Tropism[PhaseStages::Endgame][color] += 1 * tropism;
 }
 
 template<Color TColor>
@@ -355,8 +355,8 @@ void EvalRook(const BoardBase& board, EvaluationScores& scores, const Position p
         )
     )
     {
-        scores.Mobility[EvalPhases::Midgame][color] += 20;
-        scores.Mobility[EvalPhases::Endgame][color] += 30;
+        scores.Mobility[PhaseStages::Midgame][color] += 20;
+        scores.Mobility[PhaseStages::Endgame][color] += 30;
     }
 
     const Bitboard file = BitboardConstants::Files[sqCol];
@@ -366,8 +366,8 @@ void EvalRook(const BoardBase& board, EvaluationScores& scores, const Position p
         const Bitboard opponentPawnsOnFile = board.BitBoard[Pieces::Pawn | opp] & file;
         if (opponentPawnsOnFile == 0) // fully open file
         {
-            scores.Mobility[EvalPhases::Midgame][color] += EvaluationData::RookOpenFile;
-            scores.Mobility[EvalPhases::Endgame][color] += EvaluationData::RookOpenFile;
+            scores.Mobility[PhaseStages::Midgame][color] += EvaluationData::RookOpenFile;
+            scores.Mobility[PhaseStages::Endgame][color] += EvaluationData::RookOpenFile;
             if (std::abs(sqCol - static_cast<int8_t>(Files::Get(board.KingPositions[opp]))) < 2)
             {
                 scores.AttackWeight[color] += 1;
@@ -375,8 +375,8 @@ void EvalRook(const BoardBase& board, EvaluationScores& scores, const Position p
         }
         else // half open file
         {
-            scores.Mobility[EvalPhases::Midgame][color] += EvaluationData::RookHalfOpenFile;
-            scores.Mobility[EvalPhases::Endgame][color] += EvaluationData::RookHalfOpenFile;
+            scores.Mobility[PhaseStages::Midgame][color] += EvaluationData::RookHalfOpenFile;
+            scores.Mobility[PhaseStages::Endgame][color] += EvaluationData::RookHalfOpenFile;
             if (std::abs(sqCol - static_cast<int8_t>(Files::Get(board.KingPositions[opp]))) < 2)
             {
                 scores.AttackWeight[color] += 2;
@@ -401,8 +401,8 @@ void EvalRook(const BoardBase& board, EvaluationScores& scores, const Position p
     const Bitboard emptyOrOpponentNearKing = emptyOrOpponent & BitboardJumps.KingExtendedJumps[opp][board.KingPositions[opp]];
     att += PopCount(emptyOrOpponentNearKing);
 
-    scores.Mobility[EvalPhases::Midgame][color] += 2 * (mob - 7);
-    scores.Mobility[EvalPhases::Endgame][color] += 4 * (mob - 7);
+    scores.Mobility[PhaseStages::Midgame][color] += 2 * (mob - 7);
+    scores.Mobility[PhaseStages::Endgame][color] += 4 * (mob - 7);
 
     if (att > 0)
     {
@@ -411,8 +411,8 @@ void EvalRook(const BoardBase& board, EvaluationScores& scores, const Position p
     }
 
     const Tropism tropism = GetTropism(position, board.KingPositions[opp]);
-    scores.Tropism[EvalPhases::Midgame][color] += 2 * tropism;
-    scores.Tropism[EvalPhases::Endgame][color] += 1 * tropism;
+    scores.Tropism[PhaseStages::Midgame][color] += 2 * tropism;
+    scores.Tropism[PhaseStages::Endgame][color] += 1 * tropism;
 }
 
 template<Color TColor>
@@ -437,8 +437,8 @@ void EvalQueen(const BoardBase& board, EvaluationScores& scores, const Position 
         )
     )
     {
-        scores.Mobility[EvalPhases::Midgame][color] += 5;
-        scores.Mobility[EvalPhases::Endgame][color] += 10;
+        scores.Mobility[PhaseStages::Midgame][color] += 5;
+        scores.Mobility[PhaseStages::Endgame][color] += 10;
     }
 
     if ((color == Colors::White && sqRow > 1) || (color == Colors::Black && sqRow < 6))
@@ -469,8 +469,8 @@ void EvalQueen(const BoardBase& board, EvaluationScores& scores, const Position 
     const Bitboard emptyOrOpponentNearKing = emptyOrOpponent & BitboardJumps.KingExtendedJumps[opp][board.KingPositions[opp]];
     att += PopCount(emptyOrOpponentNearKing);
 
-    scores.Mobility[EvalPhases::Midgame][color] += 1 * (mob - 14);
-    scores.Mobility[EvalPhases::Endgame][color] += 2 * (mob - 14);
+    scores.Mobility[PhaseStages::Midgame][color] += 1 * (mob - 14);
+    scores.Mobility[PhaseStages::Endgame][color] += 2 * (mob - 14);
 
     if (att > 0)
     {
@@ -479,8 +479,8 @@ void EvalQueen(const BoardBase& board, EvaluationScores& scores, const Position 
     }
 
     const Tropism tropism = GetTropism(position, board.KingPositions[opp]);
-    scores.Tropism[EvalPhases::Midgame][color] += 2 * tropism;
-    scores.Tropism[EvalPhases::Endgame][color] += 4 * tropism;
+    scores.Tropism[PhaseStages::Midgame][color] += 2 * tropism;
+    scores.Tropism[PhaseStages::Endgame][color] += 4 * tropism;
 }
 
 template<Color TColor>
@@ -492,10 +492,10 @@ void EvaluatePieces(const BoardBase& board, EvaluationScores& scores, const Atta
     while (pawns != 0)
     {
         Position pos = BitScanForward(pawns);
-        scores.Material[EvalPhases::Midgame][color] += EvaluationData::Material[EvalPhases::Midgame][Pieces::Pawn];
-        scores.Material[EvalPhases::Endgame][color] += EvaluationData::Material[EvalPhases::Endgame][Pieces::Pawn];
-        scores.PieceSquares[EvalPhases::Midgame][color] += EvaluationData::Midgame[pawn][pos];
-        scores.PieceSquares[EvalPhases::Endgame][color] += EvaluationData::Endgame[pawn][pos];
+        scores.Material[PhaseStages::Midgame][color] += EvaluationData::Material[PhaseStages::Midgame][Pieces::Pawn];
+        scores.Material[PhaseStages::Endgame][color] += EvaluationData::Material[PhaseStages::Endgame][Pieces::Pawn];
+        scores.PieceSquares[PhaseStages::Midgame][color] += EvaluationData::Midgame[pawn][pos];
+        scores.PieceSquares[PhaseStages::Endgame][color] += EvaluationData::Endgame[pawn][pos];
         pawns &= pawns - 1;
     }
 
@@ -505,10 +505,10 @@ void EvaluatePieces(const BoardBase& board, EvaluationScores& scores, const Atta
     {
         Position pos = BitScanForward(knights);
         EvalKnight<TColor>(board, scores, pos, attacks, pinned);
-        scores.Material[EvalPhases::Midgame][color] += EvaluationData::Material[EvalPhases::Midgame][Pieces::Knight];
-        scores.Material[EvalPhases::Endgame][color] += EvaluationData::Material[EvalPhases::Endgame][Pieces::Knight];
-        scores.PieceSquares[EvalPhases::Midgame][color] += EvaluationData::Midgame[knight][pos];
-        scores.PieceSquares[EvalPhases::Endgame][color] += EvaluationData::Endgame[knight][pos];
+        scores.Material[PhaseStages::Midgame][color] += EvaluationData::Material[PhaseStages::Midgame][Pieces::Knight];
+        scores.Material[PhaseStages::Endgame][color] += EvaluationData::Material[PhaseStages::Endgame][Pieces::Knight];
+        scores.PieceSquares[PhaseStages::Midgame][color] += EvaluationData::Midgame[knight][pos];
+        scores.PieceSquares[PhaseStages::Endgame][color] += EvaluationData::Endgame[knight][pos];
         knights &= knights - 1;
     }
 
@@ -518,10 +518,10 @@ void EvaluatePieces(const BoardBase& board, EvaluationScores& scores, const Atta
     {
         Position pos = BitScanForward(bishops);
         EvalBishop<TColor>(board, scores, pos, attacks, pinned);
-        scores.Material[EvalPhases::Midgame][color] += EvaluationData::Material[EvalPhases::Midgame][Pieces::Bishop];
-        scores.Material[EvalPhases::Endgame][color] += EvaluationData::Material[EvalPhases::Endgame][Pieces::Bishop];
-        scores.PieceSquares[EvalPhases::Midgame][color] += EvaluationData::Midgame[bishop][pos];
-        scores.PieceSquares[EvalPhases::Endgame][color] += EvaluationData::Endgame[bishop][pos];
+        scores.Material[PhaseStages::Midgame][color] += EvaluationData::Material[PhaseStages::Midgame][Pieces::Bishop];
+        scores.Material[PhaseStages::Endgame][color] += EvaluationData::Material[PhaseStages::Endgame][Pieces::Bishop];
+        scores.PieceSquares[PhaseStages::Midgame][color] += EvaluationData::Midgame[bishop][pos];
+        scores.PieceSquares[PhaseStages::Endgame][color] += EvaluationData::Endgame[bishop][pos];
         bishops &= bishops - 1;
     }
 
@@ -531,10 +531,10 @@ void EvaluatePieces(const BoardBase& board, EvaluationScores& scores, const Atta
     {
         Position pos = BitScanForward(rooks);
         EvalRook<TColor>(board, scores, pos, attacks, pinned);
-        scores.Material[EvalPhases::Midgame][color] += EvaluationData::Material[EvalPhases::Midgame][Pieces::Rook];
-        scores.Material[EvalPhases::Endgame][color] += EvaluationData::Material[EvalPhases::Endgame][Pieces::Rook];
-        scores.PieceSquares[EvalPhases::Midgame][color] += EvaluationData::Midgame[rook][pos];
-        scores.PieceSquares[EvalPhases::Endgame][color] += EvaluationData::Endgame[rook][pos];
+        scores.Material[PhaseStages::Midgame][color] += EvaluationData::Material[PhaseStages::Midgame][Pieces::Rook];
+        scores.Material[PhaseStages::Endgame][color] += EvaluationData::Material[PhaseStages::Endgame][Pieces::Rook];
+        scores.PieceSquares[PhaseStages::Midgame][color] += EvaluationData::Midgame[rook][pos];
+        scores.PieceSquares[PhaseStages::Endgame][color] += EvaluationData::Endgame[rook][pos];
         rooks &= rooks - 1;
     }
 
@@ -544,16 +544,16 @@ void EvaluatePieces(const BoardBase& board, EvaluationScores& scores, const Atta
     {
         Position pos = BitScanForward(queens);
         EvalQueen<TColor>(board, scores, pos, attacks, pinned);
-        scores.Material[EvalPhases::Midgame][color] += EvaluationData::Material[EvalPhases::Midgame][Pieces::Queen];
-        scores.Material[EvalPhases::Endgame][color] += EvaluationData::Material[EvalPhases::Endgame][Pieces::Queen];
-        scores.PieceSquares[EvalPhases::Midgame][color] += EvaluationData::Midgame[queen][pos];
-        scores.PieceSquares[EvalPhases::Endgame][color] += EvaluationData::Endgame[queen][pos];
+        scores.Material[PhaseStages::Midgame][color] += EvaluationData::Material[PhaseStages::Midgame][Pieces::Queen];
+        scores.Material[PhaseStages::Endgame][color] += EvaluationData::Material[PhaseStages::Endgame][Pieces::Queen];
+        scores.PieceSquares[PhaseStages::Midgame][color] += EvaluationData::Midgame[queen][pos];
+        scores.PieceSquares[PhaseStages::Endgame][color] += EvaluationData::Endgame[queen][pos];
         queens &= queens - 1;
     }
 
     constexpr Piece king = Pieces::King | color;
-    scores.PieceSquares[EvalPhases::Midgame][color] += EvaluationData::Midgame[king][board.KingPositions[color]];
-    scores.PieceSquares[EvalPhases::Endgame][color] += EvaluationData::Endgame[king][board.KingPositions[color]];
+    scores.PieceSquares[PhaseStages::Midgame][color] += EvaluationData::Midgame[king][board.KingPositions[color]];
+    scores.PieceSquares[PhaseStages::Endgame][color] += EvaluationData::Endgame[king][board.KingPositions[color]];
 }
 
 template<Color TColor>
@@ -764,18 +764,18 @@ Score EvaluateInner(const BoardBase& board, const EachColor<Bitboard>& pins, Eva
     GetAttackDetails(board, attacks);
 
     scores.GamePhase =
-        EvaluationData::PiecePhases[Pieces::WhiteKnight] *board.PieceCounts[Pieces::WhiteKnight]
-        + EvaluationData::PiecePhases[Pieces::WhiteBishop] * board.PieceCounts[Pieces::WhiteBishop]
-        + EvaluationData::PiecePhases[Pieces::WhiteRook] * board.PieceCounts[Pieces::WhiteRook]
-        + EvaluationData::PiecePhases[Pieces::WhiteQueen] * board.PieceCounts[Pieces::WhiteQueen]
-        + EvaluationData::PiecePhases[Pieces::BlackKnight] * board.PieceCounts[Pieces::BlackKnight]
-        + EvaluationData::PiecePhases[Pieces::BlackBishop] * board.PieceCounts[Pieces::BlackBishop]
-        + EvaluationData::PiecePhases[Pieces::BlackRook] * board.PieceCounts[Pieces::BlackRook]
-        + EvaluationData::PiecePhases[Pieces::BlackQueen] * board.PieceCounts[Pieces::BlackQueen];
+        PiecePhases[Pieces::WhiteKnight] *board.PieceCounts[Pieces::WhiteKnight]
+        + PiecePhases[Pieces::WhiteBishop] * board.PieceCounts[Pieces::WhiteBishop]
+        + PiecePhases[Pieces::WhiteRook] * board.PieceCounts[Pieces::WhiteRook]
+        + PiecePhases[Pieces::WhiteQueen] * board.PieceCounts[Pieces::WhiteQueen]
+        + PiecePhases[Pieces::BlackKnight] * board.PieceCounts[Pieces::BlackKnight]
+        + PiecePhases[Pieces::BlackBishop] * board.PieceCounts[Pieces::BlackBishop]
+        + PiecePhases[Pieces::BlackRook] * board.PieceCounts[Pieces::BlackRook]
+        + PiecePhases[Pieces::BlackQueen] * board.PieceCounts[Pieces::BlackQueen];
 
-    if (scores.GamePhase > EvaluationData::MaxPhase)
+    if (scores.GamePhase > MaxPhase)
     {
-        scores.GamePhase = EvaluationData::MaxPhase;
+        scores.GamePhase = MaxPhase;
     }
 
     scores.KingShield[Colors::White] = KingShield<Colors::White>(board);
@@ -795,43 +795,43 @@ Score EvaluateInner(const BoardBase& board, const EachColor<Bitboard>& pins, Eva
 
     if (board.PieceCounts[Pieces::WhiteBishop] > 1)
     {
-        scores.MaterialAdjustment[EvalPhases::Midgame][Colors::White] += EvaluationData::BishopPair[EvalPhases::Midgame];
-        scores.MaterialAdjustment[EvalPhases::Endgame][Colors::White] += EvaluationData::BishopPair[EvalPhases::Endgame];
+        scores.MaterialAdjustment[PhaseStages::Midgame][Colors::White] += EvaluationData::BishopPair[PhaseStages::Midgame];
+        scores.MaterialAdjustment[PhaseStages::Endgame][Colors::White] += EvaluationData::BishopPair[PhaseStages::Endgame];
     }
     if (board.PieceCounts[Pieces::BlackBishop] > 1)
     {
-        scores.MaterialAdjustment[EvalPhases::Midgame][Colors::Black] += EvaluationData::BishopPair[EvalPhases::Midgame];
-        scores.MaterialAdjustment[EvalPhases::Endgame][Colors::Black] += EvaluationData::BishopPair[EvalPhases::Endgame];
+        scores.MaterialAdjustment[PhaseStages::Midgame][Colors::Black] += EvaluationData::BishopPair[PhaseStages::Midgame];
+        scores.MaterialAdjustment[PhaseStages::Endgame][Colors::Black] += EvaluationData::BishopPair[PhaseStages::Endgame];
     }
     if (board.PieceCounts[Pieces::WhiteKnight] > 1)
     {
-        scores.MaterialAdjustment[EvalPhases::Midgame][Colors::White] += EvaluationData::KnightPair[EvalPhases::Midgame];
-        scores.MaterialAdjustment[EvalPhases::Endgame][Colors::White] += EvaluationData::KnightPair[EvalPhases::Endgame];
+        scores.MaterialAdjustment[PhaseStages::Midgame][Colors::White] += EvaluationData::KnightPair[PhaseStages::Midgame];
+        scores.MaterialAdjustment[PhaseStages::Endgame][Colors::White] += EvaluationData::KnightPair[PhaseStages::Endgame];
     }
     if (board.PieceCounts[Pieces::BlackKnight] > 1)
     {
-        scores.MaterialAdjustment[EvalPhases::Midgame][Colors::Black] += EvaluationData::KnightPair[EvalPhases::Midgame];
-        scores.MaterialAdjustment[EvalPhases::Endgame][Colors::Black] += EvaluationData::KnightPair[EvalPhases::Endgame];
+        scores.MaterialAdjustment[PhaseStages::Midgame][Colors::Black] += EvaluationData::KnightPair[PhaseStages::Midgame];
+        scores.MaterialAdjustment[PhaseStages::Endgame][Colors::Black] += EvaluationData::KnightPair[PhaseStages::Endgame];
     }
     if (board.PieceCounts[Pieces::WhiteRook] > 1)
     {
-        scores.MaterialAdjustment[EvalPhases::Midgame][Colors::White] += EvaluationData::RookPair[EvalPhases::Midgame];
-        scores.MaterialAdjustment[EvalPhases::Endgame][Colors::White] += EvaluationData::RookPair[EvalPhases::Endgame];
+        scores.MaterialAdjustment[PhaseStages::Midgame][Colors::White] += EvaluationData::RookPair[PhaseStages::Midgame];
+        scores.MaterialAdjustment[PhaseStages::Endgame][Colors::White] += EvaluationData::RookPair[PhaseStages::Endgame];
     }
     if (board.PieceCounts[Pieces::BlackRook] > 1)
     {
-        scores.MaterialAdjustment[EvalPhases::Midgame][Colors::Black] += EvaluationData::RookPair[EvalPhases::Midgame];
-        scores.MaterialAdjustment[EvalPhases::Endgame][Colors::Black] += EvaluationData::RookPair[EvalPhases::Endgame];
+        scores.MaterialAdjustment[PhaseStages::Midgame][Colors::Black] += EvaluationData::RookPair[PhaseStages::Midgame];
+        scores.MaterialAdjustment[PhaseStages::Endgame][Colors::Black] += EvaluationData::RookPair[PhaseStages::Endgame];
     }
 
-    scores.MaterialAdjustment[EvalPhases::Midgame][Colors::White] += EvaluationData::KnightPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteKnight];
-    scores.MaterialAdjustment[EvalPhases::Endgame][Colors::White] += EvaluationData::KnightPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteKnight];
-    scores.MaterialAdjustment[EvalPhases::Midgame][Colors::Black] += EvaluationData::KnightPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackKnight];
-    scores.MaterialAdjustment[EvalPhases::Endgame][Colors::Black] += EvaluationData::KnightPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackKnight];
-    scores.MaterialAdjustment[EvalPhases::Midgame][Colors::White] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteRook];
-    scores.MaterialAdjustment[EvalPhases::Endgame][Colors::White] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteRook];
-    scores.MaterialAdjustment[EvalPhases::Midgame][Colors::Black] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackRook];
-    scores.MaterialAdjustment[EvalPhases::Endgame][Colors::Black] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackRook];
+    scores.MaterialAdjustment[PhaseStages::Midgame][Colors::White] += EvaluationData::KnightPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteKnight];
+    scores.MaterialAdjustment[PhaseStages::Endgame][Colors::White] += EvaluationData::KnightPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteKnight];
+    scores.MaterialAdjustment[PhaseStages::Midgame][Colors::Black] += EvaluationData::KnightPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackKnight];
+    scores.MaterialAdjustment[PhaseStages::Endgame][Colors::Black] += EvaluationData::KnightPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackKnight];
+    scores.MaterialAdjustment[PhaseStages::Midgame][Colors::White] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteRook];
+    scores.MaterialAdjustment[PhaseStages::Endgame][Colors::White] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::WhitePawn]] * board.PieceCounts[Pieces::WhiteRook];
+    scores.MaterialAdjustment[PhaseStages::Midgame][Colors::Black] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackRook];
+    scores.MaterialAdjustment[PhaseStages::Endgame][Colors::Black] += EvaluationData::RookPawnAdjust[board.PieceCounts[Pieces::BlackPawn]] * board.PieceCounts[Pieces::BlackRook];
 
     const Score pawnScore = GetPawnScore(board, attacks, state);
     scores.Result += pawnScore;
@@ -845,30 +845,30 @@ Score EvaluateInner(const BoardBase& board, const EachColor<Bitboard>& pins, Eva
     Score midgameScore = 0;
     midgameScore += scores.KingShield[Colors::White];
     midgameScore -= scores.KingShield[Colors::Black];
-    midgameScore += scores.Material[EvalPhases::Midgame][Colors::White];
-    midgameScore -= scores.Material[EvalPhases::Midgame][Colors::Black];
-    midgameScore += scores.PieceSquares[EvalPhases::Midgame][Colors::White];
-    midgameScore -= scores.PieceSquares[EvalPhases::Midgame][Colors::Black];
-    midgameScore += scores.Mobility[EvalPhases::Midgame][Colors::White];
-    midgameScore -= scores.Mobility[EvalPhases::Midgame][Colors::Black];
-    midgameScore += scores.MaterialAdjustment[EvalPhases::Midgame][Colors::White];
-    midgameScore -= scores.MaterialAdjustment[EvalPhases::Midgame][Colors::Black];
+    midgameScore += scores.Material[PhaseStages::Midgame][Colors::White];
+    midgameScore -= scores.Material[PhaseStages::Midgame][Colors::Black];
+    midgameScore += scores.PieceSquares[PhaseStages::Midgame][Colors::White];
+    midgameScore -= scores.PieceSquares[PhaseStages::Midgame][Colors::Black];
+    midgameScore += scores.Mobility[PhaseStages::Midgame][Colors::White];
+    midgameScore -= scores.Mobility[PhaseStages::Midgame][Colors::Black];
+    midgameScore += scores.MaterialAdjustment[PhaseStages::Midgame][Colors::White];
+    midgameScore -= scores.MaterialAdjustment[PhaseStages::Midgame][Colors::Black];
 
     Score endgameScore = 0;
-    endgameScore += scores.Material[EvalPhases::Endgame][Colors::White];
-    endgameScore -= scores.Material[EvalPhases::Endgame][Colors::Black];
-    endgameScore += scores.PieceSquares[EvalPhases::Endgame][Colors::White];
-    endgameScore -= scores.PieceSquares[EvalPhases::Endgame][Colors::Black];
-    endgameScore += scores.Mobility[EvalPhases::Endgame][Colors::White];
-    endgameScore -= scores.Mobility[EvalPhases::Endgame][Colors::Black];
-    endgameScore += scores.Tropism[EvalPhases::Endgame][Colors::White];
-    endgameScore -= scores.Tropism[EvalPhases::Endgame][Colors::Black];
-    endgameScore += scores.MaterialAdjustment[EvalPhases::Endgame][Colors::White];
-    endgameScore -= scores.MaterialAdjustment[EvalPhases::Endgame][Colors::Black];
+    endgameScore += scores.Material[PhaseStages::Endgame][Colors::White];
+    endgameScore -= scores.Material[PhaseStages::Endgame][Colors::Black];
+    endgameScore += scores.PieceSquares[PhaseStages::Endgame][Colors::White];
+    endgameScore -= scores.PieceSquares[PhaseStages::Endgame][Colors::Black];
+    endgameScore += scores.Mobility[PhaseStages::Endgame][Colors::White];
+    endgameScore -= scores.Mobility[PhaseStages::Endgame][Colors::Black];
+    endgameScore += scores.Tropism[PhaseStages::Endgame][Colors::White];
+    endgameScore -= scores.Tropism[PhaseStages::Endgame][Colors::Black];
+    endgameScore += scores.MaterialAdjustment[PhaseStages::Endgame][Colors::White];
+    endgameScore -= scores.MaterialAdjustment[PhaseStages::Endgame][Colors::Black];
 
     const Phase midgameWeight = scores.GamePhase;
-    const Phase endgameWeight = EvaluationData::MaxPhase - midgameWeight;
-    scores.Result += ((midgameScore * midgameWeight) + (endgameScore * endgameWeight)) / EvaluationData::MaxPhase;
+    const Phase endgameWeight = MaxPhase - midgameWeight;
+    scores.Result += ((midgameScore * midgameWeight) + (endgameScore * endgameWeight)) / MaxPhase;
 
     scores.Result += (scores.Blockages[Colors::White] - scores.Blockages[Colors::Black]);
     scores.Result += (scores.PositionalThemes[Colors::White] - scores.PositionalThemes[Colors::Black]);

@@ -6,6 +6,7 @@
 #include "evaluation.h"
 #include "perft.h"
 #include "tablebases.h"
+#include "texel.h"
 
 
 void Run(int argc, char** argv)
@@ -20,6 +21,10 @@ void Run(int argc, char** argv)
         {
             Bench::Run(1);
             return;
+        }
+        else if (param1 == "tune")
+        {
+            Texel::Run();
         }
     }
     
@@ -54,5 +59,6 @@ int main(int argc, char** argv)
     //Test();
     //Train();
     Run(argc, argv);
+
     return 0;
 }

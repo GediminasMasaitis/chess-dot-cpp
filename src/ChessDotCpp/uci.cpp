@@ -1,6 +1,8 @@
 #include "uci.h"
 
 
+
+#include "texel.h"
 #include "trainclassical.h"
 #include "trainnnue.h"
 
@@ -276,6 +278,10 @@ bool Uci::HandleInput(const std::string& line)
 		else if (word == "train")
 		{
 			HandleTrain(reader);
+		}
+		else if (word == "tune")
+		{
+			Texel::Run();
 		}
 		else if (word == "quit")
 		{

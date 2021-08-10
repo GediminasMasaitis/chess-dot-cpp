@@ -3,18 +3,7 @@
 #include "board.h"
 #include "evalstate.h"
 #include "options.h"
-
-class EvalPhases
-{
-public:
-    static constexpr PhaseStage Midgame = 0;
-    static constexpr PhaseStage Endgame = 1;
-
-    static constexpr PhaseStage Count = 2;
-};
-
-template<class T>
-using EachPhase = std::array<T, EvalPhases::Count>;
+#include "evalbase.h"
 
 class EvaluationDataMain
 {
@@ -223,9 +212,6 @@ public:
     // TODO: Make it go up to 64
     static constexpr std::array<Score, 17> KnightPawnAdjust = { -20, -16, -12, -8, -4, 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44 };
     static constexpr std::array<Score, 17> RookPawnAdjust = { 15, 12, 9, 6, 3, 0, -3, -6, -9, -12, -15, -18, -21, -24, -27, -30, -33 };
-
-    static constexpr EachPiece<Phase> PiecePhases = { 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 4, 4, 0, 0 };
-    static constexpr Phase MaxPhase = 4 * PiecePhases[Pieces::Knight] + 4 * PiecePhases[Pieces::Bishop] + 4 * PiecePhases[Pieces::Rook] + 2 * PiecePhases[Pieces::Queen];
     
     static constexpr EachColor<Scoreboard> WeakPawn = Positions::MakeRelative(WeakPawnPcsq);
     static constexpr EachColor<Scoreboard> PassedPawn = Positions::MakeRelative(PassedPawnPcsq);
@@ -343,12 +329,12 @@ public:
 
     static void Sync()
     {
-        BishopPair[EvalPhases::Midgame] = TuneScores[0];
-        BishopPair[EvalPhases::Endgame] = TuneScores[1];
-        KnightPair[EvalPhases::Midgame] = TuneScores[2];
-        KnightPair[EvalPhases::Endgame] = TuneScores[3];
-        RookPair[EvalPhases::Midgame] = TuneScores[4];
-        RookPair[EvalPhases::Endgame] = TuneScores[5];
+        BishopPair[PhaseStages::Midgame] = TuneScores[0];
+        BishopPair[PhaseStages::Endgame] = TuneScores[1];
+        KnightPair[PhaseStages::Midgame] = TuneScores[2];
+        KnightPair[PhaseStages::Endgame] = TuneScores[3];
+        RookPair[PhaseStages::Midgame] = TuneScores[4];
+        RookPair[PhaseStages::Endgame] = TuneScores[5];
         RookOpenFile = TuneScores[6];
         RookHalfOpenFile = TuneScores[7];
         KingShieldRank2 = TuneScores[8];
@@ -358,12 +344,12 @@ public:
     
     static void SetInitial()
     {
-        TuneScores[0] = EvaluationDataMain::BishopPair[EvalPhases::Midgame];
-        TuneScores[1] = EvaluationDataMain::BishopPair[EvalPhases::Endgame];
-        TuneScores[2] = EvaluationDataMain::KnightPair[EvalPhases::Midgame];
-        TuneScores[3] = EvaluationDataMain::KnightPair[EvalPhases::Endgame];
-        TuneScores[4] = EvaluationDataMain::RookPair[EvalPhases::Midgame];
-        TuneScores[5] = EvaluationDataMain::RookPair[EvalPhases::Endgame];
+        TuneScores[0] = EvaluationDataMain::BishopPair[PhaseStages::Midgame];
+        TuneScores[1] = EvaluationDataMain::BishopPair[PhaseStages::Endgame];
+        TuneScores[2] = EvaluationDataMain::KnightPair[PhaseStages::Midgame];
+        TuneScores[3] = EvaluationDataMain::KnightPair[PhaseStages::Endgame];
+        TuneScores[4] = EvaluationDataMain::RookPair[PhaseStages::Midgame];
+        TuneScores[5] = EvaluationDataMain::RookPair[PhaseStages::Endgame];
         TuneScores[6] = EvaluationDataMain::RookOpenFile;
         TuneScores[7] = EvaluationDataMain::RookHalfOpenFile;
         TuneScores[8] = EvaluationDataMain::KingShieldRank2;
