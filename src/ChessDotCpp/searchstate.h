@@ -4,7 +4,7 @@
 #include "options.h"
 #include "searchhash.h"
 //#include "abdada.h"
-//#include "threadpool.h"
+//#include "threadpool_old.h"
 
 class SearchParameters
 {
@@ -268,7 +268,6 @@ public:
     ThreadVector Thread;
     GlobalData Global{};
     SearchStats Stats{};
-    //std::unique_ptr<thread_pool> Pool;
     //std::unique_ptr<ThreadPool> Pool;
 
     SearchState()

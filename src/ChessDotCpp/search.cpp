@@ -519,7 +519,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             return probedScore;
         }
     }
-
+    
     // STATIC EVALUATION
     EachColor<Bitboard> pins;
     PinDetector::GetPinnedToKings(board, pins);
@@ -539,12 +539,14 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         && !inCheck
     )
     {
-        constexpr Score marginPerDepth = 120;  // 120? Pawn is 100
-        Score margin = marginPerDepth * depth;
-        //if(improving)
-        //{
-     //       margin += marginPerDepth;
-        //}
+        constexpr Score marginPerDepth = 48;
+        //const Score marginPerDepth = Options::TuneScore1;
+        Score margin = static_cast<Score>(marginPerDepth * depth);
+
+        if(improving)
+        {
+            margin += marginPerDepth / 2;
+        }
         
         if (staticScore - margin >= beta)
         {
@@ -1090,19 +1092,15 @@ void Search::IterativeDeepenLazySmp(Board& board, SearchResults& results)
     for (ThreadId helperId = 1; helperId < Options::Threads; helperId++)
     {
         State.Thread[helperId] = State.Thread[0];
-        threads.emplace_back([this, helperId, board, &results]()
+        threads.emplace_back([this, helperId, board]()
         //State.Pool->push_task([this, helperId, board, &results]()
         {
             Board clone = board;
-            //const Ply helperDepth = depth + helperId / 2;
-            //State.Thread[helperId].IterationInitialDepth = helperDepth;
-            //Aspiration(helperId, clone, helperDepth, score);
             SearchResults fakeResults;
             IterativeDeepen(helperId, clone, fakeResults);
         });
     }
 
-    //State.Pool.push_task()
     IterativeDeepen(0, board, results);
 
     for (ThreadId helperId = 1; helperId < Options::Threads; helperId++)
@@ -1110,10 +1108,10 @@ void Search::IterativeDeepenLazySmp(Board& board, SearchResults& results)
         State.Thread[helperId].StopIteration = true;
     }
 
-    /*if(Options::Threads > 1)
-    {
-        State.Pool->wait_for_tasks();
-    }*/
+    //if(Options::Threads > 1)
+    //{
+    //    State.Pool->wait_for_tasks();
+    //}
 
     for (ThreadId helperId = 1; helperId < Options::Threads; helperId++)
     {
