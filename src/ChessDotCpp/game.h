@@ -5,6 +5,8 @@
 #include <queue>
 #include <thread>
 #include <fstream>
+#include <codecvt>
+#include <regex>
 
 class Game
 {
@@ -76,6 +78,41 @@ public:
 		//	"isready",
 		//	"go infinite"
 		//});
+
+		RunCommands(commands);
+	}
+
+	static void RunCuteChessOutput()
+	{
+		auto target_game = 1;
+		auto reg = std::regex(R"(\d+ \>\ChessDotCpp\(0\): (.+))");
+
+		std::ifstream file("C:/Chess/Runners/CuteChess/out2.txt");
+		std::string str;
+
+		std::queue<std::string> commands{};
+		auto game_num = 0;
+		while (std::getline(file, str))
+		{
+			auto matches = std::smatch();
+			if(!std::regex_search(str, matches, reg))
+			{
+			    continue;
+			}
+
+			auto command = matches[1];
+			if(command == "ucinewgame")
+			{
+				game_num++;
+			}
+
+			if(game_num == 0 || game_num == target_game)
+			{
+				commands.push(command);
+			}
+		}
+
+		commands.push("quit");
 
 		RunCommands(commands);
 	}

@@ -3,7 +3,8 @@
 #include "evalstate.h"
 #include "options.h"
 #include "searchhash.h"
-#include "abdada.h"
+//#include "abdada.h"
+//#include "threadpool.h"
 
 class SearchParameters
 {
@@ -11,11 +12,11 @@ public:
     bool Infinite = false;
     Ply MaxDepth = Constants::MaxDepth;
 
-    size_t WhiteTime = 10000;
-    size_t BlackTime = 10000;
+    size_t WhiteTime = 1000000;
+    size_t BlackTime = 1000000;
 
-    size_t WhiteTimeIncrement = 100;
-    size_t BlackTimeIncrement = 100;
+    size_t WhiteTimeIncrement = 10000;
+    size_t BlackTimeIncrement = 10000;
 
     bool SkipNewSearch = false;
 };
@@ -267,6 +268,8 @@ public:
     ThreadVector Thread;
     GlobalData Global{};
     SearchStats Stats{};
+    //std::unique_ptr<thread_pool> Pool;
+    //std::unique_ptr<ThreadPool> Pool;
 
     SearchState()
     {
@@ -276,6 +279,18 @@ public:
     void NewGame()
     {
         Thread = ThreadVector(Options::Threads);
+        //auto pool_size = static_cast<uint32_t>(Options::Threads - 1);
+        //if(Options::Threads > 1 && (Pool == nullptr || Pool->get_thread_count() != pool_size))
+        //{
+        //    Pool = std::make_unique<thread_pool>(pool_size);
+        //    Pool->sleep_duration = 0;
+        //    //Pool = std::make_unique<ThreadPool>(Options::Threads - 1);
+        //}
+        //else
+        //{
+        //    Pool = nullptr;
+        //}
+        
         Global.NewGame();
         for(ThreadState& threadState : Thread)
         {

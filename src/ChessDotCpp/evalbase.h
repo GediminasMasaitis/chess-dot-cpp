@@ -1,7 +1,10 @@
 #pragma once
 
+#include "common.h"
+#include "board.h"
+
 #define TUNE 1
-#define TAPERED 1
+#define TAPERED 0
 
 #if TUNE
 #define TraceIncr(term) T.term[color]++
@@ -57,4 +60,9 @@ static constexpr Score EgScore(int s)
 static constexpr int S(const int mg, const int eg)
 {
     return static_cast<int>(static_cast<unsigned int>(eg) << 16) + mg;
+}
+
+static constexpr Position GetRelative(Color c, Position p)
+{
+    return c == Colors::White ? p : p ^ 56;
 }

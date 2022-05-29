@@ -187,6 +187,8 @@ void Uci::HandleSetoption(std::stringstream& reader)
 	}
 	else if (name == "Threads") {
 		Options::Threads = static_cast<ThreadId>(std::stoull(value));
+		//search.State.NewGame();
+		search.State.Initialized = false;
 	}
 	else if (name == "TUNE_Score1") {
 		Options::TuneScore1 = static_cast<Score>(std::stoi(value));
@@ -207,7 +209,7 @@ void Uci::HandleIsReady()
 
 void Uci::HandleUciNewGame()
 {
-	//search.State.NewGame();
+	search.State.NewGame();
 	Fens::Parse(board, StartingFen);
 }
 

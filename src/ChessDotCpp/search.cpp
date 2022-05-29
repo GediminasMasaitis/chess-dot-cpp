@@ -462,8 +462,29 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     Score probedScore;
     const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, threadState.SingularMove.Value);
     const bool probeSuccess = TryProbeTranspositionTable(key, depth, alpha, beta, entry, probedScore, hashEntryExists);
+    bool probedMoveLegal = false;
+
+    if(probeSuccess)
+    {
+        auto ttMoves = MoveArray();
+        EachColor<Bitboard> ttPins;
+        PinDetector::GetPinnedToKings(board, ttPins);
+        const Bitboard ttPinned = ttPins[board.ColorToMove];
+        MoveCount ttMoveCount = 0;
+        MoveGenerator::GetAllPotentialMoves(board, checkers, ttPinned, ttMoves, ttMoveCount);
+        for (int ttMoveIndex = 0; ttMoveIndex < ttMoveCount; ttMoveIndex++)
+        {
+            auto ttMove = ttMoves[ttMoveIndex];
+            if(ttMove.Value == entry.MMove.Value)
+            {
+                probedMoveLegal = MoveValidator::IsKingSafeAfterMove2(board, ttMove, checkers, ttPinned);
+                break;
+            }
+        }
+    }
+
     const Move principalVariationMove = hashEntryExists ? entry.MMove : Move(0);
-    if (probeSuccess)
+    if (probedMoveLegal)
     {
         bool returnTtValue = !isPrincipalVariation || (probedScore > alpha && probedScore < beta);
         if(returnTtValue /*&& isPrincipalVariation*/)
@@ -1064,6 +1085,43 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
 }
 
 void Search::IterativeDeepenLazySmp(Board& board, SearchResults& results)
+{
+    auto threads = std::vector<std::thread>();
+    for (ThreadId helperId = 1; helperId < Options::Threads; helperId++)
+    {
+        State.Thread[helperId] = State.Thread[0];
+        threads.emplace_back([this, helperId, board, &results]()
+        //State.Pool->push_task([this, helperId, board, &results]()
+        {
+            Board clone = board;
+            //const Ply helperDepth = depth + helperId / 2;
+            //State.Thread[helperId].IterationInitialDepth = helperDepth;
+            //Aspiration(helperId, clone, helperDepth, score);
+            SearchResults fakeResults;
+            IterativeDeepen(helperId, clone, fakeResults);
+        });
+    }
+
+    //State.Pool.push_task()
+    IterativeDeepen(0, board, results);
+
+    for (ThreadId helperId = 1; helperId < Options::Threads; helperId++)
+    {
+        State.Thread[helperId].StopIteration = true;
+    }
+
+    /*if(Options::Threads > 1)
+    {
+        State.Pool->wait_for_tasks();
+    }*/
+
+    for (ThreadId helperId = 1; helperId < Options::Threads; helperId++)
+    {
+        threads[helperId - 1].join();
+    }
+}
+
+void Search::IterativeDeepenLazySmpOld(Board& board, SearchResults& results)
 {
     ThreadState& mainThreadState = State.Thread[0];
     Ply depth = 1;

@@ -40,6 +40,7 @@ private:
     void GetSearchResults(SearchResults& results, Ply depth, Score score);
     void IterativeDeepen(const ThreadId threadId, Board& board, SearchResults& results);
     void IterativeDeepenLazySmp(Board& board, SearchResults& results);
+    void IterativeDeepenLazySmpOld(Board& board, SearchResults& results);
 
 public:
     SearchState State{};

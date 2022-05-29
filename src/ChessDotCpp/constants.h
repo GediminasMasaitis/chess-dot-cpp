@@ -103,6 +103,9 @@ private:
 template<class T>
 using EachPiece = std::array<T, Pieces::Count>;
 
+template<class T>
+using EachPieceNoColor = std::array<T, 8>;
+
 class Positions
 {
 public:

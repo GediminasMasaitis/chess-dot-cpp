@@ -1,8 +1,9 @@
 #pragma once
 
 #include "board.h"
-
 #include <iostream>
+//#include <mutex>
+//#include <shared_mutex>
 
 class TranspositionTableFlags
 {
@@ -219,6 +220,7 @@ public:
     size_t _size = 0;
     size_t _mask = 0;
     TableEntries _entries = nullptr;
+    //std::shared_mutex _mutex = std::shared_mutex();
 
     static size_t GetClampedSize(size_t bytes)
     {
@@ -272,9 +274,11 @@ public:
         std::memset(_entries.get(), 0, bytesToClear);
     }
 
-    void Store(const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag) const
+    void Store(const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag)
     {
         const size_t index = GetTableIndex(key);
+        //auto guard = std::unique_lock<std::shared_mutex>(_mutex);
+
         TranspositionTableEntry& existingEntry = _entries[index];
 
         const bool existingExact = existingEntry.Flag == TranspositionTableFlags::Exact;
@@ -301,17 +305,19 @@ public:
         _entries[index] = entry;
     }
 
-    bool TryProbe(const ZobristKey key, TranspositionTableEntry* entry, ZobristKey* entryKey) const
+    bool TryProbe(const ZobristKey key, TranspositionTableEntry* entry, ZobristKey* entryKey)
     {
         //entry = default; return false;
         const size_t index = GetTableIndex(key);
+        //auto guard = std::shared_lock<std::shared_mutex>(_mutex);
+
         *entry = _entries[index];
         const bool exists = entry->Flag != TranspositionTableFlags::None;
         *entryKey = entry->Key;
         return exists;
     }
 
-    bool TryGetPvMove(const Board& board, Move& move) const
+    bool TryGetPvMove(const Board& board, Move& move)
     {
         TranspositionTableEntry entry;
         ZobristKey entryKey;
@@ -337,7 +343,7 @@ public:
         return true;
     }
     
-    void GetPrincipalVariation(const Board& board, std::vector<Move>& principalVariation) const
+    void GetPrincipalVariation(const Board& board, std::vector<Move>& principalVariation)
     {
         Board clone = board;
         for (Ply i = 0; i < Constants::MaxDepth; i++)

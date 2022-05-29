@@ -8,7 +8,6 @@
 #include "tablebases.h"
 #include "texel.h"
 
-
 void Run(int argc, char** argv)
 {
     EvaluationNnue::Init();
@@ -36,13 +35,14 @@ void Test()
 {
     //std::cout << sizeof(UndoMove) << std::endl;
     //Game::RunTestCommands();
+    Game::RunCuteChessOutput();
 
     //Tests::TestSee();
     //Tests::TestMagics();
     //Tests::TestZobrist();
     //Tests::TestRepetitions();
     //Tests::TestUci();
-    Tests::TestEval();
+    //Tests::TestEval();
     //Tests::TestTablebases();
     
     //Tests::TestSfen();
