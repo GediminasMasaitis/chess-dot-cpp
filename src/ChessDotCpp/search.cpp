@@ -665,6 +665,12 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     //    parentResult = Tablebases::Probe(board);
     //}
 
+    // INTERNAL ITERATIVE DEEPENING
+    if (depth > 3 && !hashEntryExists)
+    {
+        depth -= 1;
+    }
+
     // MOVE LOOP
     SearchedPosition searchedPosition = SearchedPosition(State, threadId, board.Key, ply);
     moveCount = 0;
