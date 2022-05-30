@@ -466,20 +466,28 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
     if(probeSuccess)
     {
-        auto ttMoves = MoveArray();
-        EachColor<Bitboard> ttPins;
-        PinDetector::GetPinnedToKings(board, ttPins);
-        const Bitboard ttPinned = ttPins[board.ColorToMove];
-        MoveCount ttMoveCount = 0;
-        MoveGenerator::GetAllPotentialMoves(board, checkers, ttPinned, ttMoves, ttMoveCount);
-        for (int ttMoveIndex = 0; ttMoveIndex < ttMoveCount; ttMoveIndex++)
+        if(Options::Threads != 1)
         {
-            auto ttMove = ttMoves[ttMoveIndex];
-            if(ttMove.Value == entry.MMove.Value)
+            // Doublecheck TT move legality
+            auto ttMoves = MoveArray();
+            EachColor<Bitboard> ttPins;
+            PinDetector::GetPinnedToKings(board, ttPins);
+            const Bitboard ttPinned = ttPins[board.ColorToMove];
+            MoveCount ttMoveCount = 0;
+            MoveGenerator::GetAllPotentialMoves(board, checkers, ttPinned, ttMoves, ttMoveCount);
+            for (int ttMoveIndex = 0; ttMoveIndex < ttMoveCount; ttMoveIndex++)
             {
-                probedMoveLegal = MoveValidator::IsKingSafeAfterMove2(board, ttMove, checkers, ttPinned);
-                break;
+                auto ttMove = ttMoves[ttMoveIndex];
+                if (ttMove.Value == entry.MMove.Value)
+                {
+                    probedMoveLegal = MoveValidator::IsKingSafeAfterMove2(board, ttMove, checkers, ttPinned);
+                    break;
+                }
             }
+        }
+        else
+        {
+            probedMoveLegal = true;
         }
     }
 
