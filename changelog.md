@@ -1233,13 +1233,13 @@ Elo difference: -8.7 +/- 19.3, LOS: 18.9 %, DrawRatio: 19.7 %
 
 ### 1.32
 
-Tuned some search values
-Added continuations
-Improved late move reductions
-Improved TT store policy
-Faster movegen
-Aspiration windows
-Added Lazy SMP
+* Tuned some search values
+* Added continuations
+* Improved late move reductions
+* Improved TT store policy
+* Faster movegen
+* Aspiration windows
+* Added Lazy SMP
 
 ```
 info depth 1 multipv 1 score cp 44 nodes 26 nps 26000 time 1 pv e2e4
@@ -1384,6 +1384,40 @@ info depth 22 multipv 1 score cp 16 nodes 61835930 nps 1948631 time 31733 pv e2e
 info depth 23 multipv 1 score cp 17 nodes 116355028 nps 1939832 time 59982 pv e2e4 e7e6 g1f3 d7d5 e4e5 c8d7 f1e2 c7c5 e1g1 b8c6 c2c3 d8b6 d2d4 e8c8 d4c5 f8c5 b2b4 c5e7 b4b5 c6a5 c1e3 e7c5 e3c5
 ```
 
+### 1.35
+
+Late move pruning
+
+```
+info depth 1 multipv 1 score cp 44 nodes 26 nps 26000 time 1 pv e2e4
+info depth 2 multipv 1 score cp 34 nodes 77 nps 77000 time 1 pv e2e4 b8c6
+info depth 3 multipv 1 score cp 19 nodes 290 nps 290000 time 1 pv b1c3 d7d5 e2e4
+info depth 4 multipv 1 score cp 19 nodes 657 nps 657000 time 1 pv b1c3 d7d5 e2e4 d5e4
+info depth 5 multipv 1 score cp 11 nodes 1815 nps 907500 time 2 pv b1c3 d7d6 e2e4 e7e5 f1c4
+info depth 6 multipv 1 score cp 14 nodes 7182 nps 1436400 time 5 pv e2e4 e7e5 d2d4 d7d5 b1c3 b8c6
+info depth 7 multipv 1 score cp 16 nodes 11453 nps 1431625 time 8 pv e2e4 e7e5 f1c4 b8c6 d2d3 d7d6 e1f1
+info depth 8 multipv 1 score cp 13 nodes 25980 nps 1528235 time 17 pv e2e4 e7e6 d2d3 d7d5 g1f3 b8c6 c1f4 f8d6
+info depth 9 multipv 1 score cp 14 nodes 42467 nps 1516678 time 28 pv e2e4 e7e6 d2d4 d7d5 e4e5 b8c6 c1f4 c8d7 b1c3
+info depth 10 multipv 1 score cp 14 nodes 73986 nps 1574170 time 47 pv e2e4 e7e6 d2d4 d7d5 e4e5 f8e7 c1f4 c8d7 b1c3 e8f8
+info depth 11 multipv 1 score cp 17 nodes 126166 nps 1638519 time 77 pv e2e4 e7e6 d2d4 d7d5 e4e5 f8e7 f1b5 c8d7 b5d7 b8d7 g1f3 e7b4 c2c3 b4e7
+info depth 12 multipv 1 score cp 19 nodes 261196 nps 1653139 time 158 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 g8f6 f1b5 c7c6 b5d3 f8b4 c1d2 b4d6
+info depth 13 multipv 1 score cp 17 nodes 494040 nps 1674711 time 295 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 g8f6 f1d3 f8b4 c1d2 b4d2 b1d2 e8g8 e1g1
+info depth 14 multipv 1 score cp 27 nodes 929900 nps 1669479 time 557 pv e2e4 e7e6 g1f3 d7d5 e4e5 f8b4 c2c3 b4a5 d2d4 g8e7 f1d3 c8d7 e1g1 e8g8
+info depth 15 multipv 1 score cp 27 nodes 1523151 nps 1688637 time 902 pv e2e4 e7e6 g1f3 d7d5 e4e5 f8b4 c2c3 b4a5 d2d4 g8e7 f1d3 e8g8 e1g1 c8d7 c1f4
+info depth 16 multipv 1 score cp 19 nodes 2277848 nps 1686045 time 1351 pv e2e4 e7e6 g1f3 d7d5 e4e5 c8d7 d2d3 f8c5 d3d4 c5b6 f1d3 b8c6 c2c3 g8e7 e1g1 e8g8
+info depth 17 multipv 1 score cp 22 nodes 3381173 nps 1659064 time 2038 pv e2e4 e7e6 g1f3 d7d5 e4e5 c8d7 f1e2 f8b4 c2c3 b4a5 d2d4 g8e7 e1g1 e8g8 c1g5 a5b6 e2d3
+info depth 18 multipv 1 score cp 21 nodes 4936873 nps 1627182 time 3034 pv e2e4 e7e6 g1f3 d7d5 e4e5 d5d4 c2c3 b8c6 f1b5 c8d7 e1g1 c6e5 b5d7 e5d7 f3d4 f8d6 d4f3 g8f6 d2d4
+info depth 19 multipv 1 score cp 15 nodes 8855841 nps 1609567 time 5502 pv e2e4 e7e6 g1f3 d7d5 e4e5 c7c5 f1b5 c8d7 d1e2 g8e7 e1g1 e7c6 f1d1 f8e7 d2d4 c5d4 f3d4 e8g8 c1f4 c6d4
+info depth 20 multipv 1 score cp 12 nodes 14497459 nps 1581138 time 9169 pv e2e4 e7e6 g1f3 d7d5 e4e5 c7c5 f1d3 b8c6 e1g1 d8b6 c2c3 c8d7 d3e2 g8e7 d2d3 e7g6 d3d4 c5d4 c3d4 e8c8
+info depth 21 multipv 1 score cp 16 nodes 21795709 nps 1588492 time 13721 pv e2e4 e7e6 g1f3 d7d5 e4e5 c7c5 d2d4 c5d4 d1d4 g8e7 f1b5 c8d7 d4a4 b8c6 e1g1 a7a6 b5c6 e7c6 a4b3 d8c7 c1e3 c6e5
+info depth 22 multipv 1 score cp 14 nodes 41038537 nps 1581934 time 25942 pv e2e4 e7e6 g1f3 d7d5 e4e5 c7c5 d2d4 c8d7 b1c3 c5d4 d1d4 b8c6 d4f4 c6b4 f1d3 b4d3 c2d3 g8e7 e1g1 e7g6 f4g4 h7h5 g4g5
+info depth 23 multipv 1 score cp 20 nodes 72883085 nps 1573163 time 46329 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 f1d3 f8e7 g1f3 g8f6 e1g1 e8g8 b1c3 b8c6 h2h3 e7d6 c1g5 c8e6 c3b5 a7a6 g5f6 g7f6 b5d6
 ```
 
+```
+Score of ChessDotCpp vs wyldchess: 389 - 363 - 248  [0.513] 1000
+...      ChessDotCpp playing White: 189 - 185 - 126  [0.504] 500
+...      ChessDotCpp playing Black: 200 - 178 - 122  [0.522] 500
+...      White vs Black: 367 - 385 - 248  [0.491] 1000
+Elo difference: 9.0 +/- 18.7, LOS: 82.8 %, DrawRatio: 24.8 %
 ```
