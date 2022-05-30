@@ -1464,3 +1464,43 @@ Score of ChessDotCpp vs wyldchess: 452 - 336 - 218  [0.558] 1006
 ...      White vs Black: 407 - 381 - 218  [0.513] 1006
 Elo difference: 40.2 +/- 19.1, LOS: 100.0 %, DrawRatio: 21.7 %
 ```
+
+### 1.37
+
+Razoring
+
+```
+info depth 1 multipv 1 score cp 10 nodes 2 nps 2000 time 1 pv
+info depth 2 multipv 1 score cp 26 nodes 61 nps 61000 time 1 pv d2d3 b8c6
+info depth 3 multipv 1 score cp 21 nodes 178 nps 178000 time 1 pv e2e4 d7d6
+info depth 4 multipv 1 score cp 32 nodes 455 nps 455000 time 1 pv e2e4 d7d5 d2d3
+info depth 5 multipv 1 score cp 19 nodes 1933 nps 966500 time 2 pv d2d4 d7d5 b1c3 b8c6 c1f4
+info depth 6 multipv 1 score cp 10 nodes 3834 nps 1278000 time 3 pv d2d4 d7d5 e2e3 e7e6 c1d2 b8c6
+info depth 7 multipv 1 score cp 15 nodes 8419 nps 1403166 time 6 pv e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 b8c6
+info depth 8 multipv 1 score cp 15 nodes 12685 nps 1409444 time 9 pv e2e4 d7d5 e4d5 d8d5 b1c3 d5e5 d1e2 b8c6 e2e5
+info depth 9 multipv 1 score cp 7 nodes 43309 nps 1546750 time 28 pv e2e3 d7d5 g1f3 e7e6 d2d4 f8d6 b1c3 e8f8 f1b5
+info depth 10 multipv 1 score cp 11 nodes 74691 nps 1589170 time 47 pv e2e3 d7d5 d2d4 e7e6 f1b5 c8d7 b5d7 d8d7 g1f3 d7b5 b1c3 f8b4
+info depth 11 multipv 1 score cp 21 nodes 177805 nps 1677405 time 106 pv e2e4 e7e6 d2d4 d7d5 e4e5 f8b4 c2c3 b4e7 f1d3 e8f8 e1f1 c8d7
+info depth 12 multipv 1 score cp 23 nodes 269997 nps 1698094 time 159 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 g8f6 f1d3 f8d6 d1e2 d8e7 e1g1
+info depth 13 multipv 1 score cp 19 nodes 410443 nps 1731827 time 237 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 f8d6 f1b5 c7c6 b5d3 d8e7 e1f1 g8f6 f1g1
+info depth 14 multipv 1 score cp 12 nodes 691975 nps 1756281 time 394 pv e2e4 e7e6 d2d4 d7d5 e4e5 c8d7 g1f3 c7c5 f1e2 c5d4 f3d4 b8c6 d4c6
+info depth 15 multipv 1 score cp 23 nodes 1182181 nps 1753977 time 674 pv e2e4 e7e6 g1f3 d7d5 e4e5 c8d7 f1e2 c7c5 e1g1 b8c6 c2c3 d8b6 d2d4 e8c8 d4c5
+info depth 16 multipv 1 score cp 12 nodes 2038481 nps 1746770 time 1167 pv e2e4 e7e6 g1f3 d7d5 e4e5 c7c5 f1e2 b8c6 e1g1 d8c7 e2b5 c8d7 b5c6 d7c6 d2d4 e8c8
+info depth 17 multipv 1 score cp 13 nodes 3023222 nps 1717739 time 1760 pv e2e4 e7e6 g1f3 d7d5 e4e5 c7c5 f1b5 c8d7 b5d7 b8d7 e1g1 g8e7 d1e2 d8c7 b1c3 e7f5 a2a3 d5d4 c3b5
+info depth 18 multipv 1 score cp 16 nodes 4679434 nps 1709070 time 2738 pv e2e4 e7e6 g1f3 d7d5 e4e5 c7c5 f1b5 c8d7 d1e2 d8b6 b5d7 b8d7 e1g1 g8e7 d2d3 e8c8 b1c3 e7f5 f1e1 f8e7
+info depth 19 multipv 1 score cp 17 nodes 6819322 nps 1715984 time 3974 pv e2e4 e7e6 g1f3 d7d5 e4e5 c7c5 f1b5 c8d7 d1e2 d8b6 b5d7 b8d7 e1g1 g8e7 d2d3 e7c6 c2c4 e8c8 c4d5 e6d5 b1c3
+info depth 20 multipv 1 score cp 14 nodes 12236421 nps 1711387 time 7150 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8d6 b1c3 g8f6 f1d3 e8g8 e1g1 f8e8 c1g5 c7c6 f1e1 e8e1 d1e1 h7h6 g5e3
+info depth 21 multipv 1 score cp 16 nodes 16898956 nps 1702494 time 9926 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8d6 b1c3 g8f6 f1d3 e8g8 e1g1 b8c6 c1g5 c8e6 c3b5 a7a6 g5f6 g7f6 b5d6
+info depth 22 multipv 1 score cp 16 nodes 24506088 nps 1700040 time 14415 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8d6 b1c3 g8f6 f1d3 e8g8 e1g1 b8c6 c1g5 c8e6 c3b5 a7a6 g5f6 g7f6 b5d6
+info depth 23 multipv 1 score cp 15 nodes 40264378 nps 1685548 time 23888 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 g8f6 f1d3 b8c6 e1g1 f8e7 b1c3 e8g8 a2a3 a7a6 c1e3 e7d6 h2h3 c8e6 d1d2 f8e8 e3f4
+info depth 24 multipv 1 score cp 19 nodes 59672256 nps 1684467 time 35425 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 g8f6 f1d3 f8d6 d1e2 c8e6 d3f5 d8e7 f5e6 e7e6 e2e6 f7e6 e1g1 b8c6 f1e1 e8d7 c1e3 c6b4 c2c3 b4c6
+info depth 25 multipv 1 score cp 10 nodes 113654232 nps 1679337 time 67678 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 f1b5 c7c6 b5d3 f8d6 g1f3 g8e7 e1g1 b8d7 c1g5 e8g8 c2c3 d7b6 d1c2 h7h6 g5e3 c8e6 b1d2 d8c7 d2b3 f8e8
+```
+
+```
+Score of ChessDotCpp vs wyldchess: 447 - 318 - 235  [0.565] 1000
+...      ChessDotCpp playing White: 213 - 175 - 112  [0.538] 500
+...      ChessDotCpp playing Black: 234 - 143 - 123  [0.591] 500
+...      White vs Black: 356 - 409 - 235  [0.473] 1000
+Elo difference: 45.1 +/- 18.9, LOS: 100.0 %, DrawRatio: 23.5 %
+```

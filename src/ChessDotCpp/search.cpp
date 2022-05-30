@@ -539,6 +539,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     board.StaticEvaluation = staticScore;
     const bool improving = board.HistoryDepth < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation;
 
+    // STATIC EVALUATION PRUNING
     if
     (
         depth < 3
@@ -546,7 +547,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         && !inCheck
     )
     {
-        // STATIC EVALUATION PRUNING
         constexpr Score marginPerDepth = 48;
         //const Score marginPerDepth = Options::TuneScore1;
         Score margin = static_cast<Score>(marginPerDepth * depth);
@@ -562,9 +562,24 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         }
     }
 
-    Move previousMove1 = !rootNode ? board.History[board.HistoryDepth - 1].Move : Move(0);
-    Move previousMove2 = board.HistoryDepth > 1 ? board.History[board.HistoryDepth - 2].Move : Move(0);
-        
+    // RAZORING
+    constexpr Score razorMargin = 200;
+    //const Score razorMargin = Options::Tune1;
+    if
+    (
+        depth == 1
+        && staticScore + razorMargin < beta
+    )
+    {
+        const auto razorScore = Quiescence(threadId, board, 0, ply, alpha, beta);
+        if (razorScore < beta)
+        {
+            return razorScore;
+        }
+
+        return beta;
+    }
+
     // NULL MOVE PRUNING
     if
     (
@@ -592,6 +607,8 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     MoveCount moveCount = 0;
     ScoreArray seeScores;
     MoveScoreArray staticMoveScores;
+    Move previousMove1 = !rootNode ? board.History[board.HistoryDepth - 1].Move : Move(0);
+    Move previousMove2 = board.HistoryDepth > 1 ? board.History[board.HistoryDepth - 2].Move : Move(0);
     const Move countermove = threadState.Countermoves[previousMove1.GetPiece()][previousMove1.GetTo()];
 
     // PROBCUT
