@@ -41,7 +41,7 @@ public:
             gain[depth] = SeeWeights[piece] - gain[depth - 1]; // speculative store, if defended
             if (std::max(static_cast<Score>(-gain[depth - 1]), gain[depth]) < 0)
             {
-                // break; // pruning does not influence the result
+                break; // pruning does not influence the result
             }
 
             occ ^= fromSet;
@@ -60,7 +60,7 @@ public:
 
     static Score GetSee(const Board& board, const Move move)
     {
-        assert(move.GetTakesPiece() != Pieces::Empty);
+        //assert(move.GetTakesPiece() != Pieces::Empty);
 
         return GetSee(board, move.GetFrom(), move.GetTo(), move.GetPiece(), move.GetTakesPiece());
     }

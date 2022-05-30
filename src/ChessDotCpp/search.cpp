@@ -680,6 +680,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     }
 
     // MOVE LOOP
+    assert(depth > 0);
     SearchedPosition searchedPosition = SearchedPosition(State, threadId, board.Key, ply);
     moveCount = 0;
     MoveGenerator::GetAllPotentialMoves(board, checkers, pinned, moves, moveCount);
@@ -704,6 +705,31 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //{
         //    continue;
         //}
+
+        const Piece takesPiece = move.GetTakesPiece();
+        const bool capture = takesPiece != Pieces::Empty;
+        const Piece pawnPromoteTo = move.GetPawnPromoteTo();
+        const bool promotion = pawnPromoteTo != Pieces::Empty;
+        const bool quiet = !capture && !promotion;
+        const Score seeScore = seeScores[moveIndex];
+
+        if
+        (
+            !rootNode
+            && quiet
+        )
+        {
+            // LATE MOVE PRUNING
+            constexpr auto lateMovePruning = std::array<Score, 6> { 0, 5, 10, 15, 20, 25 };
+            if
+            (
+                depth < 6
+                && movesEvaluated > lateMovePruning[depth]
+            )
+            {
+                continue;
+            }
+        }
 
         const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
         if (!valid)
@@ -753,7 +779,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //    }
         //}
 
-        const Score seeScore = seeScores[moveIndex];
 
         // SHALLOW PRUNING
         //if (!rootNode && movesEvaluated > 0)
@@ -783,10 +808,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
         board.DoMove(move);
 
-        const Piece takesPiece = move.GetTakesPiece();
-        const bool capture = takesPiece != Pieces::Empty;
-        const Piece pawnPromoteTo = move.GetPawnPromoteTo();
-        const bool promotion = pawnPromoteTo != Pieces::Empty;
         // FUTILITY PRUNING
         if
         (
