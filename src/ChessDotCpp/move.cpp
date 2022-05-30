@@ -63,16 +63,16 @@ MoveString Move::ToPositionString() const
 std::string Move::ToDebugString() const
 {
 	std::stringstream stream = std::stringstream();
-	std::cout << ToPositionString();
-	stream << "From:" << GetFrom();
-	stream << ", To:" << GetTo();
-	stream << ", Piece: " << GetPiece();
-	stream << ", TakesPiece: " << GetTakesPiece();
-	stream << ", PawnPromoteTo: " << GetPawnPromoteTo();
-	stream << ", EnPassant: " << GetEnPassant();
-	stream << ", Castle: " << GetCastle();
-	stream << ", NullMove: " << GetNullMove();
-	stream << ", White: " << GetWhiteToMove();
+	stream << "Move: " << ToPositionString() << std::endl;
+	stream << "Color: " << (GetWhiteToMove() ? "White" : "Black") << std::endl;
+	stream << "From: " << std::to_string(GetFrom()) << std::endl;
+	stream << "To: " << std::to_string(GetTo()) << std::endl;
+	stream << "Piece: " << Pieces::CharMap[GetPiece()] << std::endl;
+	stream << "TakesPiece: " << Pieces::CharMap[GetTakesPiece()] << std::endl;
+	stream << "PawnPromoteTo: " << Pieces::CharMap[GetPawnPromoteTo()] << std::endl;
+	stream << "EnPassant: " << (GetEnPassant() ? "true" : "false") << std::endl;
+	stream << "Castle: " << (GetCastle() ? "true" : "false") << std::endl;
+	stream << "NullMove: " << (GetNullMove() ? "true" : "false") << std::endl;
 
 	return stream.str();
 }

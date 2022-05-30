@@ -146,7 +146,7 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
         alpha = standPat;
     }
 
-    const Bitboard checkers = AttacksGenerator::GetCheckers(board);
+    const Bitboard checkers = CheckDetector::GetCheckers(board);
     const bool inCheck = checkers != BitboardConstants::Empty;
 
     const Bitboard pinned = pins[board.ColorToMove];
@@ -439,7 +439,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     }
     
     // IN CHECK EXTENSION
-    const Bitboard checkers = AttacksGenerator::GetCheckers(board);
+    const Bitboard checkers = CheckDetector::GetCheckers(board);
     const bool inCheck = checkers != BitboardConstants::Empty;
     if (inCheck)
     {
@@ -539,7 +539,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     board.StaticEvaluation = staticScore;
     const bool improving = board.HistoryDepth < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation;
 
-    // STATIC EVALUATION PRUNING
     if
     (
         depth < 3
@@ -547,6 +546,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         && !inCheck
     )
     {
+        // STATIC EVALUATION PRUNING
         constexpr Score marginPerDepth = 48;
         //const Score marginPerDepth = Options::TuneScore1;
         Score margin = static_cast<Score>(marginPerDepth * depth);
@@ -692,6 +692,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     bool raisedAlpha = false;
     bool betaCutoff = false;
     uint8_t movesEvaluated = 0;
+    uint8_t quietMovesEvaluated = 0;
 
     MoveArray failedMoves;
     MoveCount failedMoveCount = 0;
@@ -706,6 +707,12 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //    continue;
         //}
 
+        const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
+        if (!valid)
+        {
+            continue;
+        }
+
         const Piece takesPiece = move.GetTakesPiece();
         const bool capture = takesPiece != Pieces::Empty;
         const Piece pawnPromoteTo = move.GetPawnPromoteTo();
@@ -717,24 +724,30 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         (
             !rootNode
             && quiet
+            && !CheckDetector::DoesGiveCheck(board, move)
         )
         {
             // LATE MOVE PRUNING
-            constexpr auto lateMovePruning = std::array<Score, 6> { 0, 5, 10, 15, 20, 25 };
+            //constexpr auto lateMovePruning = std::array<Score, 6> { 0, 5, 10, 15, 20, 25 };
+            constexpr auto lateMovePruning = std::array<Score, 6> { 0, 3, 6, 10, 15, 20 };
             if
             (
                 depth < 6
-                && movesEvaluated > lateMovePruning[depth]
+                && quietMovesEvaluated > lateMovePruning[depth]
             )
             {
                 continue;
             }
-        }
 
-        const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
-        if (!valid)
-        {
-            continue;
+            // FUTILITY PRUNING
+            if
+            (
+                futilityPruning
+                && movesEvaluated > 0
+            )
+            {
+                continue;
+            }
         }
 
         // SINGULAR EXTENSION
@@ -807,24 +820,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //}
 
         board.DoMove(move);
-
-        // FUTILITY PRUNING
-        if
-        (
-            futilityPruning
-            && movesEvaluated > 0
-            && takesPiece == Pieces::Empty
-            && pawnPromoteTo == Pieces::Empty
-        )
-        {
-            const Position opponentKingPos = board.KingPositions[board.ColorToMove];
-            const bool opponentInCheck = AttacksGenerator::IsPositionAttacked(board, opponentKingPos, !board.WhiteToMove);
-            if (!opponentInCheck)
-            {
-                board.UndoMove();
-                continue;
-            }
-        }
 
         // LATE MOVE REDUCTION
         Ply reduction = 0;
@@ -949,6 +944,10 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         
         board.UndoMove();
         movesEvaluated++;
+        if(quiet)
+        {
+            quietMovesEvaluated++;
+        }
         
         if (childScore > bestScore)
         {

@@ -201,12 +201,6 @@ Bitboard AttacksGenerator::GetAttackersOfSide(const Board& board, Position posit
 	return result;
 }
 
-Bitboard AttacksGenerator::GetCheckers(const Board& board)
-{
-	const Bitboard checkers = GetAttackersOfSide(board, board.KingPositions[board.ColorToMove], !board.WhiteToMove, board.AllPieces);
-	return checkers;
-}
-
 bool AttacksGenerator::IsPositionAttacked(const Board& board, const Position position, const bool byWhite)
 {
 	Bitboard allPieces = board.AllPieces;
@@ -271,6 +265,96 @@ bool AttacksGenerator::IsPositionAttacked(const Board& board, const Position pos
 		return true;
 	}
 	if ((verticalAttack & queens) != 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+Bitboard CheckDetector::GetCheckers(const Board& board)
+{
+	const Bitboard checkers = AttacksGenerator::GetAttackersOfSide(board, board.KingPositions[board.ColorToMove], !board.WhiteToMove, board.AllPieces);
+	return checkers;
+}
+
+bool CheckDetector::DoesGiveCheck(const Board& board, const Move move)
+{
+	const Color color = board.ColorToMove;
+	const Color opponentColor = color ^ 1;
+	const Position from = move.GetFrom();
+	const Position to = move.GetTo();
+	const Piece piece = move.GetPiece();
+	const Piece takes = move.GetTakesPiece();
+	const Piece promotion = move.GetPawnPromoteTo();
+
+	Bitboard allPieces = board.AllPieces;
+	const Bitboard fromBitboard = GetBitboard(from);
+	const Bitboard toBitboard = GetBitboard(to);
+
+	allPieces &= ~fromBitboard;
+	allPieces |= toBitboard;
+
+
+	EachPiece<Bitboard> bitboards = board.BitBoard;
+	bitboards[piece] &= ~fromBitboard;
+
+	if (move.GetPawnPromoteTo() == Pieces::Empty)
+	{
+		bitboards[piece] |= toBitboard;
+	}
+	else
+	{
+		bitboards[promotion] |= toBitboard;
+	}
+
+	Bitboard takesBitboard = toBitboard;
+	if (move.GetEnPassant())
+	{
+		const Bitboard enPassantedBitboard = color == Colors::White ? toBitboard >> 8 : toBitboard << 8;
+		allPieces &= ~enPassantedBitboard;
+		takesBitboard |= enPassantedBitboard;
+	}
+	bitboards[takes] &= ~takesBitboard;
+
+	if (move.GetCastle())
+	{
+		const bool kingSide = to % 8 > 3;
+		const Position castlingRookPos = (kingSide ? 7 : 0) + (color == Colors::White ? 0 : 56);
+		const Position castlingRookNewPos = (from + to) / 2;
+		const Piece rookPiece = Pieces::Rook | color;
+		bitboards[rookPiece] &= ~GetBitboard(castlingRookPos);
+		bitboards[rookPiece] |= GetBitboard(castlingRookNewPos);
+	}
+
+	const Position kingPos = board.KingPositions[opponentColor];
+
+	const Bitboard knightAttack = BitboardJumps.KnightJumps[kingPos];
+	if ((knightAttack & bitboards[Pieces::Knight | color]) != 0)
+	{
+		return true;
+	}
+
+	const Bitboard kingAttack = BitboardJumps.KingJumps[kingPos];
+	if ((kingAttack & bitboards[Pieces::King | color]) != 0)
+	{
+		return true;
+	}
+
+	const Bitboard pawnAttack = BitboardJumps.PawnJumps[opponentColor][kingPos];
+	if ((pawnAttack & bitboards[Pieces::Pawn | color]) != 0)
+	{
+		return true;
+	}
+
+	const Bitboard diagonalAttack = SlideMoveGenerator::DiagonalAntidiagonalSlide(allPieces, kingPos);
+	if ((diagonalAttack & (bitboards[Pieces::Bishop | color] | bitboards[Pieces::Queen | color])) != 0)
+	{
+		return true;
+	}
+
+	const Bitboard verticalAttack = SlideMoveGenerator::HorizontalVerticalSlide(allPieces, kingPos);
+	if ((verticalAttack & (bitboards[Pieces::Rook | color] | bitboards[Pieces::Queen | color])) != 0)
 	{
 		return true;
 	}

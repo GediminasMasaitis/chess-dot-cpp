@@ -773,7 +773,7 @@ void MoveValidator::FilterMovesByKingSafety(const Board& board, Bitboard checker
 template<Piece TColor>
 void GetAllPossibleMovesForColor(const Board& board, MoveArray& moves, MoveCount& moveCount)
 {
-	const Bitboard checkers = AttacksGenerator::GetCheckers(board);
+	const Bitboard checkers = CheckDetector::GetCheckers(board);
 	const Bitboard pinned = GetPinnedForColor<TColor>(board, board.KingPositions[board.ColorToMove]);
 	GetAllPotentialMovesForColor<TColor>(board, checkers, pinned, moves, moveCount);
 	MoveValidator::FilterMovesByKingSafety(board, checkers, pinned, moves, moveCount);

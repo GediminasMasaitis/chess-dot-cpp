@@ -94,7 +94,26 @@ public:
     static constexpr Piece NextPiece = 1 << 1;
     
     static constexpr Piece Count = 16;
-    
+
+    static constexpr std::array<char, Count> CharMap =
+    {
+        ' ',
+        ' ',
+        ' ',
+        ' ',
+        'P',
+        'p',
+        'N',
+        'n',
+        'B',
+        'b',
+        'R',
+        'r',
+        'Q',
+        'q',
+        'K',
+        'k'
+    };
 
 private:
     Pieces() = default;
