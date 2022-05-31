@@ -542,12 +542,12 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     // STATIC EVALUATION PRUNING
     if
     (
-        depth < 3
+        depth < 4
         && !isPrincipalVariation
         && !inCheck
     )
     {
-        constexpr Score marginPerDepth = 48;
+        constexpr Score marginPerDepth = 64;
         //const Score marginPerDepth = Options::TuneScore1;
         Score margin = static_cast<Score>(marginPerDepth * depth);
 
