@@ -1612,3 +1612,13 @@ Score of ChessDotCpp vs glaurung: 103 - 319 - 78  [0.284] 500
 ...      White vs Black: 209 - 213 - 78  [0.496] 500
 Elo difference: -160.6 +/- 30.4, LOS: 0.0 %, DrawRatio: 15.6 %
 ```
+
+### 2.1
+
+Bishop pair eval
+
+```
+```
+
+```
+```
