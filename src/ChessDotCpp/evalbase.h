@@ -3,7 +3,7 @@
 #include "common.h"
 #include "board.h"
 
-#define TUNE 1
+#define TUNE 0
 #define TAPERED 1
 
 #if TUNE
