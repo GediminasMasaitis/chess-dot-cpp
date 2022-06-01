@@ -422,6 +422,12 @@ public:
         0x100000000000000ULL
     };
     
+    static constexpr EachColor<Bitboard> ColoredSquares =
+    {
+        0x55AA55AA55AA55AA,
+        0xAA55AA55AA55AA55
+    };
+    
     static constexpr Bitboard KingSide = Files[0] | Files[1] | Files[2] | Files[3];
     static constexpr Bitboard QueenSide = ~KingSide;
 
