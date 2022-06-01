@@ -10,6 +10,12 @@
 class EvaluationClassical2
 {
 public:
+#if TUNE
+    static constexpr bool tune = true;
+#else
+    static constexpr bool tune = false;
+#endif
+
     class EvaluationClassical2Trace
     {
     public:
@@ -175,6 +181,8 @@ public:
     static constexpr PhaseScore weakPawnBonus = S(-11, -9);
     static constexpr PhaseScore rookOpenFileBonus = S(16, -4);
     static constexpr PhaseScore rookSemiOpenFileBonus = S(1, 8);
+
+    static constexpr Score Tempo = 15;
 
     static inline Trace T;
     static inline EachPiece<EachPosition<PhaseScore>> MaterialAndPst;
@@ -444,7 +452,11 @@ public:
         const Score eg = EgScore(score);
         const Score interpolated = static_cast<Score>((mg * phase + (24 - phase) * eg) / MaxPhase);
         const Score flipped = board.WhiteToMove ? interpolated : static_cast<Score>(-interpolated);
-        return flipped;
+
+        // TEMPO
+        const Score final = tune ? flipped : static_cast<Score>(flipped + 15);
+
+        return final;
     }
 
     static void Init()
