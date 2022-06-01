@@ -4,14 +4,16 @@
 #include "board.h"
 
 #define TUNE 1
-#define TAPERED 0
+#define TAPERED 1
 
 #if TUNE
-#define TraceIncr(term) T.term[color]++
+#define TraceParam Trace& T,
+#define TraceIncr(term) ++T.term[color]
 #define TraceAdd(term, count) T.term[color] += count
 #define TraceEval(e) T.eval = e
 #define TracePhase(e) T.phase = e
 #else
+#define TraceParam
 #define TraceIncr(term)
 #define TraceAdd(term, count)
 #define TraceEval(e)
@@ -65,4 +67,9 @@ static constexpr int S(const int mg, const int eg)
 static constexpr Position GetRelative(Color c, Position p)
 {
     return c == Colors::White ? p : p ^ 56;
+}
+
+static constexpr Position GetRelativeInverse(Color c, Position p)
+{
+    return c == Colors::White ? p ^ 56: p;
 }

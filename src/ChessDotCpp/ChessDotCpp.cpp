@@ -7,12 +7,14 @@
 #include "perft.h"
 #include "tablebases.h"
 #include "texel.h"
+#include "evaluationClassical2.h"
 
 void Run(int argc, char** argv)
 {
     EvaluationNnue::Init();
     Tablebases::Init();
     Eval2::InitEvalMasks();
+    EvaluationClassical2::Init();
     if(argc > 1)
     {
         std::string param1 = argv[1];
