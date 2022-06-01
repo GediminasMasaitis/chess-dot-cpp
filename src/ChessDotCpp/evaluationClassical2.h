@@ -31,12 +31,12 @@ public:
         std::array<TraceScores, 6> kingAttackBonus;
         std::array<TraceScores, 8> bishopSameColorSquareOwnPawnBonus;
         std::array<TraceScores, 8> bishopSameColorSquareOpponentPawnBonus;
-        TraceScores bishopPairBonus;
         TraceScores doubledPawnBonus;
         TraceScores doubledPassedPawnBonus;
         TraceScores blockedPassedPawnBonus;
         TraceScores protectedPawnBonus;
         TraceScores weakPawnBonus;
+        TraceScores bishopPairBonus;
         TraceScores rookOpenFileBonus;
         TraceScores rookSemiOpenFileBonus;
     };
@@ -189,12 +189,12 @@ public:
         S(  9, -19), S( -8, -10), S(-10,  -5), S(-10,  -3), S( -7,   0), S( -5,   3), S( -2,   3), S(  1,  38)
     };
 
-    static constexpr PhaseScore bishopPairBonus = S(29, 52);
     static constexpr PhaseScore doubledPawnBonus = S(-7, -12);
     static constexpr PhaseScore doubledPassedPawnBonus = S(-7, -27);
     static constexpr PhaseScore blockedPassedPawnBonus = S(16, -39);
     static constexpr PhaseScore protectedPawnBonus = S(14, 10);
     static constexpr PhaseScore weakPawnBonus = S(-11, -8);
+    static constexpr PhaseScore bishopPairBonus = S(29, 52);
     static constexpr PhaseScore rookOpenFileBonus = S(17, -2);
     static constexpr PhaseScore rookSemiOpenFileBonus = S(4, 2);
 

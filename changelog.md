@@ -2062,12 +2062,6 @@ Score of ChessDotCpp2.9 vs ChessDotCpp2.8: 235 - 213 - 552  [0.511] 1000
 ...      ChessDotCpp2.9 playing Black: 113 - 114 - 274  [0.499] 501
 ...      White vs Black: 236 - 212 - 552  [0.512] 1000
 Elo difference: 7.6 +/- 14.4, LOS: 85.1 %, DrawRatio: 55.2 %
-
-Score of ChessDotCpp2.9 vs greko: 220 - 157 - 123  [0.563] 500
-...      ChessDotCpp2.9 playing White: 115 - 79 - 56  [0.572] 250
-...      ChessDotCpp2.9 playing Black: 105 - 78 - 67  [0.554] 250
-...      White vs Black: 193 - 184 - 123  [0.509] 500
-Elo difference: 44.0 +/- 26.6, LOS: 99.9 %, DrawRatio: 24.6 %
 ```
 
 ### 2.10
@@ -2109,11 +2103,11 @@ Score of ChessDotCpp2.10 vs ChessDotCpp2.9: 245 - 217 - 538  [0.514] 1000
 ...      White vs Black: 245 - 217 - 538  [0.514] 1000
 Elo difference: 9.7 +/- 14.6, LOS: 90.4 %, DrawRatio: 53.8 %
 
-Score of ChessDotCpp2.10 vs greko: 203 - 158 - 139  [0.545] 500
-...      ChessDotCpp2.10 playing White: 102 - 79 - 69  [0.546] 250
-...      ChessDotCpp2.10 playing Black: 101 - 79 - 70  [0.544] 250
-...      White vs Black: 181 - 180 - 139  [0.501] 500
-Elo difference: 31.4 +/- 26.0, LOS: 99.1 %, DrawRatio: 27.8 %
+Score of ChessDotCpp2.10 vs greko: 220 - 157 - 123  [0.563] 500
+...      ChessDotCpp2.10 playing White: 115 - 79 - 56  [0.572] 250
+...      ChessDotCpp2.10 playing Black: 105 - 78 - 67  [0.554] 250
+...      White vs Black: 193 - 184 - 123  [0.509] 500
+Elo difference: 44.0 +/- 26.6, LOS: 99.9 %, DrawRatio: 24.6 %
 ```
 
 ### 2.11
@@ -2154,4 +2148,16 @@ Score of ChessDotCpp2.11 vs ChessDotCpp2.10: 367 - 338 - 795  [0.510] 1500
 ...      ChessDotCpp2.11 playing Black: 172 - 173 - 405  [0.499] 750
 ...      White vs Black: 368 - 337 - 795  [0.510] 1500
 Elo difference: 6.7 +/- 12.0, LOS: 86.3 %, DrawRatio: 53.0 %
+
+Score of ChessDotCpp2.11 vs greko: 260 - 144 - 96  [0.616] 500
+...      ChessDotCpp2.11 playing White: 131 - 68 - 51  [0.626] 250
+...      ChessDotCpp2.11 playing Black: 129 - 76 - 45  [0.606] 250
+...      White vs Black: 207 - 197 - 96  [0.510] 500
+Elo difference: 82.1 +/- 28.0, LOS: 100.0 %, DrawRatio: 19.2 %
+
+Score of ChessDotCpp2.11 vs glaurung: 502 - 642 - 356  [0.453] 1500
+...      ChessDotCpp2.11 playing White: 230 - 326 - 194  [0.436] 750
+...      ChessDotCpp2.11 playing Black: 272 - 316 - 162  [0.471] 750
+...      White vs Black: 546 - 598 - 356  [0.483] 1500
+Elo difference: -32.5 +/- 15.4, LOS: 0.0 %, DrawRatio: 23.7 %
 ```
