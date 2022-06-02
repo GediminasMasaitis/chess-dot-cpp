@@ -8,19 +8,27 @@
 
 void Uci::OnCallback(SearchCallbackData& data) const
 {
+	const ThreadState& mainThreadState = data.State.Thread[0];
 	std::stringstream builder = std::stringstream();
 
 	builder << "info";
 	builder << " depth " << std::to_string(data.Depth);
 	builder << " multipv 1";
 	builder << " score cp " << std::to_string(data._Score);
-	builder << " nodes " << std::to_string(data.State.Stats.Nodes);
-	auto elapsed = data.State.Stats.Elapsed;
+	builder << " nodes " << std::to_string(mainThreadState.Stats.Nodes);
+	auto elapsed = mainThreadState.Stats.Elapsed;
 	if (elapsed == 0)
 	{
 		elapsed = 1;
 	}
-	auto nps = (data.State.Stats.Nodes * 1000) / elapsed;
+
+	Stat nodes = 0;
+	for(auto i = 0; i < Options::Threads; i++)
+	{
+		nodes += data.State.Thread[i].Stats.Nodes;
+	}
+
+	auto nps = (nodes * 1000) / elapsed;
 
 	builder << " nps " << nps;
 	builder << " time " << elapsed;

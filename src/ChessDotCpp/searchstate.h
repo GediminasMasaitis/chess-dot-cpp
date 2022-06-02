@@ -21,6 +21,33 @@ public:
     bool SkipNewSearch = false;
 };
 
+class SearchStats
+{
+public:
+    //static constexpr bool Enable = true;
+
+    Stat Nodes;
+    size_t Elapsed;
+
+    Stat HashMiss;
+    Stat HashCollision;
+    Stat HashInsufficientDepth;
+
+    void NewSearch()
+    {
+        Nodes = 0;
+        Elapsed = 0;
+        HashMiss = 0;
+        HashCollision = 0;
+        HashInsufficientDepth = 0;
+    }
+
+    SearchStats()
+    {
+        NewSearch();
+    }
+};
+
 class ContinuationEntry
 {
 public:
@@ -84,6 +111,7 @@ using PlyDataArray = std::array<PlyData, Constants::MaxDepth>;
 class ThreadState
 {
 public:
+    SearchStats Stats{};
     PlyDataArray Plies;
     
     EachColor<EachPosition<EachPosition<MoveScore>>> History;
@@ -102,6 +130,8 @@ public:
 
     void NewSearch()
     {
+        Stats.NewSearch();
+
         for(Ply i = 0; i < Constants::MaxDepth; i++)
         {
             Plies[i].NewSearch();
@@ -183,33 +213,6 @@ public:
 };
 using ThreadVector = std::vector<ThreadState>;
 
-class SearchStats
-{
-public:
-    //static constexpr bool Enable = true;
-
-    Stat Nodes;
-    size_t Elapsed;
-    
-    Stat HashMiss;
-    Stat HashCollision;
-    Stat HashInsufficientDepth;
-
-    void NewSearch()
-    {
-        Nodes = 0;
-        Elapsed = 0;
-        HashMiss = 0;
-        HashCollision = 0;
-        HashInsufficientDepth = 0;
-    }
-
-    SearchStats()
-    {
-        NewSearch();
-    }
-};
-
 class Breadcrumb
 {
 public:
@@ -267,7 +270,6 @@ public:
     bool Initialized;
     ThreadVector Thread;
     GlobalData Global{};
-    SearchStats Stats{};
     //std::unique_ptr<ThreadPool> Pool;
 
     SearchState()
@@ -302,7 +304,6 @@ public:
     {
         Global.Parameters = parameters;
         Global.NewSearch(board);
-        Stats.NewSearch();
     	if(!parameters.SkipNewSearch)
     	{
             for (ThreadState& threadState : Thread)

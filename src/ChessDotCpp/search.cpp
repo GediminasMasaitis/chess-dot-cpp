@@ -23,13 +23,13 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
     const bool found = State.Global.Table.TryProbe(key, &entry, &entryKey);
     if (!found)
     {
-        State.Stats.HashMiss++;
+        //State.Stats.HashMiss++;
         return false;
     }
 
     if (entryKey != key)
     {
-        State.Stats.HashCollision++;
+        //State.Stats.HashCollision++;
         return false;
     }
 
@@ -37,7 +37,7 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
 
     if (entry.Depth < depth)
     {
-        State.Stats.HashInsufficientDepth++;
+        //State.Stats.HashInsufficientDepth++;
         return false;
     }
 
@@ -130,7 +130,7 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
     ThreadState& threadState = State.Thread[threadId];
     const bool rootNode = ply == 0;
     
-    ++State.Stats.Nodes;
+    ++threadState.Stats.Nodes;
     
     EachColor<Bitboard> pins;
     PinDetector::GetPinnedToKings(board, pins);
@@ -453,7 +453,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         return eval;
     }
 
-    ++State.Stats.Nodes;
+    ++threadState.Stats.Nodes;
     const MoveScore bonus = depth * depth + depth - 1;
 
     // PROBE TRANSPOSITION TABLE
@@ -1091,7 +1091,7 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
 
     threadState.SavedPrincipalVariation.clear();
     State.Global.Table.GetPrincipalVariation(board, threadState.SavedPrincipalVariation);
-    State.Stats.Elapsed = Stopper.GetElapsed();
+    threadState.Stats.Elapsed = Stopper.GetElapsed();
     SearchCallbackData callbackData(threadId, board, State, 1, score);
 
     if (threadId == 0)
@@ -1120,7 +1120,7 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
         {
             threadState.IterationsSincePvChange++;
         }
-        State.Stats.Elapsed = Stopper.GetElapsed();
+        threadState.Stats.Elapsed = Stopper.GetElapsed();
         if(Stopper.ShouldStopDepthIncrease(threadId, State))
         {
             break;
@@ -1180,7 +1180,7 @@ void Search::IterativeDeepenLazySmpOld(Board& board, SearchResults& results)
     mainThreadState.SavedPrincipalVariation.clear();
     State.Global.Table.GetPrincipalVariation(board, mainThreadState.SavedPrincipalVariation);
     
-    State.Stats.Elapsed = Stopper.GetElapsed();
+    mainThreadState.Stats.Elapsed = Stopper.GetElapsed();
     SearchCallbackData callbackData(0, board, State, 1, score);
     Callback(callbackData);
     //State.Global.Table.PrintOccupancy();
@@ -1230,7 +1230,7 @@ void Search::IterativeDeepenLazySmpOld(Board& board, SearchResults& results)
         {
             mainThreadState.IterationsSincePvChange++;
         }
-        State.Stats.Elapsed = Stopper.GetElapsed();
+        mainThreadState.Stats.Elapsed = Stopper.GetElapsed();
         if (Stopper.ShouldStopDepthIncrease(0, State))
         {
             break;
