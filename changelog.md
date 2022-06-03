@@ -2201,7 +2201,7 @@ Elo difference: -32.5 +/- 15.4, LOS: 0.0 %, DrawRatio: 23.7 %
 
 Improve performance for multithreaded search
 
-12 threads:
+12CPU:
 ```
 info depth 1 multipv 1 score cp 18 nodes 1 nps 3717300 time 10 pv e2e4 e7e6 b1c3 b8c6 d2d4 a7a6 e4e5 d7d5 g1f3
 info depth 2 multipv 1 score cp 18 nodes 2 nps 4202300 time 10 pv e2e4 e7e6 d2d4 d7d5 b1c3 a7a6 e4d5 e6d5 g1f3
@@ -2232,9 +2232,27 @@ info depth 26 multipv 1 score cp 24 nodes 94766167 nps 17638584 time 64252 pv d2
 ```
 
 ```
-Score of ChessDotCpp2.12 vs ChessDotCpp2.11: 80 - 45 - 175  [0.558] 300
-...      ChessDotCpp2.12 playing White: 36 - 20 - 94  [0.553] 150
-...      ChessDotCpp2.12 playing Black: 44 - 25 - 81  [0.563] 150
+Score of ChessDotCpp2.12-12CPU vs ChessDotCpp2.11: 80 - 45 - 175  [0.558] 300
+...      ChessDotCpp2.12-12CPU playing White: 36 - 20 - 94  [0.553] 150
+...      ChessDotCpp2.12-12CPU playing Black: 44 - 25 - 81  [0.563] 150
 ...      White vs Black: 61 - 64 - 175  [0.495] 300
 Elo difference: 40.7 +/- 25.3, LOS: 99.9 %, DrawRatio: 58.3 %
+
+Score of ChessDotCpp2.12-12CPU vs glaurung: 128 - 34 - 38  [0.735] 200
+...      ChessDotCpp2.12-12CPU playing White: 63 - 17 - 20  [0.730] 100
+...      ChessDotCpp2.12-12CPU playing Black: 65 - 17 - 18  [0.740] 100
+...      White vs Black: 80 - 82 - 38  [0.495] 200
+Elo difference: 177.2 +/- 47.9, LOS: 100.0 %, DrawRatio: 19.0 %
 ```
+
+## 2.12.1
+
+Fix bug with bishop on same color square pawn eval
+
+```
+Score of ChessDotCpp2.12.1 vs ChessDotCpp2.12: 2383 - 2386 - 5231  [0.500] 10000
+...      ChessDotCpp2.12.1 playing White: 1218 - 1181 - 2601  [0.504] 5000
+...      ChessDotCpp2.12.1 playing Black: 1165 - 1205 - 2630  [0.496] 5000
+...      White vs Black: 2423 - 2346 - 5231  [0.504] 10000
+Elo difference: -0.1 +/- 4.7, LOS: 48.3 %, DrawRatio: 52.3 %
+``
