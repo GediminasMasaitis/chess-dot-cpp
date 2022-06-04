@@ -33,6 +33,7 @@ public:
         std::array<TraceScores, 6> kingAreaAttackBonus;
         std::array<TraceScores, 6> pinnedBonus;
         std::array<TraceScores, 6> protectedByPawnBonus;
+        std::array<TraceScores, 6> behindPawnBonus;
         std::array<TraceScores, 6> outpostBonus;
         std::array<TraceScores, 9> bishopSameColorSquareOwnPawnBonus;
         std::array<TraceScores, 9> bishopSameColorSquareOpponentPawnBonus;
@@ -57,7 +58,7 @@ public:
     using Trace = EvaluationClassical2Trace;
     using Data = EvaluationClassical2Data;
 
-    static constexpr int ParameterCount = 6 + 6 * 64 + 64 + 6 * 28 + 2 * 6 * 6 + 4 * 6 + 2 * 9 + 8;
+    static constexpr int ParameterCount = 6 + 6 * 64 + 64 + 6 * 28 + 2 * 6 * 6 + 5 * 6 + 2 * 9 + 8;
 
     static constexpr std::array<PhaseScore, 6> material =
     {

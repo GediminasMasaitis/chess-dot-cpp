@@ -28,7 +28,7 @@ public:
 	static inline ThreadId Threads = 1;
 	static inline int MoveOverhead = 0;
 
-	static inline int32_t Tune1 = 5;
+	static inline int32_t Tune1 = 100;
 	static inline int32_t Tune2 = 0;
 	static inline int32_t Tune3 = 0;
 	
