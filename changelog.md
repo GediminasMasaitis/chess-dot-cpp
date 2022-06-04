@@ -2611,4 +2611,56 @@ Score of ChessDotCpp2.19 vs ChessDotCpp2.18: 260 - 211 - 529  [0.524] 1000
 ...      ChessDotCpp2.19 playing Black: 131 - 107 - 262  [0.524] 500
 ...      White vs Black: 236 - 235 - 529  [0.500] 1000
 Elo difference: 17.0 +/- 14.8, LOS: 98.8 %, DrawRatio: 52.9 %
+
+Score of ChessDotCpp2.19 vs glaurung: 213 - 166 - 121  [0.547] 500
+...      ChessDotCpp2.19 playing White: 110 - 79 - 61  [0.562] 250
+...      ChessDotCpp2.19 playing Black: 103 - 87 - 60  [0.532] 250
+...      White vs Black: 197 - 182 - 121  [0.515] 500
+Elo difference: 32.8 +/- 26.6, LOS: 99.2 %, DrawRatio: 24.2 %
+```
+
+### 2.20
+
+Improved king safety eval
+
+```
+info depth 1 multipv 1 score cp 15 nodes 2 nps 2000 time 1 pv
+info depth 2 multipv 1 score cp 21 nodes 60 nps 60000 time 1 pv e2e3 b8c6
+info depth 3 multipv 1 score cp 16 nodes 191 nps 191000 time 1 pv d2d4 e7e6
+info depth 4 multipv 1 score cp 34 nodes 323 nps 323000 time 1 pv d2d4 e7e6 e2e3
+info depth 5 multipv 1 score cp 15 nodes 1172 nps 1172000 time 1 pv g1f3 g8f6 d2d4 d7d5 e2e3
+info depth 6 multipv 1 score cp 21 nodes 3393 nps 1131000 time 3 pv e2e4 e7e6 e4e5 b8c6 d2d4 f8b4 c1d2
+info depth 7 multipv 1 score cp 17 nodes 8544 nps 1424000 time 6 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4
+info depth 8 multipv 1 score cp 15 nodes 15068 nps 1506800 time 10 pv e2e4 e7e5 g1f3 g8f6 f3e5 f6e4 d2d4 d7d5
+info depth 9 multipv 1 score cp 11 nodes 22631 nps 1616500 time 14 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 g8f6 d4c6
+info depth 10 multipv 1 score cp 15 nodes 58906 nps 1785030 time 33 pv d2d4 d7d5 g1f3 g8f6 e2e3 e7e6 f1e2 f8e7 e1g1 e8g8
+info depth 11 multipv 1 score cp 29 nodes 108639 nps 1810650 time 60 pv e2e4 e7e6 g1f3 d7d5 e4e5 c7c5 c2c3 d5d4 f1d3 b8c6 e1g1
+info depth 12 multipv 1 score cp 21 nodes 177261 nps 1846468 time 96 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 g8f6 d4c6 d7c6 d1d8 e8d8 b1c3
+info depth 13 multipv 1 score cp 23 nodes 238816 nps 1865750 time 128 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 g8f6 d4c6 d7c6 d1d8 e8d8 b1c3 f8e7
+info depth 14 multipv 1 score cp 37 nodes 420633 nps 1886246 time 223 pv e2e4 e7e5 g1f3 d7d6 b1c3 g8f6 f1c4 b8c6 d2d4 e5d4 f3d4 c6e5 c4e2 c7c6
+info depth 15 multipv 1 score cp 21 nodes 742173 nps 1888480 time 393 pv e2e4 e7e5 g1f3 b8c6 f1b5 g8f6 e1g1 f8c5 b1c3 c6d4 f3e5 d4b5 c3b5 d7d6 d2d4
+info depth 16 multipv 1 score cp 21 nodes 1503585 nps 1908102 time 788 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 g8f6 d4c6 d7c6 d1d8 e8d8 b1c3 f8b4 f1d3 c8e6 e1g1
+info depth 17 multipv 1 score cp 19 nodes 2428458 nps 1910667 time 1271 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 g8f6 d4c6 d7c6 d1d8 e8d8 b1c3 f8b4 c1d2 h8e8 e1c1 c8d7
+info depth 18 multipv 1 score cp 29 nodes 3430262 nps 1886832 time 1818 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 g8f6 d4c6 d7c6 d1d8 e8d8 b1c3 d8e8 f1d3 f8c5 c1g5 c8e6 e1g1
+info depth 19 multipv 1 score cp 33 nodes 4940413 nps 1872787 time 2638 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 c6d4 d1d4 g8e7 f1e2 e7c6 d4d1 f8d6 b1c3 e8g8 e1g1 f8e8 c1e3
+info depth 20 multipv 1 score cp 26 nodes 7674736 nps 1867332 time 4110 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 g8f6 d4c6 d7c6 d1d8 e8d8 b1c3 c8e6 c1g5 d8e8 g5f6 g7f6 f1e2 f8d6 e1c1
+info depth 21 multipv 1 score cp 28 nodes 11747076 nps 1867282 time 6291 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 g8f6 d4c6 d7c6 d1d8 e8d8 b1c3 c8e6 c1g5 f8d6 e1c1 h7h6 g5f6 g7f6 f1e2 d8e7 a2a3
+info depth 22 multipv 1 score cp 29 nodes 20280431 nps 1868131 time 10856 pv e2e4 e7e5 g1f3 b8c6 f1b5 c6d4 f3d4 e5d4 e1g1 g8e7 c2c3 e7c6 d2d3 f8d6 g2g3 d8f6 b5c4 c6e5 c3d4 e5f3 g1h1 e8g8 b1c3
+info depth 23 multipv 1 score cp 24 nodes 52316861 nps 1872672 time 27937 pv e2e4 c7c5 b1c3 b8c6 g1f3 e7e5 a2a3 g8f6 f1b5 d7d6 b2b4 c5b4 a3b4 f8e7 e1g1 e8g8 b5c6 b7c6 d2d4 e5d4 f3d4 c8d7 d1e2
+info depth 24 multipv 1 score cp 29 nodes 81634492 nps 1874414 time 43552 pv e2e4 c7c5 g1f3 e7e6 b1c3 b8c6 d2d4 c5d4 f3d4 g8f6 a2a3 f8e7 d4c6 b7c6 e4e5 f6d5 c3d5 c6d5 c1e3 e8g8
+info depth 25 multipv 1 score cp 22 nodes 184887750 nps 1875243 time 98594 pv e2e4 c7c5 b1c3 b8c6 g1e2 e7e6 d2d4 c5d4 e2d4 g8f6 a2a3 f8e7 c1f4 d7d5 e4d5 e6d5 f1b5 c8d7 e1g1 a7a6 d4c6 b7c6 b5e2 e8g8 f1e1
+```
+
+```
+Score of ChessDotCpp2.20 vs ChessDotCpp2.19: 282 - 224 - 494  [0.529] 1000
+...      ChessDotCpp2.20 playing White: 151 - 118 - 232  [0.533] 501
+...      ChessDotCpp2.20 playing Black: 131 - 106 - 262  [0.525] 499
+...      White vs Black: 257 - 249 - 494  [0.504] 1000
+Elo difference: 20.2 +/- 15.3, LOS: 99.5 %, DrawRatio: 49.4 %
+
+Score of ChessDotCpp2.20 vs glaurung: 221 - 147 - 132  [0.574] 500
+...      ChessDotCpp2.20 playing White: 106 - 78 - 66  [0.556] 250
+...      ChessDotCpp2.20 playing Black: 115 - 69 - 66  [0.592] 250
+...      White vs Black: 175 - 193 - 132  [0.482] 500
+Elo difference: 51.8 +/- 26.3, LOS: 100.0 %, DrawRatio: 26.4 %
 ```

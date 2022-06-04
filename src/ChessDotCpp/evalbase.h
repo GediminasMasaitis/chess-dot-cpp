@@ -64,6 +64,11 @@ static constexpr int S(const int mg, const int eg)
     return static_cast<int>(static_cast<unsigned int>(eg) << 16) + mg;
 }
 
+static constexpr int SS(const int score)
+{
+    return S(score, score);
+}
+
 static constexpr Position GetRelative(Color c, Position p)
 {
     return c == Colors::White ? p : p ^ 56;
