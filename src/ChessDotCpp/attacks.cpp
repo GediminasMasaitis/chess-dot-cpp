@@ -74,7 +74,7 @@ constexpr Bitboard GetAttackedByKnights(Bitboard knights)
 	return allJumps;
 }
 
-Bitboard AttacksGenerator::GetAllAttacked(const Board& board, const bool whiteToMove, const Bitboard allPieces, const Bitboard canAttackFrom)
+Bitboard AttacksGenerator::GetAllAttacked(const BoardBase& board, const bool whiteToMove, const Bitboard allPieces, const Bitboard canAttackFrom)
 {
 	Bitboard pawns;
 	Bitboard knights;
