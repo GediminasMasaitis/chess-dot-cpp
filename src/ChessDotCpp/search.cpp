@@ -568,6 +568,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     if
     (
         depth < 2
+        && !isPrincipalVariation
         && !inCheck
         && staticScore + (razorMargin * depth) < beta
     )
