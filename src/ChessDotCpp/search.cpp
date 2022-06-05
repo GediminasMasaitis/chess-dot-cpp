@@ -567,8 +567,9 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     //const Score razorMargin = Options::Tune1;
     if
     (
-        depth == 1
-        && staticScore + razorMargin < beta
+        depth < 2
+        && !inCheck
+        && staticScore + (razorMargin * depth) < beta
     )
     {
         const auto razorScore = Quiescence(threadId, board, 0, ply, alpha, beta);

@@ -2710,3 +2710,43 @@ Score of ChessDotCpp2.21 vs ChessDotCpp2.20: 2328 - 2213 - 5459  [0.506] 10000
 ...      White vs Black: 2272 - 2269 - 5459  [0.500] 10000
 Elo difference: 4.0 +/- 4.6, LOS: 95.6 %, DrawRatio: 54.6 %
 ```
+
+### 2.21
+
+Do not razor while in check
+
+```
+info depth 1 multipv 1 score cp 15 nodes 2 nps 2000 time 1 pv
+info depth 2 multipv 1 score cp 25 nodes 60 nps 60000 time 1 pv e2e3 b8c6
+info depth 3 multipv 1 score cp 16 nodes 193 nps 193000 time 1 pv d2d4 e7e6
+info depth 4 multipv 1 score cp 35 nodes 314 nps 314000 time 1 pv d2d4 e7e6 e2e3
+info depth 5 multipv 1 score cp 15 nodes 1248 nps 624000 time 2 pv g1f3 g8f6 e2e3 d7d5 d2d4
+info depth 6 multipv 1 score cp 15 nodes 2610 nps 870000 time 3 pv g1f3 g8f6 e2e3 d7d5 d2d4 e7e6
+info depth 7 multipv 1 score cp 22 nodes 5451 nps 1090200 time 5 pv g1f3 g8f6 e2e3 d7d5 d2d4 e7e6 f1b5 c8d7
+info depth 8 multipv 1 score cp 20 nodes 13058 nps 1305800 time 10 pv e2e4 e7e5 g1f3 b8c6 b1c3 f8c5 f1b5 g8f6
+info depth 9 multipv 1 score cp 32 nodes 20398 nps 1457000 time 14 pv e2e4 e7e5 g1f3 d7d5 e4d5 e5e4 f3e5 d8d5 d2d4
+info depth 10 multipv 1 score cp 38 nodes 32406 nps 1473000 time 22 pv e2e4 e7e5 b1c3 b8c6 g1f3 f8c5 f1b5 g8f6 e1g1 e8g8
+info depth 11 multipv 1 score cp 15 nodes 76523 nps 1561693 time 49 pv e2e4 e7e5 b1c3 b8c6 g1f3 g8f6 f1b5 f8b4 e1g1 e8g8 b5c6
+info depth 12 multipv 1 score cp 15 nodes 116762 nps 1644535 time 71 pv e2e4 e7e5 b1c3 b8c6 g1f3 g8f6 f1b5 f8b4 e1g1 e8g8 b5c6
+info depth 13 multipv 1 score cp 25 nodes 187847 nps 1723366 time 109 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 g8f6 b1c3 f8b4 d4f5 e8g8 c1g5
+info depth 14 multipv 1 score cp 29 nodes 353146 nps 1801765 time 196 pv e2e4 e7e5 g1f3 b8c6 f1b5 f8d6 e1g1 a7a6 b5c6 d7c6 d2d4 c8g4 d4e5 g4f3
+info depth 15 multipv 1 score cp 26 nodes 1121689 nps 1885191 time 595 pv d2d4 g8f6 g1f3 d7d5 e2e3 e7e6 c2c4 b8c6 f1e2 f8e7 c4d5 e6d5 b1c3 e8g8 e1g1
+info depth 16 multipv 1 score cp 28 nodes 1909357 nps 1884853 time 1013 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 c6d4 d1d4 g8e7 d4d1 e7c6 c1e3 f8d6 b1c3 e8g8
+info depth 17 multipv 1 score cp 15 nodes 3358892 nps 1874381 time 1792 pv g1f3 g8f6 e2e3 d7d5 d2d4 e7e6 c2c4 c7c5 b1c3 b8c6 f1e2 d5c4 e1g1 f8e7 e2c4 e8g8 d4c5
+info depth 18 multipv 1 score cp 26 nodes 5710310 nps 1857615 time 3074 pv e2e4 e7e5 g1f3 b8c6 f1b5 f8d6 e1g1 g8f6 d2d3 a7a6 b5c6 d7c6 h2h3 e8g8 c1e3 c8e6 b1d2 h7h6
+info depth 19 multipv 1 score cp 21 nodes 7355603 nps 1856537 time 3962 pv e2e4 e7e5 g1f3 b8c6 f1b5 f8d6 e1g1 g8f6 d2d3 a7a6 b5c6 d7c6 h2h3 e8g8 c1e3 c8e6 d1e2 h7h6 b1c3
+info depth 20 multipv 1 score cp 33 nodes 9982911 nps 1856940 time 5376 pv e2e4 e7e5 g1f3 b8c6 f1b5 f8d6 e1g1 g8f6 d2d3 a7a6 b5c6 d7c6 h2h3 e8g8 c1e3 c8e6 d1e2 h7h6 b1c3 d8e7
+info depth 21 multipv 1 score cp 23 nodes 14401178 nps 1845358 time 7804 pv e2e4 e7e5 g1f3 b8c6 f1b5 f8d6 e1g1 g8f6 d2d3 a7a6 b5c6 d7c6 h2h3 e8g8 c1e3 c8e6 d1e2 h7h6 c2c4 d8e7 b1c3
+info depth 22 multipv 1 score cp 26 nodes 20999635 nps 1832268 time 11461 pv e2e4 e7e5 g1f3 b8c6 f1b5 f8d6 e1g1 g8f6 d2d3 e8g8 b5c6 d7c6 b1c3 d8e7 h2h3 h7h6 c1e3 d6b4 d1e2 c8d7 f3d2 b4c3
+info depth 23 multipv 1 score cp 28 nodes 43142187 nps 1803753 time 23918 pv e2e4 e7e5 g1f3 d7d6 d2d4 e5d4 f3d4 g8f6 b1c3 f8e7 f1e2 e8g8 e1g1 f8e8 c1f4 b8c6 f2f3 c8d7 d4c6 d7c6 e2c4 f6d7 f4e3
+info depth 24 multipv 1 score cp 25 nodes 100401213 nps 1809976 time 55471 pv e2e4 c7c5 g1f3 b8c6 f1b5 d7d6 e1g1 c8d7 b1c3 e7e5 h2h3 g8f6 a2a4 f8e7 b5c6 b7c6 b2b3 h7h6 d2d3 e8g8 c1b2 d8c7 f3d2 a8b8
+info depth 25 multipv 1 score cp 20 nodes 160781648 nps 1813954 time 88636 pv e2e4 c7c5 g1f3 b8c6 f1b5 d7d6 e1g1 c8d7 b1c3 e7e5 h2h3 g8f6 a2a4 f8e7 b5c6 b7c6 b2b3 h7h6 d2d3 e8g8 d1e2 d8c7 c1b2 a8b8 f3d2
+```
+
+```
+Score of ChessDotCpp2.21 vs ChessDotCpp2.20.1: 360 - 334 - 806  [0.509] 1500
+...      ChessDotCpp2.21 playing White: 174 - 167 - 409  [0.505] 750
+...      ChessDotCpp2.21 playing Black: 186 - 167 - 397  [0.513] 750
+...      White vs Black: 341 - 353 - 806  [0.496] 1500
+Elo difference: 6.0 +/- 11.9, LOS: 83.8 %, DrawRatio: 53.7 %
+```
