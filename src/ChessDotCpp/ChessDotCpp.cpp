@@ -35,9 +35,10 @@ void Run(int argc, char** argv)
 
 void Test()
 {
-    //std::cout << sizeof(UndoMove) << std::endl;
+    std::cout << sizeof(TranspositionTableEntry) << std::endl;
+
     //Game::RunTestCommands();
-    Game::RunCuteChessOutput();
+    //Game::RunCuteChessOutput();
 
     //Tests::TestSee();
     //Tests::TestMagics();

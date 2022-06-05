@@ -567,7 +567,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     //const Score razorMargin = Options::Tune1;
     if
     (
-        depth < 2
+        depth < 3
         && !isPrincipalVariation
         && !inCheck
         && staticScore + (razorMargin * depth) < beta
@@ -579,7 +579,10 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             return razorScore;
         }
 
-        return beta;
+        if(depth == 1)
+        {
+            return beta;
+        }
     }
 
     // NULL MOVE PRUNING
