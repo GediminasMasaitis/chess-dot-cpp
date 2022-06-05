@@ -54,14 +54,14 @@ MoveScore CalculateStaticMoveScore
         const MoveScore mvvLvaScore = MvvLva.Values[piece][takes];
         //return mvvLvaScore;
         const Score captureHistory = threadState.CaptureHistory[piece][to][takes];
-    	if(seeScore > 0)
-    	{
+        if(seeScore > 0)
+        {
             return mvvLvaScore + captureHistory;
-    	}
-    	if(seeScore == 0)
-    	{
+        }
+        if(seeScore == 0)
+        {
             return (mvvLvaScore / 2) + captureHistory;
-    	}
+        }
         return (mvvLvaScore - 2'000'000'000) + captureHistory;
     }
 

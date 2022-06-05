@@ -567,7 +567,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     //const Score razorMargin = Options::Tune1;
     if
     (
-        depth < 3
+        depth < 4
         && !isPrincipalVariation
         && !inCheck
         && staticScore + (razorMargin * depth) < beta
