@@ -2876,3 +2876,43 @@ Score of ChessDotCpp2.24 vs ChessDotCpp2.23: 354 - 303 - 843  [0.517] 1500
 ...      White vs Black: 339 - 318 - 843  [0.507] 1500
 Elo difference: 11.8 +/- 11.6, LOS: 97.7 %, DrawRatio: 56.2 %
 ```
+
+### 2.25
+
+Extend late move pruning up to depth 7
+
+```
+info depth 1 multipv 1 score cp 41 nodes 22 nps 22000 time 1 pv b1c3
+info depth 2 multipv 1 score cp 25 nodes 75 nps 75000 time 1 pv e2e3 b8c6
+info depth 3 multipv 1 score cp 28 nodes 226 nps 226000 time 1 pv g1f3 d7d5 e2e3
+info depth 4 multipv 1 score cp 23 nodes 512 nps 512000 time 1 pv d2d4 e7e6 g1f3 f8b4 c1d2
+info depth 5 multipv 1 score cp 25 nodes 1503 nps 751500 time 2 pv b1c3 d7d5 d2d4 g8f6 g1f3
+info depth 6 multipv 1 score cp 24 nodes 2860 nps 953333 time 3 pv g1f3 d7d5 d2d4 g8f6 c2c3 b8c6
+info depth 7 multipv 1 score cp 35 nodes 8666 nps 1444333 time 6 pv e2e4 d7d5 e4d5 d8d5 d2d4 d5e4 c1e3 g8f6
+info depth 8 multipv 1 score cp 35 nodes 12352 nps 1372444 time 9 pv e2e4 d7d5 e4d5 g8f6 d2d4 f6d5 c2c3 c7c6
+info depth 9 multipv 1 score cp 32 nodes 21535 nps 1538214 time 14 pv e2e4 e7e5 g1f3 d7d5 e4d5 e5e4 f3e5 d8d5 d2d4
+info depth 10 multipv 1 score cp 24 nodes 45142 nps 1671925 time 27 pv e2e4 e7e5 g1f3 d7d5 e4d5 e5e4 f3e5 d8d5 d2d4 g8f6
+info depth 11 multipv 1 score cp 36 nodes 69740 nps 1700975 time 41 pv e2e4 e7e5 d2d4 e5d4 d1d4 d7d6 b1c3 b8c6 d4d1 g8f6 g1f3
+info depth 12 multipv 1 score cp 24 nodes 111336 nps 1739625 time 64 pv e2e4 e7e5 d2d4 e5d4 g1f3 d7d5 e4d5 d8d5 c2c3 b8c6 c3d4 g8f6
+info depth 13 multipv 1 score cp 28 nodes 179544 nps 1760235 time 102 pv e2e4 e7e5 g1f3 d7d5 e4d5 e5e4 f3e5 d8d5 d2d4 e4d3 e5d3 d5e4 c1e3 b8c6
+info depth 14 multipv 1 score cp 24 nodes 369565 nps 1820517 time 203 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 g8f6 d4c6 d7c6 d1d8 e8d8 e4e5 f6e4 f1e2
+info depth 15 multipv 1 score cp 21 nodes 1163854 nps 1877183 time 620 pv d2d4 g8f6 g1f3 d7d5 c2c4 e7e6 e2e3 c7c5 c4d5 e6d5 f1b5 c8d7 b1c3 c5d4 e3d4 b8c6
+info depth 16 multipv 1 score cp 19 nodes 2515512 nps 1864723 time 1349 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 g8f6 d4c6 d7c6 d1d8 e8d8 e4e5 f6e4 f1d3 e4c5 c1g5 d8e8
+info depth 17 multipv 1 score cp 36 nodes 3198750 nps 1864073 time 1716 pv e2e4 e7e5 g1f3 g8f6 f3e5 d7d6 e5f3 f6e4 d2d4 d6d5 f1d3 c7c5 d4c5 f8c5 e1g1 e8g8 f1e1
+info depth 18 multipv 1 score cp 17 nodes 6114246 nps 1847762 time 3309 pv d2d4 d7d5 c2c4 e7e6 g1f3 g8f6 b1c3 f8e7 c1f4 b8c6 e2e3 e8g8 a1c1 a7a6 c4d5 e6d5 f1d3 c6b4
+info depth 19 multipv 1 score cp 29 nodes 8731182 nps 1845525 time 4731 pv d2d4 d7d5 c2c4 e7e6 g1f3 g8f6 b1c3 b8c6 e2e3 f8e7 f1e2 e8g8 e1g1 a7a6 h2h3 h7h6 a2a3 f8e8 c1d2
+info depth 20 multipv 1 score cp 17 nodes 13014368 nps 1833784 time 7097 pv d2d4 d7d5 c2c4 e7e6 g1f3 g8f6 b1c3 c7c5 c4d5 c5d4 f3d4 e6d5 c1f4 b8c6 e2e3 c8g4 f1e2 g4e2 d1e2 f8b4
+info depth 21 multipv 1 score cp 24 nodes 17838367 nps 1833525 time 9729 pv d2d4 d7d5 c2c4 e7e6 g1f3 g8f6 b1c3 c7c5 c4d5 c5d4 f3d4 e6d5 c1f4 f8e7 e2e3 b8c6 f1e2 e8g8 e1g1 c8d7 h2h3
+info depth 22 multipv 1 score cp 28 nodes 28862885 nps 1831168 time 15762 pv d2d4 d7d5 c2c4 e7e6 g1f3 g8f6 b1c3 c7c5 c4d5 c5d4 f3d4 e6d5 c1f4 f8e7 e2e3 b8c6 f1e2 e8g8 e1g1 f8e8 h2h3 c6d4
+info depth 23 multipv 1 score cp 25 nodes 47363516 nps 1832456 time 25847 pv d2d4 d7d5 c2c4 e7e6 g1f3 g8f6 b1c3 c7c5 c4d5 c5d4 f3d4 e6d5 c1f4 f8e7 e2e3 b8c6 f1e2 e8g8 e1g1 c6d4 d1d4 c8e6 h2h3
+info depth 24 multipv 1 score cp 24 nodes 70072026 nps 1835643 time 38173 pv d2d4 d7d5 c2c4 e7e6 g1f3 g8f6 b1c3 c7c5 c4d5 c5d4 f3d4 e6d5 c1f4 f8c5 e2e3 e8g8 a1c1 c5d4 e3d4 b8c6 f1e2 c8f5 e1g1 f8e8
+info depth 25 multipv 1 score cp 27 nodes 137348719 nps 1830974 time 75014 pv e2e4 e7e5 g1f3 b8c6 f1b5 g8e7 e1g1 a7a6 b5c6 e7c6 d2d4 e5d4 f3d4 f8e7 b1c3 e7f6 c1e3 e8g8 c3d5 f6d4 e3d4 f8e8 f1e1 d7d6 c2c3
+```
+
+```
+Score of ChessDotCpp2.25 vs ChessDotCpp2.24: 377 - 321 - 802  [0.519] 1500
+...      ChessDotCpp2.25 playing White: 181 - 154 - 415  [0.518] 750
+...      ChessDotCpp2.25 playing Black: 196 - 167 - 387  [0.519] 750
+...      White vs Black: 348 - 350 - 802  [0.499] 1500
+Elo difference: 13.0 +/- 12.0, LOS: 98.3 %, DrawRatio: 53.5 %
+```
