@@ -10,7 +10,7 @@ Engines tested against:
 | wyldchess | 1.51 | 2629 |
 | Supernova | 2.4 | 2698 |
 | GreKo | 2021.06 | 2767 |
-| glaurung | 2.2 | 2916 |
+| glaurung | 2.2 | 2917 |
 
 
 
@@ -2915,4 +2915,40 @@ Score of ChessDotCpp2.25 vs ChessDotCpp2.24: 377 - 321 - 802  [0.519] 1500
 ...      ChessDotCpp2.25 playing Black: 196 - 167 - 387  [0.519] 750
 ...      White vs Black: 348 - 350 - 802  [0.499] 1500
 Elo difference: 13.0 +/- 12.0, LOS: 98.3 %, DrawRatio: 53.5 %
+
+Score of ChessDotCpp2.25 vs wyldchess: 375 - 36 - 89  [0.839] 500
+...      ChessDotCpp2.25 playing White: 188 - 13 - 49  [0.850] 250
+...      ChessDotCpp2.25 playing Black: 187 - 23 - 40  [0.828] 250
+...      White vs Black: 211 - 200 - 89  [0.511] 500
+Elo difference: 286.8 +/- 34.1, LOS: 100.0 %, DrawRatio: 17.8 %
+
+Score of ChessDotCpp2.25 vs supernova: 1067 - 176 - 257  [0.797] 1500
+...      ChessDotCpp2.25 playing White: 527 - 98 - 126  [0.786] 751
+...      ChessDotCpp2.25 playing Black: 540 - 78 - 131  [0.808] 749
+...      White vs Black: 605 - 638 - 257  [0.489] 1500
+Elo difference: 237.6 +/- 18.8, LOS: 100.0 %, DrawRatio: 17.1 %
+
+Score of ChessDotCpp2.25 vs greko: 556 - 204 - 240  [0.676] 1000
+...      ChessDotCpp2.25 playing White: 282 - 100 - 118  [0.682] 500
+...      ChessDotCpp2.25 playing Black: 274 - 104 - 122  [0.670] 500
+...      White vs Black: 386 - 374 - 240  [0.506] 1000
+Elo difference: 127.8 +/- 19.6, LOS: 100.0 %, DrawRatio: 24.0 %
+
+Score of ChessDotCpp2.25 vs glaurung: 439 - 335 - 226  [0.552] 1000
+...      ChessDotCpp2.25 playing White: 220 - 168 - 112  [0.552] 500
+...      ChessDotCpp2.25 playing Black: 219 - 167 - 114  [0.552] 500
+...      White vs Black: 387 - 387 - 226  [0.500] 1000
+Elo difference: 36.3 +/- 19.0, LOS: 100.0 %, DrawRatio: 22.6 %
+```
+
+### 2.26
+
+History pruning
+
+```
+
+```
+
+```
+
 ```

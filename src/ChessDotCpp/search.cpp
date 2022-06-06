@@ -131,7 +131,57 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
     const bool rootNode = ply == 0;
     
     ++threadState.Stats.Nodes;
-    
+
+    TranspositionTableEntry entry;
+    bool hashEntryExists = true;
+    Score probedScore;
+    const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, threadState.SingularMove.Value);
+    const bool probeSuccess = TryProbeTranspositionTable(key, 0, alpha, beta, entry, probedScore, hashEntryExists);
+    bool probedMoveLegal = false;
+
+    if (probeSuccess)
+    {
+        if (Options::Threads != 1)
+        {
+            // Doublecheck TT move legality
+            const Bitboard ttCheckers = CheckDetector::GetCheckers(board);
+            auto ttMoves = MoveArray();
+            EachColor<Bitboard> ttPins;
+            PinDetector::GetPinnedToKings(board, ttPins);
+            const Bitboard ttPinned = ttPins[board.ColorToMove];
+            MoveCount ttMoveCount = 0;
+            MoveGenerator::GetAllPotentialMoves(board, ttCheckers, ttPinned, ttMoves, ttMoveCount);
+            for (int ttMoveIndex = 0; ttMoveIndex < ttMoveCount; ttMoveIndex++)
+            {
+                auto ttMove = ttMoves[ttMoveIndex];
+                if (ttMove.Value == entry.MMove.Value)
+                {
+                    probedMoveLegal = MoveValidator::IsKingSafeAfterMove2(board, ttMove, ttCheckers, ttPinned);
+                    break;
+                }
+            }
+        }
+        else
+        {
+            probedMoveLegal = true;
+        }
+    }
+
+    const Move principalVariationMove = hashEntryExists ? entry.MMove : Move(0);
+    if (probedMoveLegal)
+    {
+            if (probedScore > Constants::MateThreshold)
+            {
+                probedScore -= ply;
+            }
+            else if (probedScore < -Constants::MateThreshold)
+            {
+                probedScore += ply;
+            }
+
+            return probedScore;
+    }
+
     EachColor<Bitboard> pins;
     PinDetector::GetPinnedToKings(board, pins);
     const Score standPat = Evaluation::Evaluate(board, pins, State.Global.Eval);
@@ -162,7 +212,7 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
     See::CalculateSeeScores(board, moves, moveCount, seeScores);
     
     MoveScoreArray staticMoveScores{};
-    MoveOrdering::CalculateStaticScores(threadId, State, moves, seeScores, moveCount, ply, Move(0), countermove, staticMoveScores, board);
+    MoveOrdering::CalculateStaticScores(threadId, State, moves, seeScores, moveCount, ply, principalVariationMove, countermove, staticMoveScores, board);
 
     Score bestScore = -Constants::Inf;
     Move bestMove;
@@ -237,6 +287,25 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
                     break;
                 }
             }
+        }
+    }
+
+    if (movesEvaluated > 0)
+    {
+        if (raisedAlpha)
+        {
+            if (betaCutoff)
+            {
+                StoreTranspositionTable(threadState, key, bestMove, 0, bestScore, TranspositionTableFlags::Beta);
+            }
+            else
+            {
+                StoreTranspositionTable(threadState, key, bestMove, 0, bestScore, TranspositionTableFlags::Exact);
+            }
+        }
+        else
+        {
+            StoreTranspositionTable(threadState, key, bestMove, 0, bestScore, TranspositionTableFlags::Alpha);
         }
     }
 
