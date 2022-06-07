@@ -696,7 +696,7 @@ public:
         return score;
     }
 
-    static Score Evaluate(const BoardBase& board, const EachColor<Bitboard>& pins, EvalState& state)
+    static Score EvaluateInner(const BoardBase& board, const EachColor<Bitboard>& pins)
     {
         const PhaseScore score = EvaluatePhased(board, pins);
 
@@ -712,6 +712,16 @@ public:
         const Score final = tune ? flipped : static_cast<Score>(flipped + 15);
 
         return final;
+    }
+
+    static Score Evaluate(const BoardBase& board, const EachColor<Bitboard>& pins)
+    {
+        return EvaluateInner(board, pins);
+    }
+
+    static Score Evaluate(const BoardBase& board, const EachColor<Bitboard>& pins, EvalState& state)
+    {
+        return EvaluateInner(board, pins);
     }
 
     static void Init()

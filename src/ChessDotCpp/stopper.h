@@ -62,6 +62,11 @@ public:
 
     [[nodiscard]] bool ShouldStopDepthIncrease(ThreadId threadId, SearchState& state)
     {
+        if(Parameters.MaxNodesOnDepthIncrease != 0 && state.Thread[threadId].Stats.Nodes >= Parameters.MaxNodesOnDepthIncrease)
+        {
+            Stopped = true;
+        }
+
         if (Stopped)
         {
             return true;

@@ -18,6 +18,8 @@ public:
     size_t WhiteTimeIncrement = 10000;
     size_t BlackTimeIncrement = 10000;
 
+    size_t MaxNodesOnDepthIncrease = 0;
+
     bool SkipNewSearch = false;
 };
 

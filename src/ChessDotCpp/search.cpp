@@ -14,6 +14,12 @@
 
 #include "zobrist.h"
 
+#if DATAGEN
+static constexpr bool datagen = true;
+#else
+static constexpr bool datagen = false;
+#endif
+
 bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, TranspositionTableEntry& entry, Score& score, bool& entryExists)
 {
     score = 0;
@@ -813,7 +819,8 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
         if
         (
-            !rootNode
+            (!datagen || !isPrincipalVariation)
+            && !rootNode
             && quiet
             && !CheckDetector::DoesGiveCheck(board, move)
         )
@@ -1194,8 +1201,8 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
         {
             threadState.IterationsSincePvChange++;
         }
-        threadState.Stats.Elapsed = Stopper.GetElapsed();
-        if(Stopper.ShouldStopDepthIncrease(threadId, State))
+
+        if(Stopper.Stopped)
         {
             break;
         }
@@ -1205,6 +1212,12 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
         if (threadId == 0)
         {
             Callback(callbackData);
+        }
+
+        threadState.Stats.Elapsed = Stopper.GetElapsed();
+        if (Stopper.ShouldStopDepthIncrease(threadId, State))
+        {
+            break;
         }
     }
     

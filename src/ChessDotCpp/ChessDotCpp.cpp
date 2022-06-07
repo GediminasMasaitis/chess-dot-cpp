@@ -7,6 +7,7 @@
 #include "perft.h"
 #include "tablebases.h"
 #include "texel.h"
+#include "datagen.h"
 #include "evaluationClassical2.h"
 
 void Run(int argc, char** argv)
@@ -23,9 +24,17 @@ void Run(int argc, char** argv)
             Bench::Run(1);
             return;
         }
-        else if (param1 == "tune")
+
+        if (param1 == "tune")
         {
             Texel::Run();
+            return;
+        }
+
+        if (param1 == "datagen")
+        {
+            DataGenerator::Run();
+            return;
         }
     }
     
@@ -35,7 +44,7 @@ void Run(int argc, char** argv)
 
 void Test()
 {
-    std::cout << sizeof(TranspositionTableEntry) << std::endl;
+    //std::cout << sizeof(TranspositionTableEntry) << std::endl;
 
     //Game::RunTestCommands();
     //Game::RunCuteChessOutput();
