@@ -151,7 +151,7 @@ Bitboard AttacksGenerator::GetAttackersOf(const Board& board, Position position,
 	return result;
 }
 
-Bitboard AttacksGenerator::GetAttackersOfSide(const Board& board, Position position, bool byWhite, Bitboard allPieces)
+Bitboard AttacksGenerator::GetAttackersOfSide(const BoardBase& board, Position position, bool byWhite, Bitboard allPieces)
 {
 	Bitboard result = 0UL;
 
@@ -272,13 +272,13 @@ bool AttacksGenerator::IsPositionAttacked(const Board& board, const Position pos
 	return false;
 }
 
-Bitboard CheckDetector::GetCheckers(const Board& board)
+Bitboard CheckDetector::GetCheckers(const BoardBase& board)
 {
 	const Bitboard checkers = AttacksGenerator::GetAttackersOfSide(board, board.KingPositions[board.ColorToMove], !board.WhiteToMove, board.AllPieces);
 	return checkers;
 }
 
-bool CheckDetector::DoesGiveCheck(const Board& board, const Move move)
+bool CheckDetector::DoesGiveCheck(const BoardBase& board, const Move move)
 {
 	const Color color = board.ColorToMove;
 	const Color opponentColor = color ^ 1;

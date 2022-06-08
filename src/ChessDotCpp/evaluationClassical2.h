@@ -696,6 +696,24 @@ public:
         return score;
     }
 
+    static Score GetScaledEndgame(const BoardBase& board, PhaseScore score)
+    {
+        const Score unscaledEndgame = EgScore(score);
+
+        if constexpr (tune)
+        {
+            return unscaledEndgame;
+        }
+
+        const Color strongerColor = score > 0 ? Colors::White : Colors::Black;
+        const uint8_t strongerColorPawnCount = PopCount(board.BitBoard[Pieces::Pawn | strongerColor]);
+        const int8_t stringerColorPawnsMissing = static_cast<int8_t>(8 - strongerColorPawnCount);
+        constexpr int32_t maxScale = 128;
+        const int32_t scale = maxScale - stringerColorPawnsMissing * stringerColorPawnsMissing;
+        const Score scaledEndgame = static_cast<Score>((unscaledEndgame * scale) / maxScale);
+        return scaledEndgame;
+    }
+
     static Score EvaluateInner(const BoardBase& board, const EachColor<Bitboard>& pins)
     {
         const PhaseScore score = EvaluatePhased(board, pins);
@@ -703,9 +721,10 @@ public:
         TraceEval(score);
         const Phase phase = GetPhase(board);
         TracePhase(phase);
-        const Score mg = MgScore(score);
-        const Score eg = EgScore(score);
-        const Score interpolated = static_cast<Score>((mg * phase + (24 - phase) * eg) / MaxPhase);
+        const Score midgame = MgScore(score);
+        const Score endgame = GetScaledEndgame(board, score);
+
+        const Score interpolated = static_cast<Score>((midgame * phase + (24 - phase) * endgame) / MaxPhase);
         const Score flipped = board.WhiteToMove ? interpolated : static_cast<Score>(-interpolated);
 
         // TEMPO

@@ -297,6 +297,10 @@ bool Uci::HandleInput(const std::string& line)
 		{
 			DataGenerator::Run();
 		}
+		else if (word == "d")
+		{
+			Display::DisplayBoard(board);
+		}
 		else if (word == "quit")
 		{
 			return false;
