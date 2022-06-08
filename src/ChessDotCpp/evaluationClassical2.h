@@ -705,6 +705,7 @@ public:
             return unscaledEndgame;
         }
 
+        // ENDGAME SCALING - PAWN COUNT
         const Color strongerColor = score > 0 ? Colors::White : Colors::Black;
         const uint8_t strongerColorPawnCount = PopCount(board.BitBoard[Pieces::Pawn | strongerColor]);
         const int8_t stringerColorPawnsMissing = static_cast<int8_t>(8 - strongerColorPawnCount);
