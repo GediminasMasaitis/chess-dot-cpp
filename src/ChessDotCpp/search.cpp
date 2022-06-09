@@ -445,7 +445,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     const bool zeroWindow = alpha == beta - 1;
     
     // TIME CONTROL
-    if (depth > 2 && (threadState.StopIteration || Stopper.ShouldStop()))
+    if (depth > 2 && (threadState.StopIteration || Stopper.ShouldStop(threadId, State)))
     {
         const Score score = Contempt(board);
         return score;
@@ -463,35 +463,35 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     }
 
     // TABLEBASES PROBE
-    //if(Tablebases::CanProbe(board))
-    //{
-    //    if (rootNode)
-    //    {
-    //        Move tbMove;
-    //        const auto tbWin = Tablebases::ProbeRoot(board, tbMove);
-    //        if (tbWin)
-    //        {
-    //            StoreTranspositionTable(threadState, board.Key, tbMove, 42, Constants::TablebaseMate, TranspositionTableFlags::Exact);
-    //            return Constants::TablebaseMate;
-    //        }
-    //    }
-    //    else
-    //    {
-    //        auto result = Tablebases::Probe(board);
-    //        switch (result)
-    //        {
-    //        case GameOutcome::Win:
-    //            return Constants::TablebaseMate;
-    //        case GameOutcome::Draw:
-    //            return Contempt(board);
-    //        case GameOutcome::Loss:
-    //            return -Constants::TablebaseMate;
-    //        case GameOutcome::Unknown:
-    //            Throw();
-    //            break;
-    //        }
-    //    }
-    //}
+    if(datagen && Tablebases::CanProbe(board))
+    {
+        if (rootNode)
+        {
+            Move tbMove;
+            const auto tbWin = Tablebases::ProbeRoot(board, tbMove);
+            if (tbWin)
+            {
+                StoreTranspositionTable(threadState, board.Key, tbMove, 42, Constants::TablebaseMate, TranspositionTableFlags::Exact);
+                return Constants::TablebaseMate;
+            }
+        }
+        else
+        {
+            auto result = Tablebases::Probe(board);
+            switch (result)
+            {
+            case GameOutcome::Win:
+                return Constants::TablebaseMate;
+            case GameOutcome::Draw:
+                return Contempt(board);
+            case GameOutcome::Loss:
+                return -Constants::TablebaseMate;
+            case GameOutcome::Unknown:
+                Throw();
+                break;
+            }
+        }
+    }
 
     // MATE DISTANCE PRUNE
     const Score currentMateScore = Constants::Mate - ply;
@@ -569,7 +569,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     const Move principalVariationMove = hashEntryExists ? entry.MMove : Move(0);
     if (probedMoveLegal)
     {
-        bool returnTtValue = !isPrincipalVariation || (probedScore > alpha && probedScore < beta);
+        bool returnTtValue = !isPrincipalVariation || (!datagen && probedScore > alpha && probedScore < beta);
         if(returnTtValue /*&& isPrincipalVariation*/)
         {
             board.DoMove(principalVariationMove);

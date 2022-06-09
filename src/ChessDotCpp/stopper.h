@@ -48,7 +48,7 @@ public:
         return ms;
     }
     
-    [[nodiscard]] bool ShouldStop()
+    [[nodiscard]] bool ShouldStop(ThreadId threadId, SearchState& state)
     {
         if(Stopped)
         {
@@ -56,13 +56,13 @@ public:
         }
         
         const auto elapsed = GetElapsed();
-        Stopped = elapsed > _maxTime;
+        Stopped = (elapsed > _maxTime) || (Parameters.MaxNodes != 0 && state.Thread[threadId].Stats.Nodes >= Parameters.MaxNodes);
         return Stopped;
     }
 
     [[nodiscard]] bool ShouldStopDepthIncrease(ThreadId threadId, SearchState& state)
     {
-        if(Parameters.MaxNodesOnDepthIncrease != 0 && state.Thread[threadId].Stats.Nodes >= Parameters.MaxNodesOnDepthIncrease)
+        if(Parameters.MinNodes != 0 && state.Thread[threadId].Stats.Nodes >= Parameters.MinNodes)
         {
             Stopped = true;
         }

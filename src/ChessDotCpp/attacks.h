@@ -16,5 +16,6 @@ class CheckDetector
 {
 public:
 	static Bitboard GetCheckers(const BoardBase& board);
+	static void GetCheckers(const BoardBase& board, EachColor<Bitboard>& checkers);
 	static bool DoesGiveCheck(const BoardBase& board, const Move move);
 };

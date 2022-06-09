@@ -278,6 +278,12 @@ Bitboard CheckDetector::GetCheckers(const BoardBase& board)
 	return checkers;
 }
 
+void CheckDetector::GetCheckers(const BoardBase& board, EachColor<Bitboard>& checkers)
+{
+	checkers[board.ColorToMove] = AttacksGenerator::GetAttackersOfSide(board, board.KingPositions[board.ColorToMove], !board.WhiteToMove, board.AllPieces);
+	checkers[board.ColorToMove ^ 1] = AttacksGenerator::GetAttackersOfSide(board, board.KingPositions[board.ColorToMove ^ 1], board.WhiteToMove, board.AllPieces);
+}
+
 bool CheckDetector::DoesGiveCheck(const BoardBase& board, const Move move)
 {
 	const Color color = board.ColorToMove;

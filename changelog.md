@@ -3109,6 +3109,12 @@ Score of ChessDotCpp2.28 vs ChessDotCpp2.27: 261 - 197 - 542  [0.532] 1000
 ...      White vs Black: 239 - 219 - 542  [0.510] 1000
 Elo difference: 22.3 +/- 14.6, LOS: 99.9 %, DrawRatio: 54.2 %
 
+Score of ChessDotCpp2.28 vs wyldchess: 8330 - 623 - 1047  [0.885] 10000
+...      ChessDotCpp2.28 playing White: 4166 - 318 - 516  [0.885] 5000
+...      ChessDotCpp2.28 playing Black: 4164 - 305 - 531  [0.886] 5000
+...      White vs Black: 4471 - 4482 - 1047  [0.499] 10000
+Elo difference: 355.1 +/- 9.2, LOS: 100.0 %, DrawRatio: 10.5 %
+
 Score of ChessDotCpp2.28 vs glaurung: 286 - 107 - 107  [0.679] 500
 ...      ChessDotCpp2.28 playing White: 142 - 46 - 63  [0.691] 251
 ...      ChessDotCpp2.28 playing Black: 144 - 61 - 44  [0.667] 249
@@ -3120,4 +3126,10 @@ Score of ChessDotCpp2.28 vs zurichess: 198 - 134 - 168  [0.564] 500
 ...      ChessDotCpp2.28 playing Black: 105 - 68 - 77  [0.574] 250
 ...      White vs Black: 161 - 171 - 168  [0.490] 500
 Elo difference: 44.7 +/- 24.9, LOS: 100.0 %, DrawRatio: 33.6 %
+
+Score of ChessDotCpp2.28 vs zurichess: 687 - 308 - 505  [0.626] 1500
+...      ChessDotCpp2.28 playing White: 348 - 154 - 248  [0.629] 750
+...      ChessDotCpp2.28 playing Black: 339 - 154 - 257  [0.623] 750
+...      White vs Black: 502 - 493 - 505  [0.503] 1500
+Elo difference: 89.7 +/- 14.5, LOS: 100.0 %, DrawRatio: 33.7 %
 ```
