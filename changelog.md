@@ -13,6 +13,7 @@ Engines tested against:
 | glaurung | 2.2 | 2802 |
 | Zurichess | Neuchatel | 2904 |
 | Texel | 1.07 | 3113 |
+| Weiss | 2.0 | 3305 |
 
 
 ### 1.0.1
