@@ -54,7 +54,8 @@ public:
     {
         using TestEvalClass = EvaluationNnue2;
 
-        TestEvalClass::Init();
+        //TestEvalClass::Init();
+        EvaluationNnueBase::Init();
 
         //Fen fen = "rnbqkb1r/pppppppp/8/8/8/8/PPPPPPPP/RNBQK1NR w KQkq - 0 1";
         //Fen fen = "3k4/4b3/8/8/P4RB1/4P3/6KP/1R6 b - - 2 40";

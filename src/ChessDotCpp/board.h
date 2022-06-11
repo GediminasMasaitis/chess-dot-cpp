@@ -2,8 +2,11 @@
 
 #include "common.h"
 #include "move.h"
+#include "evaluationNnueBase.h"
 
 #include <array>
+
+#define USEACCUMULATOR 1
 
 class UndoMove
 {
@@ -21,6 +24,34 @@ public:
 class BoardBase
 {
 public:
+#if USEACCUMULATOR
+	static constexpr bool useAccumulator = true;
+
+	using accumulator_t = EvaluationNnueBase::hidden_layer_t;
+	accumulator_t accumulator;
+
+	void SetPiece(const Position pos, const Piece piece)
+	{
+		EvaluationNnueBase::SetPiece(accumulator, pos, piece);
+	}
+
+	void UnsetPiece(const Position pos, const Piece piece)
+	{
+		EvaluationNnueBase::UnsetPiece(accumulator, pos, piece);
+	}
+
+#else
+	static constexpr bool useAccumulator = false;
+
+	void SetPiece(const Position pos, const Piece piece)
+	{
+	}
+
+	void UnetPiece(const Position pos, const Piece piece)
+	{
+	}
+#endif
+	
 	Color ColorToMove;
 	bool WhiteToMove;
 	CastlingPermission CastlingPermissions;

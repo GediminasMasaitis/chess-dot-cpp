@@ -76,6 +76,7 @@ void Fens::Parse(TBoard& board, Fen fen)
             const auto pieceBitBoard = GetBitboard(fixedBoardPosition);
             board.BitBoard[piece] |= pieceBitBoard;
             board.ArrayBoard[fixedBoardPosition] = piece;
+            board.SetPiece(fixedBoardPosition, piece);
             board.PieceCounts[piece]++;
             if (piece == Pieces::WhiteKing)
             {

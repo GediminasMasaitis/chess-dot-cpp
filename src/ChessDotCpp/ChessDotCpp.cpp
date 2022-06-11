@@ -12,7 +12,7 @@
 
 void Run(int argc, char** argv)
 {
-    EvaluationNnue2::Init();
+    EvaluationNnueBase::Init();
     Tablebases::Init();
     Eval2::InitEvalMasks();
     EvaluationClassical2::Init();

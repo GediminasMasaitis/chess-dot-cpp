@@ -10,5 +10,5 @@ For more details on each version see [changelog.md](changelog.md)
 
 ## Special thanks
 * [**Chess Programing Wiki**](https://www.chessprogramming.org) for teaching the basics and later on some more complex topics.
-* [**Engine Programming Discord**](discord.gg/invite/YctB2p4) for answering many (often dumb) questions I had along the way.
+* [**Engine Programming Discord**](https://discord.gg/invite/YctB2p4) for answering many (often dumb) questions I had along the way.
 * [**Luecx**](https://github.com/Luecx) for giving me endless tips regarding data generation and NNUE training, and for writing a NNUE trainer [CudAD](https://github.com/Luecx/CudAD) which I used to train my NNUE networks.

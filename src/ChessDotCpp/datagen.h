@@ -63,6 +63,7 @@ public:
                         clone.BitBoard[color] &= ~posBitboard;
                         clone.AllPieces &= ~posBitboard;
                         clone.PieceCounts[piece]--;
+                        clone.UnsetPiece(pos, piece);
 
                         EachColor<Bitboard> noPiecePins;
                         PinDetector::GetPinnedToKings(clone, noPiecePins);
@@ -89,6 +90,7 @@ public:
                         clone.BitBoard[color] |= posBitboard;
                         clone.AllPieces |= posBitboard;
                         clone.PieceCounts[piece]++;
+                        clone.SetPiece(pos, piece);
                     }
                     else
                     {
