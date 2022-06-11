@@ -12,7 +12,7 @@
 
 void Run(int argc, char** argv)
 {
-    EvaluationNnue::Init();
+    EvaluationNnue2::Init();
     Tablebases::Init();
     Eval2::InitEvalMasks();
     EvaluationClassical2::Init();
@@ -54,7 +54,7 @@ void Test()
     //Tests::TestZobrist();
     //Tests::TestRepetitions();
     //Tests::TestUci();
-    //Tests::TestEval();
+    Tests::TestEval();
     //Tests::TestTablebases();
     
     //Tests::TestSfen();

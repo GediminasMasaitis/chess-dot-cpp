@@ -15,13 +15,15 @@
 class Display
 {
 public:
+    using DisplayEvaluation = EvaluationNnue2;//EvaluationClassical2;
+
     static void DisplayBoard(const BoardBase& board, const bool evalPieces = true)
     {
         std::stringstream ss;
 
         EachColor<Bitboard> pins;
         PinDetector::GetPinnedToKings(board, pins);
-        Score eval = Evaluation::Evaluate(board, pins);
+        Score eval = DisplayEvaluation::Evaluate(board, pins);
         eval = board.WhiteToMove ? eval : -eval;
 
         if(evalPieces)
@@ -64,7 +66,7 @@ public:
 
                         EachColor<Bitboard> noPiecePins;
                         PinDetector::GetPinnedToKings(clone, noPiecePins);
-                        Score noPieceEval = Evaluation::Evaluate(clone, noPiecePins);
+                        Score noPieceEval = DisplayEvaluation::Evaluate(clone, noPiecePins);
                         noPieceEval = board.WhiteToMove ? noPieceEval : -noPieceEval;
                         const Score difference = static_cast<Score>(eval - noPieceEval);
                         const std::string diffStr = std::to_string(difference);
@@ -153,10 +155,10 @@ public:
         ss << "FEN: " << fen << "\n";
         ss << "Key: " << board.Key << "\n";
         ss << "Eval: " << eval << "\n";
-        const PhaseScore phasedEval = Evaluation::EvaluatePhased(board, pins);
-        const PhaseScore flippedPhasedEval = phasedEval;//board.WhiteToMove ? static_cast<Score>(phasedEval) : -phasedEval;
-        ss << "Midgame: " << MgScore(flippedPhasedEval) << "\n";
-        ss << "Endgame: " << EgScore(flippedPhasedEval) << "\n";
+        //const PhaseScore phasedEval = DisplayEvaluation::EvaluatePhased(board, pins);
+        //const PhaseScore flippedPhasedEval = phasedEval;//board.WhiteToMove ? static_cast<Score>(phasedEval) : -phasedEval;
+        //ss << "Midgame: " << MgScore(flippedPhasedEval) << "\n";
+        //ss << "Endgame: " << EgScore(flippedPhasedEval) << "\n";
         const int32_t phase = static_cast<int32_t>(GetPhase(board));
         ss << "Phase: " << phase << "\n";
         
@@ -270,12 +272,12 @@ public:
     static GameResult Adjudicate(Board& board, DataEntries& entries, DataEntry& currentEntry)
     {
         constexpr Score drawishScore = 8;
-        constexpr Score winishScore = 2000;
-        constexpr Score loseishScore = -2000;
+        constexpr Score winishScore = 1500;
+        constexpr Score loseishScore = -1500;
 
         constexpr auto drawishLimit = 8;
-        constexpr auto winishLimit = 8;
-        constexpr auto loseishLimit = 8;
+        constexpr auto winishLimit = 4;
+        constexpr auto loseishLimit = 4;
 
         if(entries.size() >= 300)
         {
@@ -342,8 +344,8 @@ public:
 
     static bool ShouldIncludeInDataset(const Board& board, const DataEntries& entries, const DataEntry& currentEntry, const Move& move)
     {
-        //constexpr Score scoreLimit = 2000;
-        constexpr Score scoreLimit = Constants::MateThreshold;
+        constexpr Score scoreLimit = 2000;
+        //constexpr Score scoreLimit = Constants::MateThreshold;
         if(std::abs(currentEntry.SScore) > scoreLimit)
         {
             return false;
@@ -397,8 +399,8 @@ public:
 
         SearchParameters parameters = SearchParameters();
         parameters.Infinite = true;
-        parameters.MinNodes = 50000;
-        //parameters.MaxNodes = 25000;
+        parameters.MinNodes = 5000;
+        //parameters.MaxNodes = 10000;
         GameResult result;
         while (true)
         //for (auto i = 0; i < 30; i++)
@@ -459,7 +461,7 @@ public:
     static void RunThread(const ThreadId threadId, const IterationCallback& callback)
     {
         Search search = Search(OnCallback);
-        auto rng = std::mt19937(threadId);
+        auto rng = std::mt19937(threadId * 256);
         auto data = std::vector<DataEntry>();
 
 
@@ -478,31 +480,59 @@ public:
     static void WriteResults(DataEntries& entries)
     {
         std::stringstream ss;
-        //const auto size = static_cast<int32_t>(entries.size());
-        const auto size = 725000;
+        const auto size = static_cast<int32_t>(entries.size());
+        //const auto size = 725000;
         // r2qkbnr/pppbppp1/2n5/3p3p/5P2/1P2P1P1/P1PP3P/RNBQKBNR w KQkq -
         // r1b1k1r1/p2npp1p/2pp1n1R/qp6/3PP3/5N2/PPPN1PP1/R2QKB2 b Qq - c9 "1/2-1/2";
         //for(auto& entry : entries)
-        for(auto entryId = 0; entryId < size; entryId++)
+
+        //for(auto entryId = 0; entryId < size; entryId++)
+        //{
+        //    const auto& entry = entries[entryId];
+        //    ss << entry.FFen << " c9 \"";
+        //    switch (entry.Result)
+        //    {
+        //    case GameResult::Win:
+        //        ss << "1-0";
+        //        break;
+        //    case GameResult::Draw:
+        //        ss << "1/2-1/2";
+        //        break;
+        //    case GameResult::Loss:
+        //        ss << "0-1";
+        //        break;
+        //    case GameResult::None:
+        //        Throw();
+        //        break;
+        //    }
+        //    ss << "\";";
+        //    //if(entryId != size - 1)
+        //    //{
+        //        ss << "\n";
+        //    //}
+        //}
+
+        for (auto entryId = 0; entryId < size; entryId++)
         {
             const auto& entry = entries[entryId];
-            ss << entry.FFen << " c9 \"";
+            ss << entry.FFen << " 0 0 \[";
             switch (entry.Result)
             {
             case GameResult::Win:
-                ss << "1-0";
+                ss << "1.0";
                 break;
             case GameResult::Draw:
-                ss << "1/2-1/2";
+                ss << "0.5";
                 break;
             case GameResult::Loss:
-                ss << "0-1";
+                ss << "0.0";
                 break;
             case GameResult::None:
                 Throw();
                 break;
             }
-            ss << "\";";
+            ss << "] ";
+            ss << entry.SScore;
             //if(entryId != size - 1)
             //{
                 ss << "\n";
@@ -516,7 +546,7 @@ public:
 
     static void Run()
     {
-        constexpr ThreadId threadCount = 12;
+        constexpr ThreadId threadCount = 16;
         auto threads = std::vector<std::thread>(threadCount);
         auto mutex = std::mutex();
         auto data = DataEntries();
@@ -599,13 +629,13 @@ public:
             const auto log = ss.str();
             std::cout << log;
 
-            if(data.size() >= 725000)
+            //if(data.size() >= 10000)
             {
-                auto shuffeRng = std::default_random_engine(0);
-                std::shuffle(data.begin(), data.end(), shuffeRng);
+                //auto shuffeRng = std::default_random_engine(0);
+                //std::shuffle(data.begin(), data.end(), shuffeRng);
                 WriteResults(data);
                 data.clear();
-                return;
+                //return;
             }
         }
     }

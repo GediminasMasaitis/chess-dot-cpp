@@ -708,9 +708,9 @@ public:
         // ENDGAME SCALING - PAWN COUNT
         const Color strongerColor = score > 0 ? Colors::White : Colors::Black;
         const uint8_t strongerColorPawnCount = PopCount(board.BitBoard[Pieces::Pawn | strongerColor]);
-        const int8_t stringerColorPawnsMissing = static_cast<int8_t>(8 - strongerColorPawnCount);
+        const int8_t strongerColorPawnsMissing = static_cast<int8_t>(8 - strongerColorPawnCount);
         constexpr int32_t maxScale = 128;
-        const int32_t scale = maxScale - stringerColorPawnsMissing * stringerColorPawnsMissing;
+        const int32_t scale = maxScale - strongerColorPawnsMissing * strongerColorPawnsMissing;
         const Score scaledEndgame = static_cast<Score>((unscaledEndgame * scale) / maxScale);
         return scaledEndgame;
     }

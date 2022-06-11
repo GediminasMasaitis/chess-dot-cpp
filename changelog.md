@@ -1560,9 +1560,9 @@ Started rewriting the whole evaluation function using texel tuned values.
 This version performs around on-par with the previous one in self-play, despite only having material and PST evaluation.
 
 ```
-Score of ChessDotCpp vs ChessDotCpp1.38: 413 - 404 - 183  [0.504] 1000
-...      ChessDotCpp playing White: 204 - 205 - 92  [0.499] 501
-...      ChessDotCpp playing Black: 209 - 199 - 91  [0.510] 499
+Score of ChessDotCpp2.0 vs ChessDotCpp1.38: 413 - 404 - 183  [0.504] 1000
+...      ChessDotCpp2.0 playing White: 204 - 205 - 92  [0.499] 501
+...      ChessDotCpp2.0 playing Black: 209 - 199 - 91  [0.510] 499
 ...      White vs Black: 403 - 414 - 183  [0.494] 1000
 Elo difference: 3.1 +/- 19.5, LOS: 62.4 %, DrawRatio: 18.3 %
 ```
@@ -1600,45 +1600,45 @@ info depth 25 multipv 1 score cp 21 nodes 80886246 nps 2664500 time 30357 pv e2e
 ```
 
 ```
-Score of ChessDotCpp vs vice: 97 - 1 - 2  [0.980] 100
-...      ChessDotCpp playing White: 48 - 1 - 1  [0.970] 50
-...      ChessDotCpp playing Black: 49 - 0 - 1  [0.990] 50
+Score of ChessDotCpp2.0 vs vice: 97 - 1 - 2  [0.980] 100
+...      ChessDotCpp2.0 playing White: 48 - 1 - 1  [0.970] 50
+...      ChessDotCpp2.0 playing Black: 49 - 0 - 1  [0.990] 50
 ...      White vs Black: 48 - 50 - 2  [0.490] 100
 Elo difference: 676.1 +/- nan, LOS: 100.0 %, DrawRatio: 2.0 %
 
-Score of ChessDotCpp vs mediocre: 73 - 19 - 8  [0.770] 100
-...      ChessDotCpp playing White: 36 - 11 - 4  [0.745] 51
-...      ChessDotCpp playing Black: 37 - 8 - 4  [0.796] 49
+Score of ChessDotCpp2.0 vs mediocre: 73 - 19 - 8  [0.770] 100
+...      ChessDotCpp2.0 playing White: 36 - 11 - 4  [0.745] 51
+...      ChessDotCpp2.0 playing Black: 37 - 8 - 4  [0.796] 49
 ...      White vs Black: 44 - 48 - 8  [0.480] 100
 Elo difference: 209.9 +/- 78.5, LOS: 100.0 %, DrawRatio: 8.0 %
 
-Score of ChessDotCpp vs simplex: 164 - 24 - 12  [0.850] 200
-...      ChessDotCpp playing White: 85 - 10 - 6  [0.871] 101
-...      ChessDotCpp playing Black: 79 - 14 - 6  [0.828] 99
+Score of ChessDotCpp2.0 vs simplex: 164 - 24 - 12  [0.850] 200
+...      ChessDotCpp2.0 playing White: 85 - 10 - 6  [0.871] 101
+...      ChessDotCpp2.0 playing Black: 79 - 14 - 6  [0.828] 99
 ...      White vs Black: 99 - 89 - 12  [0.525] 200
 Elo difference: 301.3 +/- 65.1, LOS: 100.0 %, DrawRatio: 6.0 %
 
-Score of ChessDotCpp vs cosette5: 131 - 40 - 29  [0.728] 200
-...      ChessDotCpp playing White: 66 - 19 - 15  [0.735] 100
-...      ChessDotCpp playing Black: 65 - 21 - 14  [0.720] 100
+Score of ChessDotCpp2.0 vs cosette5: 131 - 40 - 29  [0.728] 200
+...      ChessDotCpp2.0 playing White: 66 - 19 - 15  [0.735] 100
+...      ChessDotCpp2.0 playing Black: 65 - 21 - 14  [0.720] 100
 ...      White vs Black: 87 - 84 - 29  [0.507] 200
 Elo difference: 170.6 +/- 49.3, LOS: 100.0 %, DrawRatio: 14.5 %
 
-Score of ChessDotCpp vs wyldchess: 267 - 149 - 92  [0.616] 508
-...      ChessDotCpp playing White: 140 - 76 - 39  [0.625] 255
-...      ChessDotCpp playing Black: 127 - 73 - 53  [0.607] 253
+Score of ChessDotCpp2.0 vs wyldchess: 267 - 149 - 92  [0.616] 508
+...      ChessDotCpp2.0 playing White: 140 - 76 - 39  [0.625] 255
+...      ChessDotCpp2.0 playing Black: 127 - 73 - 53  [0.607] 253
 ...      White vs Black: 213 - 203 - 92  [0.510] 508
 Elo difference: 82.2 +/- 28.0, LOS: 100.0 %, DrawRatio: 18.1 %
 
-Score of ChessDotCpp vs supernova: 214 - 194 - 92  [0.520] 500
-...      ChessDotCpp playing White: 112 - 97 - 41  [0.530] 250
-...      ChessDotCpp playing Black: 102 - 97 - 51  [0.510] 250
+Score of ChessDotCpp2.0 vs supernova: 214 - 194 - 92  [0.520] 500
+...      ChessDotCpp2.0 playing White: 112 - 97 - 41  [0.530] 250
+...      ChessDotCpp2.0 playing Black: 102 - 97 - 51  [0.510] 250
 ...      White vs Black: 209 - 199 - 92  [0.510] 500
 Elo difference: 13.9 +/- 27.5, LOS: 83.9 %, DrawRatio: 18.4 %
 
-Score of ChessDotCpp vs glaurung: 103 - 319 - 78  [0.284] 500
-...      ChessDotCpp playing White: 51 - 161 - 38  [0.280] 250
-...      ChessDotCpp playing Black: 52 - 158 - 40  [0.288] 250
+Score of ChessDotCpp2.0 vs glaurung: 103 - 319 - 78  [0.284] 500
+...      ChessDotCpp2.0 playing White: 51 - 161 - 38  [0.280] 250
+...      ChessDotCpp2.0 playing Black: 52 - 158 - 40  [0.288] 250
 ...      White vs Black: 209 - 213 - 78  [0.496] 500
 Elo difference: -160.6 +/- 30.4, LOS: 0.0 %, DrawRatio: 15.6 %
 ```
@@ -3132,4 +3132,83 @@ Score of ChessDotCpp2.28 vs zurichess: 687 - 308 - 505  [0.626] 1500
 ...      ChessDotCpp2.28 playing Black: 339 - 154 - 257  [0.623] 750
 ...      White vs Black: 502 - 493 - 505  [0.503] 1500
 Elo difference: 89.7 +/- 14.5, LOS: 100.0 %, DrawRatio: 33.7 %
+```
+
+## Version 3
+
+Implemented data generation and NNUE evaluation trained on self-play of ChessDotCpp 2.28.
+This version performs around on-par with the previous one in self-play, despite not having efficient updates with a persistent accumulator, no SIMD code and only a very basic NNUE network.
+
+### 3.0
+
+```
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   r   |   n   |   b   |   q   |   k   |   b   |   n   |   r   |
+| -521  | -362  | -408  | -1116 |       | -412  | -356  | -522  | 8
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   p   |   p   |   p   |   p   |   p   |   p   |   p   |   p   |
+|  -33  |  -94  |  -80  |  -73  |  -92  | -132  | -120  |  -36  | 7
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 6
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 5
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 4
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 3
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   P   |   P   |   P   |   P   |   P   |   P   |   P   |   P   |
+|  38   |  102  |  96   |  73   |  79   |  134  |  109  |  60   | 2
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   R   |   N   |   B   |   Q   |   K   |   B   |   N   |   R   |
+|  499  |  347  |  390  | 1098  |       |  415  |  352  |  496  | 1
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+    A       B       C       D       E       F       G       H
+Side: White
+FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+Key: 5885741381098971863
+Eval: 20
+Phase: 24
+```
+
+```
+
+```
+
+```
+Score of ChessDotCpp3.0 vs ChessDotCpp2.28: 674 - 671 - 655  [0.501] 2000
+...      ChessDotCpp3.0 playing White: 308 - 343 - 349  [0.482] 1000
+...      ChessDotCpp3.0 playing Black: 366 - 328 - 306  [0.519] 1000
+...      White vs Black: 636 - 709 - 655  [0.482] 2000
+Elo difference: 0.5 +/- 12.5, LOS: 53.3 %, DrawRatio: 32.8 %
+
+Score of ChessDotCpp3.0 vs simplex: 481 - 7 - 12  [0.974] 500
+...      ChessDotCpp3.0 playing White: 239 - 6 - 5  [0.966] 250
+...      ChessDotCpp3.0 playing Black: 242 - 1 - 7  [0.982] 250
+...      White vs Black: 240 - 248 - 12  [0.492] 500
+Elo difference: 629.4 +/- 90.3, LOS: 100.0 %, DrawRatio: 2.4 %
+
+Score of ChessDotCpp3.0 vs cosette5: 465 - 9 - 26  [0.956] 500
+...      ChessDotCpp3.0 playing White: 224 - 5 - 21  [0.938] 250
+...      ChessDotCpp3.0 playing Black: 241 - 4 - 5  [0.974] 250
+...      White vs Black: 228 - 246 - 26  [0.482] 500
+Elo difference: 534.8 +/- 64.1, LOS: 100.0 %, DrawRatio: 5.2 %
+
+Score of ChessDotCpp3.0 vs glaurung: 272 - 134 - 94  [0.638] 500
+...      ChessDotCpp3.0 playing White: 131 - 67 - 53  [0.627] 251
+...      ChessDotCpp3.0 playing Black: 141 - 67 - 41  [0.649] 249
+...      White vs Black: 198 - 208 - 94  [0.490] 500
+Elo difference: 98.4 +/- 28.3, LOS: 100.0 %, DrawRatio: 18.8 %
 ```

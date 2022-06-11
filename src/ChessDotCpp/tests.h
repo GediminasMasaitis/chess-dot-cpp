@@ -52,8 +52,16 @@ public:
 
     static void TestEval()
     {
+        using TestEvalClass = EvaluationNnue2;
+
+        TestEvalClass::Init();
+
         //Fen fen = "rnbqkb1r/pppppppp/8/8/8/8/PPPPPPPP/RNBQK1NR w KQkq - 0 1";
-        Fen fen = "3k4/4b3/8/8/P4RB1/4P3/6KP/1R6 b - - 2 40";
+        //Fen fen = "3k4/4b3/8/8/P4RB1/4P3/6KP/1R6 b - - 2 40";
+
+        //Fen fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        Fen fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1";
+
         Board board{};
         Fens::Parse(board, fen);
 
@@ -66,7 +74,7 @@ public:
 
         EachColor<Bitboard> pins;
         PinDetector::GetPinnedToKings(board, pins);
-        const auto score = Evaluation::Evaluate(board, pins, state);
+        const auto score = TestEvalClass::Evaluate(board, pins, state);
         std::cout << score << std::endl;
     }
     
