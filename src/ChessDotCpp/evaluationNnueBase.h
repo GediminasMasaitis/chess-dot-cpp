@@ -20,7 +20,7 @@ public:
     using output_bias_t = FinalValue;
 
     using input_layer_t = std::array<NnueValue, InputCount>;
-    using hidden_layer_t = std::array<FinalValue, HiddenCount>;
+    using hidden_layer_t = std::array<NnueValue, HiddenCount>;
     using hidden_layers_t = EachColor<hidden_layer_t>;
 
     inline static input_weights_t InputWeights;
@@ -70,13 +70,13 @@ public:
         ApplyPiece<false>(hiddenLayers, pos, piece);
     }
 
-    //static void Reset(hidden_layers_t& hiddenLayers)
-    //{
-    //    for(Color color = 0; color < Colors::Count; color++)
-    //    {
-    //        std::copy(std::begin(HiddenBiases), std::end(HiddenBiases), hiddenLayers[color]);
-    //    }
-    //}
+    static void Reset(hidden_layers_t& hiddenLayers)
+    {
+        for(Color color = 0; color < Colors::Count; color++)
+        {
+            //std::copy(std::begin(HiddenBiases), std::end(HiddenBiases), hiddenLayers[color]);
+        }
+    }
 
     template<class T>
     static T Read(std::istream& stream)

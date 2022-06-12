@@ -31,10 +31,10 @@ public:
 	using accumulators_t = EvaluationNnueBase::hidden_layers_t;
 	accumulators_t accumulators;
 
-	//void ResetAccumulator()
-	//{
-	//	EvaluationNnueBase::Reset(accumulators);
-	//}
+	void ResetAccumulator()
+	{
+		EvaluationNnueBase::Reset(accumulators);
+	}
 
 	void SetAccumulatorPiece(const Position pos, const Piece piece)
 	{
@@ -49,9 +49,9 @@ public:
 #else
 	static constexpr bool useAccumulator = false;
 
-	//void ResetAccumulator()
-	//{
-	//}
+	void ResetAccumulator()
+	{
+	}
 
 	void SetPiece(const Position pos, const Piece piece)
 	{
