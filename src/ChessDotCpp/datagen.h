@@ -54,7 +54,7 @@ public:
                 {
                     const Position pos = static_cast<Position>(rank * 8 + file);
                     const Piece piece = board.ArrayBoard[pos];
-                    if(piece > Pieces::Empty && piece < Pieces::King)
+                    if(piece > Pieces::Empty && piece < Pieces::Count)
                     {
                         const Bitboard posBitboard = GetBitboard(pos);
                         const Color color = piece & Colors::Mask;
@@ -63,7 +63,7 @@ public:
                         clone.BitBoard[color] &= ~posBitboard;
                         clone.AllPieces &= ~posBitboard;
                         clone.PieceCounts[piece]--;
-                        clone.UnsetPiece(pos, piece);
+                        clone.UnsetAccumulatorPiece(pos, piece);
 
                         EachColor<Bitboard> noPiecePins;
                         PinDetector::GetPinnedToKings(clone, noPiecePins);
@@ -90,7 +90,7 @@ public:
                         clone.BitBoard[color] |= posBitboard;
                         clone.AllPieces |= posBitboard;
                         clone.PieceCounts[piece]++;
-                        clone.SetPiece(pos, piece);
+                        clone.SetAccumulatorPiece(pos, piece);
                     }
                     else
                     {
@@ -463,7 +463,7 @@ public:
     static void RunThread(const ThreadId threadId, const IterationCallback& callback)
     {
         Search search = Search(OnCallback);
-        auto rng = std::mt19937(threadId * 256);
+        auto rng = std::mt19937(threadId * 501);
         auto data = std::vector<DataEntry>();
 
 
