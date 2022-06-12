@@ -14,8 +14,9 @@ public:
     using FinalValue = int32_t;
 
     using input_weights_t = std::array<std::array<NnueValue, HiddenCount>, InputCount>;
-    using hidden_weights_t = std::array<NnueValue, HiddenCount>;
     using hidden_biases_t = std::array<NnueValue, HiddenCount>;
+    using hidden_weights_t = std::array<NnueValue, HiddenCount>;
+    using hidden_weightses_t = EachColor<hidden_weights_t>;
     using output_bias_t = FinalValue;
 
     using input_layer_t = std::array<NnueValue, InputCount>;
@@ -24,13 +25,13 @@ public:
 
     inline static input_weights_t InputWeights;
     inline static hidden_biases_t HiddenBiases;
-    inline static hidden_weights_t HiddenWeights;
+    inline static hidden_weightses_t HiddenWeightses;
     inline static output_bias_t OutputBias;
 
     static constexpr EachPiece<int32_t> pieceIndices = { -1, -1, -1, -1, 0, 6, 1, 7, 2, 8, 3, 9, 4, 10, 5, 11 };
 
     template<bool TSet>
-    static void ApplyPiece(hidden_layer_t& hiddenLayer, const Position pos, const Piece piece)
+    static void ApplyPieceSingle(hidden_layer_t& hiddenLayer, const Position pos, const Piece piece)
     {
         const auto pieceIndex = pieceIndices[piece] * 64;
         assert(pieceIndex >= 0);
@@ -50,15 +51,32 @@ public:
         }
     }
 
-    static void SetPiece(hidden_layer_t& hiddenLayer, const Position pos, const Piece piece)
+    template<bool TSet>
+    static void ApplyPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece)
     {
-        ApplyPiece<true>(hiddenLayer, pos, piece);
+        const Position flippedPos = pos ^ 56;
+        const Piece flippedPiece = piece ^ 1;
+        ApplyPieceSingle<TSet>(hiddenLayers[Colors::White], pos, piece);
+        ApplyPieceSingle<TSet>(hiddenLayers[Colors::Black], flippedPos, flippedPiece);
     }
 
-    static void UnsetPiece(hidden_layer_t& hiddenLayer, const Position pos, const Piece piece)
+    static void SetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece)
     {
-        ApplyPiece<false>(hiddenLayer, pos, piece);
+        ApplyPiece<true>(hiddenLayers, pos, piece);
     }
+
+    static void UnsetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece)
+    {
+        ApplyPiece<false>(hiddenLayers, pos, piece);
+    }
+
+    //static void Reset(hidden_layers_t& hiddenLayers)
+    //{
+    //    for(Color color = 0; color < Colors::Count; color++)
+    //    {
+    //        std::copy(std::begin(HiddenBiases), std::end(HiddenBiases), hiddenLayers[color]);
+    //    }
+    //}
 
     template<class T>
     static T Read(std::istream& stream)
@@ -73,8 +91,7 @@ public:
 
     static void Init()
     {
-        //auto file = std::ifstream("C:/shared/cdcpp/nn/current.nnue", std::ios::binary | std::ios::ate);
-        auto file = std::ifstream("C:/Chess/Networks/10/nn-epoch320.nnue", std::ios::binary | std::ios::ate);
+        auto file = std::ifstream("C:/Chess/Networks/13/requantised.nnue", std::ios::binary | std::ios::ate);
         auto fileSize = static_cast<size_t>(file.tellg());
         file.seekg(0);
 
@@ -95,18 +112,21 @@ public:
             HiddenBiases[hiddenIndex] = bias;
         }
 
-        for (auto hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
+        for(auto hiddenNum = 0; hiddenNum < 2; hiddenNum++)
         {
-            assert(!file.eof());
-            const NnueValue weight = Read<int16_t>(file);
-            HiddenWeights[hiddenIndex] = weight;
+            for (auto hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
+            {
+                assert(!file.eof());
+                const NnueValue weight = Read<int16_t>(file);
+                HiddenWeightses[hiddenNum][hiddenIndex] = weight;
+            }
         }
 
         assert(!file.eof());
         OutputBias = Read<int32_t>(file);
         //assert(file.eof());
 
-        constexpr size_t valueCount = InputCount * HiddenCount + HiddenCount + HiddenCount;
+        constexpr size_t valueCount = InputCount * HiddenCount + HiddenCount + HiddenCount*2;
         constexpr size_t expectedPos = sizeof(NnueValue) * valueCount + sizeof(FinalValue);
         auto pos = static_cast<size_t>(file.tellg());
         assert(pos == expectedPos);

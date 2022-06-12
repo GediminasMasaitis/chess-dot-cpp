@@ -31,26 +31,27 @@ public:
 	using accumulators_t = EvaluationNnueBase::hidden_layers_t;
 	accumulators_t accumulators;
 
-	void SetPiece(const Position pos, const Piece piece, const Color view)
+	//void ResetAccumulator()
+	//{
+	//	EvaluationNnueBase::Reset(accumulators);
+	//}
+
+	void SetAccumulatorPiece(const Position pos, const Piece piece)
 	{
-		const Position flippedPos = pos ^ 56;
-		const Piece flippedPiece = piece ^ 1;
-		EvaluationNnueBase::SetPiece(accumulators[Colors::White], pos, piece);
-		EvaluationNnueBase::SetPiece(accumulators[Colors::Black], flippedPos, flippedPiece);
-		/*accumulator_t& accumulator = accumulators[view];
-		EvaluationNnueBase::SetPiece(accumulator, flippedPos, flippedPiece);*/
+		EvaluationNnueBase::SetPiece(accumulators, pos, piece);
 	}
 
-	void UnsetPiece(const Position pos, const Piece piece, const Color view)
+	void UnsetAccumulatorPiece(const Position pos, const Piece piece)
 	{
-		const Position flippedPos = pos ^ 56;
-		const Piece flippedPiece = piece ^ 1;
-		EvaluationNnueBase::UnsetPiece(accumulators[Colors::White], pos, piece);
-		EvaluationNnueBase::UnsetPiece(accumulators[Colors::Black], flippedPos, flippedPiece);
+		EvaluationNnueBase::UnsetPiece(accumulators, pos, piece);
 	}
 
 #else
 	static constexpr bool useAccumulator = false;
+
+	//void ResetAccumulator()
+	//{
+	//}
 
 	void SetPiece(const Position pos, const Piece piece)
 	{
