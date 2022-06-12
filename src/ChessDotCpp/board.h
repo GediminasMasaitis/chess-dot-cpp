@@ -28,16 +28,25 @@ public:
 	static constexpr bool useAccumulator = true;
 
 	using accumulator_t = EvaluationNnueBase::hidden_layer_t;
-	accumulator_t accumulator;
+	using accumulators_t = EvaluationNnueBase::hidden_layers_t;
+	accumulators_t accumulators;
 
-	void SetPiece(const Position pos, const Piece piece)
+	void SetPiece(const Position pos, const Piece piece, const Color view)
 	{
-		EvaluationNnueBase::SetPiece(accumulator, pos, piece);
+		const Position flippedPos = pos ^ 56;
+		const Piece flippedPiece = piece ^ 1;
+		EvaluationNnueBase::SetPiece(accumulators[Colors::White], pos, piece);
+		EvaluationNnueBase::SetPiece(accumulators[Colors::Black], flippedPos, flippedPiece);
+		/*accumulator_t& accumulator = accumulators[view];
+		EvaluationNnueBase::SetPiece(accumulator, flippedPos, flippedPiece);*/
 	}
 
-	void UnsetPiece(const Position pos, const Piece piece)
+	void UnsetPiece(const Position pos, const Piece piece, const Color view)
 	{
-		EvaluationNnueBase::UnsetPiece(accumulator, pos, piece);
+		const Position flippedPos = pos ^ 56;
+		const Piece flippedPiece = piece ^ 1;
+		EvaluationNnueBase::UnsetPiece(accumulators[Colors::White], pos, piece);
+		EvaluationNnueBase::UnsetPiece(accumulators[Colors::Black], flippedPos, flippedPiece);
 	}
 
 #else

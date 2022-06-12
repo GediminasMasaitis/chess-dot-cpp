@@ -3,17 +3,16 @@
 #include "common.h"
 #include "board.h"
 
+#define DATAGEN 0
 #define TUNE 0
 #define TAPERED 1
 
 #if TUNE
-#define TraceParam Trace& T,
 #define TraceIncr(term) ++T.term[color]
 #define TraceAdd(term, count) T.term[color] += count
 #define TraceEval(e) T.eval = e
 #define TracePhase(e) T.phase = e
 #else
-#define TraceParam
 #define TraceIncr(term)
 #define TraceAdd(term, count)
 #define TraceEval(e)
@@ -66,7 +65,7 @@ static constexpr int S(const int mg, const int eg)
 
 static constexpr int SS(const int score)
 {
-    return S(score, score);
+    return S((score*2)/3, (score*2)/3);
 }
 
 static constexpr Position GetRelative(Color c, Position p)

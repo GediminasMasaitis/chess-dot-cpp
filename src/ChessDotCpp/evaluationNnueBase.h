@@ -20,6 +20,7 @@ public:
 
     using input_layer_t = std::array<NnueValue, InputCount>;
     using hidden_layer_t = std::array<FinalValue, HiddenCount>;
+    using hidden_layers_t = EachColor<hidden_layer_t>;
 
     inline static input_weights_t InputWeights;
     inline static hidden_biases_t HiddenBiases;
@@ -73,7 +74,7 @@ public:
     static void Init()
     {
         //auto file = std::ifstream("C:/shared/cdcpp/nn/current.nnue", std::ios::binary | std::ios::ate);
-        auto file = std::ifstream("C:/Chess/Networks/7/nn-epoch320.nnue", std::ios::binary | std::ios::ate);
+        auto file = std::ifstream("C:/Chess/Networks/10/nn-epoch320.nnue", std::ios::binary | std::ios::ate);
         auto fileSize = static_cast<size_t>(file.tellg());
         file.seekg(0);
 

@@ -51,7 +51,8 @@ public:
         //    }
         //}
 
-        const auto& hiddenLayer = board.accumulator;
+        //const auto& accumulator = board.accumulators[board.ColorToMove];
+        const auto& hiddenLayer = board.accumulators[board.ColorToMove];
 
         FinalValue outputValue = 0;
         for (auto hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
@@ -70,7 +71,7 @@ public:
         const Score score = static_cast<Score>(outputValue / scale);
         const Score flipped = board.WhiteToMove ? score : static_cast<Score>(-score);
 
-        return flipped;
+        return score;
     }
 
     static Score Evaluate(const BoardBase& board, const EachColor<Bitboard>& pins)

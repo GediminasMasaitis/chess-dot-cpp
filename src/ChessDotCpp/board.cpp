@@ -74,7 +74,7 @@ void Board::DoMove(const Move move)
     ArrayBoard[from] = Pieces::Empty;
     BitBoard[piece] &= ~fromPosBitBoard;
     Key ^= ZobristKeys.ZPieces[from][piece];
-    UnsetPiece(from, piece);
+    UnsetPiece(from, piece, ColorToMove);
 
     const bool isPawn = (piece & ~Pieces::Color) == Pieces::Pawn;
     const bool takesPawn = (takesPiece & ~Pieces::Color) == Pieces::Pawn;
@@ -104,7 +104,7 @@ void Board::DoMove(const Move move)
     ArrayBoard[to] = promotedPiece;
     BitBoard[promotedPiece] |= toPosBitBoard;
     Key ^= ZobristKeys.ZPieces[to][promotedPiece];
-    SetPiece(to, promotedPiece);
+    SetPiece(to, promotedPiece, ColorToMove);
     if (isPawn && move.GetPawnPromoteTo() == Pieces::Empty)
     {
         PawnKey ^= ZobristKeys.ZPieces[to][piece];
@@ -117,7 +117,7 @@ void Board::DoMove(const Move move)
         {
             BitBoard[takesPiece] &= ~toPosBitBoard;
             Key ^= ZobristKeys.ZPieces[to][takesPiece];
-            UnsetPiece(to, takesPiece);
+            UnsetPiece(to, takesPiece, ColorToMove);
             if (takesPawn)
             {
                 PawnKey ^= ZobristKeys.ZPieces[to][takesPiece];
@@ -159,7 +159,7 @@ void Board::DoMove(const Move move)
         BitBoard[takesPiece] &= ~killedPawnBitBoard;
         ArrayBoard[killedPawnPos] = Pieces::Empty;
         Key ^= ZobristKeys.ZPieces[killedPawnPos][takesPiece];
-        UnsetPiece(killedPawnPos, takesPiece);
+        UnsetPiece(killedPawnPos, takesPiece, ColorToMove);
         PawnKey ^= ZobristKeys.ZPieces[killedPawnPos][takesPiece];
     }
 
@@ -193,9 +193,9 @@ void Board::DoMove(const Move move)
         BitBoard[rookPiece] &= ~GetBitboard(castlingRookPos);
         BitBoard[rookPiece] |= GetBitboard(castlingRookNewPos);
         Key ^= ZobristKeys.ZPieces[castlingRookPos][rookPiece];
-        UnsetPiece(castlingRookPos, rookPiece);
+        UnsetPiece(castlingRookPos, rookPiece, ColorToMove);
         Key ^= ZobristKeys.ZPieces[castlingRookNewPos][rookPiece];
-        SetPiece(castlingRookNewPos, rookPiece);
+        SetPiece(castlingRookNewPos, rookPiece, ColorToMove);
     }
 
     const CastlingPermission originalPermissions = CastlingPermissions;
@@ -246,7 +246,7 @@ void Board::UndoMove()
     //Piece promotedPiece = move.PawnPromoteTo.HasValue ? move.PawnPromoteTo.Value : move.Piece;
     ArrayBoard[from] = piece;
     BitBoard[piece] |= fromPosBitBoard;
-    SetPiece(from, piece);
+    SetPiece(from, piece, originalColorToMove);
 
     Piece promotedPiece;
     if (move.GetPawnPromoteTo() != Pieces::Empty)
@@ -266,7 +266,7 @@ void Board::UndoMove()
     // TO
     Bitboard toPosBitBoard = GetBitboard(to);
     BitBoard[promotedPiece] &= ~toPosBitBoard;
-    UnsetPiece(to, promotedPiece);
+    UnsetPiece(to, promotedPiece, originalColorToMove);
     
     if (move.GetEnPassant())
     {
@@ -289,7 +289,7 @@ void Board::UndoMove()
         if (!move.GetEnPassant())
         {
             BitBoard[takesPiece] |= toPosBitBoard;
-            SetPiece(to, takesPiece);
+            SetPiece(to, takesPiece, originalColorToMove);
         }
         PieceCounts[takesPiece]++;
         const bool takesPawn = (takesPiece & ~Pieces::Color) == Pieces::Pawn;
@@ -319,7 +319,7 @@ void Board::UndoMove()
         const Bitboard killedPawnBitBoard = GetBitboard(killedPawnPos);
         BitBoard[takesPiece] |= killedPawnBitBoard;
         ArrayBoard[killedPawnPos] = takesPiece;
-        SetPiece(killedPawnPos, takesPiece);
+        SetPiece(killedPawnPos, takesPiece, originalColorToMove);
     }
 
     if (move.GetCastle())
@@ -332,9 +332,9 @@ void Board::UndoMove()
         ArrayBoard[castlingRookPos] = rookPiece;
         ArrayBoard[castlingRookNewPos] = Pieces::Empty;
         BitBoard[rookPiece] |= GetBitboard(castlingRookPos);
-        SetPiece(castlingRookPos, rookPiece);
+        SetPiece(castlingRookPos, rookPiece, originalColorToMove);
         BitBoard[rookPiece] &= ~GetBitboard(castlingRookNewPos);
-        UnsetPiece(castlingRookNewPos, rookPiece);
+        UnsetPiece(castlingRookNewPos, rookPiece, originalColorToMove);
     }
 
     //SyncCastleTo1();
