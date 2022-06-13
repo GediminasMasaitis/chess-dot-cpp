@@ -47,7 +47,7 @@ template<class TBoard>
 void Fens::Parse(TBoard& board, Fen fen)
 {
     board = TBoard();
-    //board.ResetAccumulator();
+    board.ResetAccumulator();
     //fen = std::regex_replace(fen, std::regex("/"), "");
     auto cleanedFen = Fen();
     cleanedFen.reserve(fen.size());

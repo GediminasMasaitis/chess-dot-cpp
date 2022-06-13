@@ -74,7 +74,7 @@ public:
     {
         for(Color color = 0; color < Colors::Count; color++)
         {
-            //std::copy(std::begin(HiddenBiases), std::end(HiddenBiases), hiddenLayers[color]);
+            std::copy(std::begin(HiddenBiases), std::end(HiddenBiases), std::begin(hiddenLayers[color]));
         }
     }
 
