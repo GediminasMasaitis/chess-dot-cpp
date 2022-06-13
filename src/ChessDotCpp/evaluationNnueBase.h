@@ -91,7 +91,7 @@ public:
 
     static void Init()
     {
-        auto file = std::ifstream("C:/Chess/Networks/13/requantised.nnue", std::ios::binary | std::ios::ate);
+        auto file = std::ifstream("C:/Chess/Networks/15/nn-epoch360.nnue", std::ios::binary | std::ios::ate);
         auto fileSize = static_cast<size_t>(file.tellg());
         file.seekg(0);
 
@@ -124,14 +124,11 @@ public:
 
         assert(!file.eof());
         OutputBias = Read<int32_t>(file);
-        //assert(file.eof());
 
         constexpr size_t valueCount = InputCount * HiddenCount + HiddenCount + HiddenCount*2;
         constexpr size_t expectedPos = sizeof(NnueValue) * valueCount + sizeof(FinalValue);
         auto pos = static_cast<size_t>(file.tellg());
         assert(pos == expectedPos);
         assert(pos == fileSize);
-
-        auto a = 123;
     }
 };
