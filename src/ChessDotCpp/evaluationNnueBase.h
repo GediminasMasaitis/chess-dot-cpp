@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.h"
+#include "simd.h"
 
 #include <fstream>
 
@@ -23,30 +24,34 @@ public:
     using hidden_layer_t = std::array<NnueValue, HiddenCount>;
     using hidden_layers_t = EachColor<hidden_layer_t>;
 
-    inline static input_weights_t InputWeights;
-    inline static hidden_biases_t HiddenBiases;
-    inline static hidden_weightses_t HiddenWeightses;
-    inline static output_bias_t OutputBias;
+    using SimdNV = Simd<NnueValue>;
+    using SimdFV = Simd<FinalValue>;
+
+    alignas(SimdNV::alignment) inline static input_weights_t InputWeights;
+    alignas(SimdNV::alignment) inline static hidden_biases_t HiddenBiases;
+    alignas(SimdNV::alignment) inline static hidden_weightses_t HiddenWeightses;
+    alignas(SimdNV::alignment) inline static output_bias_t OutputBias;
 
     static constexpr EachPiece<int32_t> pieceIndices = { -1, -1, -1, -1, 0, 6, 1, 7, 2, 8, 3, 9, 4, 10, 5, 11 };
 
     template<bool TSet>
     static void ApplyPieceSingle(hidden_layer_t& hiddenLayer, const Position pos, const Piece piece)
     {
-        const auto pieceIndex = pieceIndices[piece] * 64;
+        const auto pieceIndex = pieceIndices[piece] * Positions::Count;
         assert(pieceIndex >= 0);
 
         const auto inputIndex = pieceIndex + pos;
-        for (auto hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
+        const auto hiddenLayerPtr = SimdNV::reinterpret(hiddenLayer.data());
+        const auto inputWeightsPtr = SimdNV::reinterpret(InputWeights[inputIndex].data());
+        for (auto hiddenIndex = 0; hiddenIndex < (HiddenCount / SimdNV::stride); hiddenIndex++)
         {
-            const NnueValue weight = InputWeights[inputIndex][hiddenIndex];
             if constexpr (TSet)
             {
-                hiddenLayer[hiddenIndex] += weight;
+                hiddenLayerPtr[hiddenIndex] = SimdNV::add(hiddenLayerPtr[hiddenIndex], inputWeightsPtr[hiddenIndex]);
             }
             else
             {
-                hiddenLayer[hiddenIndex] -= weight;
+                hiddenLayerPtr[hiddenIndex] = SimdNV::subtract(hiddenLayerPtr[hiddenIndex], inputWeightsPtr[hiddenIndex]);
             }
         }
     }
@@ -88,10 +93,11 @@ public:
         const auto result = *resultPtr;
         return result;
     }
-
+    
     static void Init()
     {
         auto file = std::ifstream("C:/Chess/Networks/15/nn-epoch360.nnue", std::ios::binary | std::ios::ate);
+        //auto file = std::ifstream("C:/Chess/Networks/16/nn-epoch350.nnue", std::ios::binary | std::ios::ate);
         auto fileSize = static_cast<size_t>(file.tellg());
         file.seekg(0);
 

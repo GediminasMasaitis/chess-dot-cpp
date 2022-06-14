@@ -29,7 +29,7 @@ public:
 
 	using accumulator_t = EvaluationNnueBase::hidden_layer_t;
 	using accumulators_t = EvaluationNnueBase::hidden_layers_t;
-	accumulators_t accumulators;
+	alignas(Simd<int16_t>::alignment) accumulators_t accumulators;
 
 	void ResetAccumulator()
 	{

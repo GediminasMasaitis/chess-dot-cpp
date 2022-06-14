@@ -11,25 +11,29 @@
 class EvaluationNnue2 : EvaluationNnueBase
 {
 public:
+    alignas(SimdFV::alignment) static inline SimdNV::simd_t zero = { 0 };
+
     static Score Evaluate(const BoardBase& board)
     {
-        FinalValue outputValue = OutputBias;
-
+        alignas(SimdFV::alignment) auto outputSimd = SimdFV::simd_t { 0 };
         for(auto relativeSide = 0; relativeSide < 2; relativeSide++)
         {
             const Color accumulatorColor = relativeSide == 0 ? board.ColorToMove : board.ColorToMove ^ 1;
-            const auto& accumulator = board.accumulators[accumulatorColor];
-
-            for (auto hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
+            auto& accumulator = board.accumulators[accumulatorColor];
+            auto accumulatorPtr = SimdNV::reinterpret_const(accumulator.data());
+            auto& hiddenWeights = HiddenWeightses[relativeSide];
+            auto hiddenWeightsPtr = SimdNV::reinterpret_const(hiddenWeights.data());
+            for (auto hiddenIndex = 0; hiddenIndex < (HiddenCount / SimdNV::stride); hiddenIndex++)
             {
-                NnueValue hiddenValue = accumulator[hiddenIndex];
-                hiddenValue = std::max(static_cast<NnueValue>(0), hiddenValue);
-
-                const NnueValue hiddenWeight = HiddenWeightses[relativeSide][hiddenIndex];
-                const FinalValue outputAddition = hiddenValue * hiddenWeight;
-                outputValue += outputAddition;
+                const auto hiddenValue = SimdNV::max(zero, accumulatorPtr[hiddenIndex]);
+                const auto hiddenWeight = hiddenWeightsPtr[hiddenIndex];
+                const auto outputAdditionSimd = SimdNV::madd16(hiddenValue, hiddenWeight);
+                //const FinalValue outputAddition = hiddenValue * hiddenWeight;
+                outputSimd = SimdFV::add(outputSimd, outputAdditionSimd);
             }
         }
+
+        const FinalValue outputValue = SimdFV::sumRegisterEpi32(outputSimd) + OutputBias;
 
         constexpr auto scale = 64 * 256;
         const Score score = static_cast<Score>(outputValue / scale);
