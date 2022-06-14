@@ -28,7 +28,6 @@ public:
                 const auto hiddenValue = SimdNV::max(zero, accumulatorPtr[hiddenIndex]);
                 const auto hiddenWeight = hiddenWeightsPtr[hiddenIndex];
                 const auto outputAdditionSimd = SimdNV::madd16(hiddenValue, hiddenWeight);
-                //const FinalValue outputAddition = hiddenValue * hiddenWeight;
                 outputSimd = SimdFV::add(outputSimd, outputAdditionSimd);
             }
         }

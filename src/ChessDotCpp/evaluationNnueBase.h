@@ -9,7 +9,7 @@ class EvaluationNnueBase
 {
 public:
     static constexpr size_t InputCount = 12 * 64;
-    static constexpr size_t HiddenCount = 128;
+    static constexpr size_t HiddenCount = 256;
 
     using NnueValue = int16_t;
     using FinalValue = int32_t;
@@ -96,7 +96,7 @@ public:
     
     static void Init()
     {
-        auto file = std::ifstream("C:/Chess/Networks/15/nn-epoch360.nnue", std::ios::binary | std::ios::ate);
+        auto file = std::ifstream("C:/Chess/Networks/17/nn-epoch330.nnue", std::ios::binary | std::ios::ate);
         //auto file = std::ifstream("C:/Chess/Networks/16/nn-epoch350.nnue", std::ios::binary | std::ios::ate);
         auto fileSize = static_cast<size_t>(file.tellg());
         file.seekg(0);
