@@ -63,6 +63,7 @@ void Board::DoMove(const Move move)
         return;
     }
 
+    PushAccumulator();
 
     const Position from = move.GetFrom();
     const Position to = move.GetTo();
@@ -235,6 +236,8 @@ void Board::UndoMove()
         return;
     }
 
+    PopAccumulator();
+
     const Position from = move.GetFrom();
     const Position to = move.GetTo();
     const Piece piece = move.GetPiece();
@@ -246,7 +249,6 @@ void Board::UndoMove()
     //Piece promotedPiece = move.PawnPromoteTo.HasValue ? move.PawnPromoteTo.Value : move.Piece;
     ArrayBoard[from] = piece;
     BitBoard[piece] |= fromPosBitBoard;
-    SetAccumulatorPiece(from, piece);
 
     Piece promotedPiece;
     if (move.GetPawnPromoteTo() != Pieces::Empty)
@@ -266,7 +268,6 @@ void Board::UndoMove()
     // TO
     Bitboard toPosBitBoard = GetBitboard(to);
     BitBoard[promotedPiece] &= ~toPosBitBoard;
-    UnsetAccumulatorPiece(to, promotedPiece);
     
     if (move.GetEnPassant())
     {
@@ -289,7 +290,6 @@ void Board::UndoMove()
         if (!move.GetEnPassant())
         {
             BitBoard[takesPiece] |= toPosBitBoard;
-            SetAccumulatorPiece(to, takesPiece);
         }
         PieceCounts[takesPiece]++;
         const bool takesPawn = (takesPiece & ~Pieces::Color) == Pieces::Pawn;
@@ -319,7 +319,6 @@ void Board::UndoMove()
         const Bitboard killedPawnBitBoard = GetBitboard(killedPawnPos);
         BitBoard[takesPiece] |= killedPawnBitBoard;
         ArrayBoard[killedPawnPos] = takesPiece;
-        SetAccumulatorPiece(killedPawnPos, takesPiece);
     }
 
     if (move.GetCastle())
@@ -332,9 +331,7 @@ void Board::UndoMove()
         ArrayBoard[castlingRookPos] = rookPiece;
         ArrayBoard[castlingRookNewPos] = Pieces::Empty;
         BitBoard[rookPiece] |= GetBitboard(castlingRookPos);
-        SetAccumulatorPiece(castlingRookPos, rookPiece);
         BitBoard[rookPiece] &= ~GetBitboard(castlingRookNewPos);
-        UnsetAccumulatorPiece(castlingRookNewPos, rookPiece);
     }
 
     //SyncCastleTo1();

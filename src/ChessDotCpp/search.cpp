@@ -1333,6 +1333,8 @@ void Search::IterativeDeepenLazySmpOld(Board& board, SearchResults& results)
 
 void Search::Run(Board& board, const SearchParameters& parameters, SearchResults& results)
 {
+    assert(!board.enableAccumulatorStack);
+    board.enableAccumulatorStack = true;
     if(!State.Initialized)
     {
         State.NewGame();
@@ -1341,5 +1343,6 @@ void Search::Run(Board& board, const SearchParameters& parameters, SearchResults
     Stopper.Init(parameters, board.WhiteToMove);
     State.NewSearch(board, parameters);
     IterativeDeepenLazySmp(board, results);
+    board.enableAccumulatorStack = false;
     //IterativeDeepen(0, board, results);
 }

@@ -24,30 +24,70 @@ public:
 class BoardBase
 {
 public:
+	bool enableAccumulatorStack = false;
 #if USEACCUMULATOR
 	static constexpr bool useAccumulator = true;
 
+	using value_t = EvaluationNnueBase::NnueValue;
 	using accumulator_t = EvaluationNnueBase::hidden_layer_t;
 	using accumulators_t = EvaluationNnueBase::hidden_layers_t;
-	alignas(Simd<int16_t>::alignment) accumulators_t accumulators;
+
+    struct accumulator_wrapper_t
+    {
+		alignas(Simd<value_t>::alignment) accumulators_t accumulators {};
+    };
+
+	using accumulator_stack_t = std::vector<accumulator_wrapper_t>;
+    accumulator_stack_t accumulatorStack;
+
+	void PushAccumulator()
+	{
+		if(!enableAccumulatorStack)
+		{
+		    return;
+		}
+
+		auto& accumulators = accumulatorStack[accumulatorStack.size() - 1];
+		accumulatorStack.push_back(accumulators);
+	}
+
+	void PopAccumulator()
+	{
+		assert(enableAccumulatorStack);
+        assert(!accumulatorStack.empty());
+
+		accumulatorStack.pop_back();
+	}
 
 	void ResetAccumulator()
 	{
-		EvaluationNnueBase::Reset(accumulators);
+		accumulatorStack.clear();
+		accumulatorStack.push_back(accumulator_wrapper_t{});
+		EvaluationNnueBase::Reset(accumulatorStack[0].accumulators);
 	}
 
 	void SetAccumulatorPiece(const Position pos, const Piece piece)
 	{
+		auto& accumulators = accumulatorStack[accumulatorStack.size() - 1].accumulators;
 		EvaluationNnueBase::SetPiece(accumulators, pos, piece);
 	}
 
 	void UnsetAccumulatorPiece(const Position pos, const Piece piece)
 	{
+		auto& accumulators = accumulatorStack[accumulatorStack.size() - 1].accumulators;
 		EvaluationNnueBase::UnsetPiece(accumulators, pos, piece);
 	}
 
 #else
 	static constexpr bool useAccumulator = false;
+
+	void PushAccumulator()
+	{
+	}
+
+	void PopAccumulator()
+	{
+	}
 
 	void ResetAccumulator()
 	{

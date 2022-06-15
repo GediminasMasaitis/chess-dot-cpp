@@ -15,11 +15,13 @@ public:
 
     static Score Evaluate(const BoardBase& board)
     {
+        assert(!board.accumulatorStack.empty());
+        auto& accumulators = board.accumulatorStack[board.accumulatorStack.size() - 1].accumulators;
         alignas(SimdFV::alignment) auto outputSimd = SimdFV::simd_t { 0 };
         for(auto relativeSide = 0; relativeSide < 2; relativeSide++)
         {
             const Color accumulatorColor = relativeSide == 0 ? board.ColorToMove : board.ColorToMove ^ 1;
-            auto& accumulator = board.accumulators[accumulatorColor];
+            auto& accumulator = accumulators[accumulatorColor];
             auto accumulatorPtr = SimdNV::reinterpret_const(accumulator.data());
             auto& hiddenWeights = HiddenWeightses[relativeSide];
             auto hiddenWeightsPtr = SimdNV::reinterpret_const(hiddenWeights.data());
