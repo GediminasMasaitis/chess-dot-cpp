@@ -13,6 +13,8 @@ class EvaluationNnue2 : EvaluationNnueBase
 public:
     alignas(SimdFV::alignment) static inline SimdNV::simd_t zero = { 0 };
 
+    static constexpr FinalValue scale = 16 * 256;
+
     static Score Evaluate(const BoardBase& board)
     {
         assert(!board.accumulatorStack.empty());
@@ -35,10 +37,7 @@ public:
         }
 
         const FinalValue outputValue = SimdFV::sumRegisterEpi32(outputSimd) + OutputBias;
-
-        constexpr auto scale = 64 * 256;
         const Score score = static_cast<Score>(outputValue / scale);
-
         return score;
     }
 
