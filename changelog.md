@@ -4519,7 +4519,31 @@ Phase: 24
 ```
 
 ```
-
+info depth 1 multipv 1 score cp 21 nodes 26 nps 26000 time 1 pv c2c4
+info depth 2 multipv 1 score cp 28 nodes 82 nps 82000 time 1 pv e2e3 c7c6
+info depth 3 multipv 1 score cp 18 nodes 236 nps 236000 time 1 pv d2d4 g8f6 e2e3
+info depth 4 multipv 1 score cp 26 nodes 382 nps 382000 time 1 pv d2d4 g8f6 e2e3 e7e6
+info depth 5 multipv 1 score cp 12 nodes 875 nps 437500 time 2 pv d2d4 g8f6 e2e3 e7e6 f1e2
+info depth 6 multipv 1 score cp 12 nodes 2974 nps 991333 time 3 pv g2g3 d7d5 f1g2 e7e6 d2d4 c7c5
+info depth 7 multipv 1 score cp 23 nodes 7456 nps 1864000 time 4 pv e2e4 c7c5 g1f3 e7e6 f1e2 f8e7 e1g1
+info depth 8 multipv 1 score cp 20 nodes 11332 nps 1618857 time 7 pv e2e4 c7c5 g1f3 e7e6 f1e2 f8e7 e1g1 g8f6
+info depth 9 multipv 1 score cp 18 nodes 25134 nps 2513400 time 10 pv e2e4 e7e6 d2d4 c7c5 d4d5 g8f6 d5e6 f7e6 e4e5
+info depth 10 multipv 1 score cp 21 nodes 49791 nps 2766166 time 18 pv e2e4 e7e6 b1c3 d7d5 d2d4 f8b4 e4d5 e6d5 f1e2 g8f6
+info depth 11 multipv 1 score cp 19 nodes 122763 nps 3720090 time 33 pv d2d4 e7e6 c2c4 f8e7 g1f3 g8f6 e2e3 d7d5 f1e2 d5c4 d1a4 b8d7 a4c4
+info depth 12 multipv 1 score cp 20 nodes 176552 nps 2385837 time 74 pv d2d4 e7e6 c2c4 f8e7 g1f3 g8f6 e2e3 e8g8 f1e2 f8e8 e1g1 c7c5 d4c5 e7c5
+info depth 13 multipv 1 score cp 20 nodes 283506 nps 2700057 time 105 pv d2d4 e7e6 c2c4 f8e7 g1f3 g8f6 e2e3 c7c5 d4c5 e8g8 f1e2 f8e8 e1g1 e7c5
+info depth 14 multipv 1 score cp 20 nodes 505511 nps 3063703 time 165 pv d2d4 e7e6 c2c4 f8e7 g1f3 g8f6 e2e3 c7c5 d4c5 e8g8 f1e2 f8e8 e1g1 e7c5
+info depth 15 multipv 1 score cp 17 nodes 1105230 nps 3746542 time 295 pv e2e4 e7e6 d2d4 d7d5 b1c3 g8f6 f1d3 c7c5 e4d5 e6d5 g1f3 c5d4 f3d4 b8c6 d4c6 b7c6
+info depth 16 multipv 1 score cp 19 nodes 1690581 nps 2446571 time 691 pv e2e4 e7e6 d2d4 d7d5 b1c3 g8f6 f1d3 c7c5 e4d5 e6d5 g1f3 c5d4 f3d4 b8c6 d3b5 c8d7
+info depth 17 multipv 1 score cp 21 nodes 2855246 nps 2740159 time 1042 pv e2e4 c7c5 g1f3 e7e6 c2c4 b8c6 f1e2 f8e7 b1c3 g8f6 e1g1 e8g8 d2d4 c5d4 f3d4 f8e8 d4c6 d7c6
+info depth 18 multipv 1 score cp 22 nodes 3942336 nps 2107074 time 1871 pv e2e4 c7c5 g1f3 e7e6 c2c4 b8c6 f1e2 g8f6 b1c3 d7d5 e4d5 e6d5 d2d4 c5d4 f3d4 d5c4 c1e3 c8d7 e2c4
+info depth 19 multipv 1 score cp 23 nodes 5768679 nps 2242005 time 2573 pv e2e4 c7c5 g1f3 e7e6 c2c4 b8c6 f1e2 g8f6 b1c3 e6e5 d2d3 f8e7 c3d5 e8g8 e1g1 d7d6 h2h3 f6d5 c4d5
+info depth 20 multipv 1 score cp 21 nodes 10300479 nps 2710652 time 3800 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 f8d6 f1d3 g8f6 e1g1 e8g8 f1e1 h7h6 c2c4 b8c6 c4d5 c6b4 b1c3 f6d5 c3d5 b4d5
+info depth 21 multipv 1 score cp 23 nodes 14344298 nps 2202748 time 6512 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 f8d6 f1d3 g8f6 d1e2 d6e7 e1g1 e8g8 c1g5 b8d7 b1c3 f8e8 a1e1 c7c6 g5h4 e7d6
+info depth 22 multipv 1 score cp 19 nodes 23487011 nps 2552381 time 9202 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 f8d6 f1d3 g8f6 d1e2 d6e7 e1g1 e8g8 c1g5 f8e8 c2c3 c7c5 g5f6 e7f6 e2c2 b8c6 d3h7 g8h8
+info depth 23 multipv 1 score cp 20 nodes 46163145 nps 3078363 time 14996 pv e2e4 c7c5 g1f3 e7e6 b1c3 b8c6 g2g3 g8f6 f1g2 f8e7 e4e5 f6g4 d1e2 e8g8 e1g1 f7f6 e5f6 g4f6 d2d3 h7h6 c1f4 d7d5 a1e1
+info depth 24 multipv 1 score cp 18 nodes 68588946 nps 2288663 time 29969 pv e2e4 c7c5 g1f3 e7e6 b1c3 b8c6 g2g3 g8f6 f1g2 f8e7 e4e5 f6g4 d1e2 e8g8 e1g1 f7f6 e5f6 g4f6 d2d3 d7d5 f1e1 h7h6 a2a3 c8d7
+info depth 25 multipv 1 score cp 16 nodes 118597658 nps 2659557 time 44593 pv e2e4 c7c5 g1f3 e7e6 b1c3 b8c6 g2g3 g8f6 f1g2 f8e7 e4e5 f6g4 d1e2 e8g8 e1g1 g4h6 d2d3 h6f5 c3e4 b7b6 c2c3 c8b7 c1f4 d7d5 e5d6 f5d6
 ```
 
 ```
@@ -4527,4 +4551,98 @@ Score of ChessDotCpp3.14 vs ChessDotCpp3.13: 219 - 175 - 606  [0.522] 1000
 ...      ChessDotCpp3.14 playing White: 114 - 85 - 300  [0.529] 499
 ...      ChessDotCpp3.14 playing Black: 105 - 90 - 306  [0.515] 501
 ...      White vs Black: 204 - 190 - 606  [0.507] 1000
+```
+
+### 3.15
+
+Retrain nnue using `+65M` fens and new LR schedule
+
+```
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   r   |   n   |   b   |   q   |   k   |   b   |   n   |   r   |
+| -571  | -441  | -503  | -950  | -119  | -489  | -437  | -581  | 8
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   p   |   p   |   p   |   p   |   p   |   p   |   p   |   p   |
+|  -65  | -133  | -116  | -134  | -132  | -161  | -144  |  -63  | 7
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 6
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 5
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 4
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 3
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   P   |   P   |   P   |   P   |   P   |   P   |   P   |   P   |
+|  64   |  130  |  113  |  131  |  128  |  155  |  140  |  64   | 2
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   R   |   N   |   B   |   Q   |   K   |   B   |   N   |   R   |
+|  563  |  438  |  499  |  951  |  117  |  484  |  432  |  571  | 1
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+    A       B       C       D       E       F       G       H
+Side: White
+FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+Key: 5885741381098971863
+Eval: 23
+Phase: 24
+```
+
+```
+info depth 1 multipv 1 score cp 19 nodes 25 nps 25000 time 1 pv e2e4
+info depth 2 multipv 1 score cp 22 nodes 81 nps 81000 time 1 pv c2c4 g8f6
+info depth 3 multipv 1 score cp 13 nodes 242 nps 242000 time 1 pv g1f3 c7c5 c2c4
+info depth 4 multipv 1 score cp 19 nodes 381 nps 381000 time 1 pv g1f3 c7c5 c2c4 g8f6
+info depth 5 multipv 1 score cp 21 nodes 1120 nps 1120000 time 1 pv c2c4 c7c5 g2g3 g8f6 f1g2
+info depth 6 multipv 1 score cp 17 nodes 3382 nps 3382000 time 1 pv d2d4 g8f6 g1f3 g7g6 c2c4 f8g7
+info depth 7 multipv 1 score cp 20 nodes 6130 nps 2043333 time 3 pv d2d4 g8f6 g1f3 g7g6 c2c4 f8g7 b1c3
+info depth 8 multipv 1 score cp 23 nodes 11821 nps 2364200 time 5 pv d2d4 g8f6 g1f3 g7g6 g2g3 f8g7 f1g2 e8g8
+info depth 9 multipv 1 score cp 21 nodes 29112 nps 3234666 time 9 pv d2d4 d7d5 e2e3 e7e6 c2c4 g8f6 c4d5 e6d5 f1e2
+info depth 10 multipv 1 score cp 19 nodes 88935 nps 4680789 time 19 pv c2c4 c7c5 g2g3 g7g6 f1g2 f8g7 b1c3 g8f6 g1f3 b8c6
+info depth 11 multipv 1 score cp 25 nodes 216509 nps 4085075 time 53 pv e2e4 c7c5 b1c3 b8c6 g1f3 g7g6 f1c4 f8g7 e1g1 e7e6 f1e1
+info depth 12 multipv 1 score cp 17 nodes 335987 nps 2666563 time 126 pv g1f3 e7e6 c2c4 d7d5 e2e3 g8f6 d2d4 f8e7 f1e2 e8g8 c4d5 e6d5
+info depth 13 multipv 1 score cp 26 nodes 662003 nps 3310015 time 200 pv e2e4 c7c5 g1f3 g7g6 f1c4 f8g7 e1g1 d7d6 f1e1 g8f6 d2d4 c5d4 f3d4
+info depth 14 multipv 1 score cp 20 nodes 929492 nps 2161609 time 430 pv e2e4 c7c5 g1f3 e7e6 b1c3 b8c6 f1e2 f8e7 e1g1 g8f6 d2d4 c5d4 f3d4 e8g8
+info depth 15 multipv 1 score cp 23 nodes 1273324 nps 2034063 time 626 pv e2e4 c7c5 g1f3 e7e6 c2c3 g8f6 e4e5 f6d5 d2d4 b8c6 c3c4 d5b4 a2a3 b4a6 d4c5 a6c5
+info depth 16 multipv 1 score cp 17 nodes 2487140 nps 2892023 time 860 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 f8d6 f1d3 d8e7 c1e3 g8f6 e1g1 e8g8 e3d2 c7c5 d4c5 d6c5
+info depth 17 multipv 1 score cp 18 nodes 3351602 nps 1878700 time 1784 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 f8e7 f1d3 g8f6 e1g1 e8g8 h2h3 f8e8 f1e1 c7c6 c2c4
+info depth 18 multipv 1 score cp 24 nodes 4938147 nps 2047324 time 2412 pv e2e4 c7c5 g1f3 e7e6 b1c3 b8c6 f1e2 f8e7 e1g1 g8f6 d2d4 c5d4 f3d4 e8g8 d4c6 d7c6 c1e3 f8e8
+info depth 19 multipv 1 score cp 18 nodes 8327022 nps 2437652 time 3416 pv e2e4 c7c5 g1f3 e7e6 b1c3 a7a6 g2g3 b7b5 f1g2 c8b7 d2d3 d7d6 e1g1 g8f6 a2a4 b5b4 c3e2 b8c6 f1e1
+info depth 20 multipv 1 score cp 19 nodes 13336999 nps 2345998 time 5685 pv e2e4 c7c5 g1f3 e7e6 f1e2 d7d6 c2c4 g8f6 b1c3 e6e5 e1g1 f8e7 f3e1 e8g8 e1c2 b8c6 d2d3 c6d4 h2h3 a7a6
+info depth 21 multipv 1 score cp 20 nodes 19702216 nps 2207283 time 8926 pv e2e4 c7c5 g1f3 e7e6 g2g3 d7d6 d2d4 c5d4 f3d4 f8e7 f1g2 g8f6 e1g1 a7a6 h2h3 e8g8 c1e3 c8d7 b1c3 f8e8 f1e1
+info depth 22 multipv 1 score cp 19 nodes 34133534 nps 2625252 time 13002 pv e2e4 c7c5 g1f3 e7e6 g2g3 d7d6 c2c4 g8f6 b1c3 e6e5 f1g2 f8e7 e1g1 e8g8 d2d3 b8c6 h2h3 h7h6 b2b3 a7a6 c1b2 c8e6
+info depth 23 multipv 1 score cp 18 nodes 77765058 nps 3497259 time 22236 pv c2c4 e7e5 g2g3 g8f6 f1g2 c7c6 g1f3 d7d6 e1g1 f8e7 b1c3 e8g8 d1c2 c8g4 h2h3 g4h5 f1d1 f8e8 d2d4 d8c7 b2b3 b8d7 e2e3
+info depth 24 multipv 1 score cp 20 nodes 157158058 nps 3062137 time 51323 pv c2c4 g8f6 g2g3 g7g6 d2d4 c7c5 g1f3 f8g7 d4d5 a7a6 a2a4 e8g8 f1g2 e7e6 e1g1 e6d5 c4d5 d7d6 b1c3 b8d7 f1e1 a8b8 e2e4 f8e8
+info depth 25 multipv 1 score cp 20 nodes 245045863 nps 2303495 time 106380 pv e2e4 c7c5 g1f3 e7e6 g2g3 d7d6 f1g2 g8f6 e4e5 d6e5 f3e5 f6d7 e5f3 b8c6 e1g1 d7f6 d1e2 f8e7 c2c3 e8g8 d2d4 c5d4 f1d1 c8d7 f3d4 c6d4 d1d4
+```
+
+```
+Score of ChessDotCpp3.15 vs ChessDotCpp3.14: 246 - 172 - 582  [0.537] 1000
+...      ChessDotCpp3.15 playing White: 131 - 80 - 289  [0.551] 500
+...      ChessDotCpp3.15 playing Black: 115 - 92 - 293  [0.523] 500
+...      White vs Black: 223 - 195 - 582  [0.514] 1000
+Elo difference: 25.8 +/- 13.9, LOS: 100.0 %, DrawRatio: 58.2 %
+
+Score of ChessDotCpp3.15 vs texel: 392 - 39 - 69  [0.853] 500
+...      ChessDotCpp3.15 playing White: 196 - 18 - 36  [0.856] 250
+...      ChessDotCpp3.15 playing Black: 196 - 21 - 33  [0.850] 250
+...      White vs Black: 217 - 214 - 69  [0.503] 500
+Elo difference: 305.5 +/- 36.9, LOS: 100.0 %, DrawRatio: 13.8 %
+
+Score of ChessDotCpp3.15 vs weiss2.0: 229 - 117 - 154  [0.612] 500
+...      ChessDotCpp3.15 playing White: 123 - 51 - 77  [0.643] 251
+...      ChessDotCpp3.15 playing Black: 106 - 66 - 77  [0.580] 249
+...      White vs Black: 189 - 157 - 154  [0.532] 500
+Elo difference: 79.2 +/- 25.7, LOS: 100.0 %, DrawRatio: 30.8 %
 ```
