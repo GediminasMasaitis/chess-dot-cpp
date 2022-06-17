@@ -12,6 +12,10 @@ void Uci::OnCallback(SearchCallbackData& data) const
 	std::stringstream builder = std::stringstream();
 
 	builder << "info";
+	if(data.Aborted)
+	{
+		//builder << " aborted";
+	}
 	builder << " depth " << std::to_string(data.Depth);
 	builder << " multipv 1";
 	builder << " score cp " << std::to_string(data._Score);
@@ -142,6 +146,12 @@ void ReadSearchParameters(std::stringstream& reader, SearchParameters& parameter
 			uint16_t depth;
 			reader >> depth;
 			parameters.MaxDepth = static_cast<uint8_t>(depth);
+		}
+		else if (word == "nodes")
+		{
+
+			parameters.MinNodes = 5000;
+			parameters.MaxNodes = 5000;
 		}
 		else if (word == "infinite")
 		{

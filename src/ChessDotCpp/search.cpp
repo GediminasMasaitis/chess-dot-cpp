@@ -448,7 +448,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     if (depth > 2 && (threadState.StopIteration || Stopper.ShouldStop(threadId, State)))
     {
         const Score score = Contempt(board);
-        return score;
+        return beta;
     }
     
     // REPETITION DETECTION
@@ -796,6 +796,11 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     
     for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
     {
+        if(Stopper.Stopped)
+        {
+            return bestScore;
+        }
+
         MoveOrdering::OrderNextMove(moveIndex, moves, seeScores, staticMoveScores, moveCount);
         const Move move = moves[moveIndex];
         
@@ -1127,6 +1132,11 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
     Score beta = previous + window;
     while (true)
     {
+        if(Stopper.Stopped)
+        {
+            return previous;
+        }
+
         if (alpha < -termination)
         {
             alpha = -Constants::Inf;
@@ -1173,7 +1183,7 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
     threadState.SavedPrincipalVariation.clear();
     State.Global.Table.GetPrincipalVariation(board, threadState.SavedPrincipalVariation);
     threadState.Stats.Elapsed = Stopper.GetElapsed();
-    SearchCallbackData callbackData(threadId, board, State, 1, score);
+    SearchCallbackData callbackData(threadId, board, State, 1, score, false);
 
     if (threadId == 0)
     {
@@ -1201,17 +1211,19 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
         {
             threadState.IterationsSincePvChange++;
         }
-
-        if(Stopper.Stopped)
-        {
-            break;
-        }
-
+        
         threadState.SavedPrincipalVariation.clear();
         State.Global.Table.GetPrincipalVariation(board, threadState.SavedPrincipalVariation);
         if (threadId == 0)
         {
             Callback(callbackData);
+        }
+
+        if (Stopper.Stopped)
+        {
+            callbackData.Aborted = true;
+            //Callback(callbackData);
+            break;
         }
 
         threadState.Stats.Elapsed = Stopper.GetElapsed();
@@ -1268,7 +1280,7 @@ void Search::IterativeDeepenLazySmpOld(Board& board, SearchResults& results)
     State.Global.Table.GetPrincipalVariation(board, mainThreadState.SavedPrincipalVariation);
     
     mainThreadState.Stats.Elapsed = Stopper.GetElapsed();
-    SearchCallbackData callbackData(0, board, State, 1, score);
+    SearchCallbackData callbackData(0, board, State, 1, score, false);
     Callback(callbackData);
     //State.Global.Table.PrintOccupancy();
 
@@ -1344,5 +1356,6 @@ void Search::Run(Board& board, const SearchParameters& parameters, SearchResults
     State.NewSearch(board, parameters);
     IterativeDeepenLazySmp(board, results);
     board.enableAccumulatorStack = false;
+    //std::cout << State.Thread[0].Stats.Nodes << "\n";
     //IterativeDeepen(0, board, results);
 }
