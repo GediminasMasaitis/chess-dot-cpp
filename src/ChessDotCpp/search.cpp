@@ -773,7 +773,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     // INTERNAL ITERATIVE DEEPENING
     if (depth > 3 && !hashEntryExists)
     {
-        depth -= 1;
+        depth -= 2;
     }
 
     // MOVE LOOP
@@ -892,33 +892,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //    	{
         //            return beta;
         //    	}
-        //    }
-        //}
-
-
-        // SHALLOW PRUNING
-        //if (!rootNode && movesEvaluated > 0)
-        //{
-        //    if (movesEvaluated > (3 + 2 * depth * depth) / (2 - improving))
-        //    {
-        //        continue;
-        //    }
-
-        //    // Quiet late move pruning
-        //    if ((move.GetTakesPiece() == Pieces::Empty) && movesEvaluated > (1 + depth * depth) / (2 - improving)) {
-        //        continue;
-        //    }
-
-        //    const Ply lmrDepth = depth - SearchData.Reductions[isPrincipalVariation ? 1 : 0][depth][movesEvaluated];
-        //    //if (lmrDepth < 7 && seeScore < -50 * depth)
-        //    if (lmrDepth < 3 && threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()] < -1024 * depth)
-        //    {
-        //        continue;
-        //    }
-
-        //    if (lmrDepth < 7 && !See::SeeTest(board, move, -50 * depth))
-        //    {
-        //        continue;
         //    }
         //}
 
