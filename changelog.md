@@ -4661,6 +4661,50 @@ Elo difference: 1.4 +/- 12.2, LOS: 58.8 %, DrawRatio: 67.8 %
 
 ### 3.17
 
+More aggressive internal iterative deepening
+
+```
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   r   |   n   |   b   |   q   |   k   |   b   |   n   |   r   |
+| -571  | -441  | -503  | -950  | -119  | -489  | -437  | -581  | 8
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   p   |   p   |   p   |   p   |   p   |   p   |   p   |   p   |
+|  -65  | -133  | -116  | -134  | -132  | -161  | -144  |  -63  | 7
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 6
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 5
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 4
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 3
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   P   |   P   |   P   |   P   |   P   |   P   |   P   |   P   |
+|  64   |  130  |  113  |  131  |  128  |  155  |  140  |  64   | 2
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   R   |   N   |   B   |   Q   |   K   |   B   |   N   |   R   |
+|  563  |  438  |  499  |  951  |  117  |  484  |  432  |  571  | 1
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+    A       B       C       D       E       F       G       H
+Side: White
+FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+Key: 5885741381098971863
+Eval: 23
+Phase: 24
+```
+
 ```
 info depth 1 multipv 1 score cp 19 nodes 25 nps 25000 time 1 pv e2e4
 info depth 2 multipv 1 score cp 21 nodes 113 nps 113000 time 1 pv e2e4 g8f6
@@ -4690,15 +4734,97 @@ info depth 25 multipv 1 score cp 22 nodes 93816631 nps 2390658 time 39243 pv c2c
 ```
 
 ```
-Score of ChessDotCpp3.16 vs ChessDotCpp3.15: 467 - 326 - 1207  [0.535] 2000
-...      ChessDotCpp3.16 playing White: 244 - 152 - 604  [0.546] 1000
-...      ChessDotCpp3.16 playing Black: 223 - 174 - 603  [0.524] 1000
+Score of ChessDotCpp3.17 vs ChessDotCpp3.16: 467 - 326 - 1207  [0.535] 2000
+...      ChessDotCpp3.17 playing White: 244 - 152 - 604  [0.546] 1000
+...      ChessDotCpp3.17 playing Black: 223 - 174 - 603  [0.524] 1000
 ...      White vs Black: 418 - 375 - 1207  [0.511] 2000
 Elo difference: 24.5 +/- 9.6, LOS: 100.0 %, DrawRatio: 60.4 %
+```
 
-Score of ChessDotCpp3.17 vs weiss2.0: 262 - 94 - 144  [0.668] 500
-...      ChessDotCpp3.17 playing White: 131 - 43 - 77  [0.675] 251
-...      ChessDotCpp3.17 playing Black: 131 - 51 - 67  [0.661] 249
-...      White vs Black: 182 - 174 - 144  [0.508] 500
-Elo difference: 121.5 +/- 26.6, LOS: 100.0 %, DrawRatio: 28.8 %
+### 3.18
+
+Retrain same nnue architecture on `+135M` fens
+
+```
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   r   |   n   |   b   |   q   |   k   |   b   |   n   |   r   |
+| -557  | -434  | -499  | -934  | -109  | -474  | -425  | -558  | 8
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   p   |   p   |   p   |   p   |   p   |   p   |   p   |   p   |
+|  -77  | -146  | -124  | -137  | -139  | -167  | -143  |  -63  | 7
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 6
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 5
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 4
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|       |       |       |       |       |       |       |       |
+|       |       |       |       |       |       |       |       | 3
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   P   |   P   |   P   |   P   |   P   |   P   |   P   |   P   |
+|  76   |  142  |  121  |  131  |  135  |  161  |  140  |  65   | 2
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|   R   |   N   |   B   |   Q   |   K   |   B   |   N   |   R   |
+|  539  |  427  |  488  |  900  |  102  |  464  |  418  |  541  | 1
+|       |       |       |       |       |       |       |       |
++-------+-------+-------+-------+-------+-------+-------+-------+
+    A       B       C       D       E       F       G       H
+Side: White
+FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -
+Key: 5885741381098971863
+Eval: 23
+Phase: 24
+```
+
+```
+info depth 1 multipv 1 score cp 34 nodes 25 nps 25000 time 1 pv d2d4
+info depth 2 multipv 1 score cp 32 nodes 71 nps 71000 time 1 pv d2d4 g8f6
+info depth 3 multipv 1 score cp 12 nodes 190 nps 190000 time 1 pv d2d4 g8f6 b1d2
+info depth 4 multipv 1 score cp 20 nodes 516 nps 516000 time 1 pv c2c4 g8f6 g1f3 c7c5
+info depth 5 multipv 1 score cp 20 nodes 1038 nps 1038000 time 1 pv c2c4 g8f6 d2d4 c7c5 d4d5
+info depth 6 multipv 1 score cp 20 nodes 2419 nps 1209500 time 2 pv c2c4 g8f6 d2d4 a7a6 d4d5 a6a5
+info depth 7 multipv 1 score cp 15 nodes 5158 nps 1719333 time 3 pv g2g3 g8f6 g1f3 d7d5 f1g2 c7c5 c2c4 d5c4
+info depth 8 multipv 1 score cp 23 nodes 10239 nps 2559750 time 4 pv g1f3 g8f6 g2g3 d7d5 f1g2 g7g6 d2d4 f8g7
+info depth 9 multipv 1 score cp 19 nodes 32647 nps 4080875 time 8 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8e7 f1e2
+info depth 10 multipv 1 score cp 25 nodes 43847 nps 2087952 time 21 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 g8f6 f1e2 f8b4 c1d2
+info depth 11 multipv 1 score cp 33 nodes 81979 nps 2927821 time 28 pv e2e4 c7c5 g1f3 e7e6 f1e2 g8f6 e4e5 f6d5 b1c3 d5f4 d2d4 f4e2 d1e2
+info depth 12 multipv 1 score cp 17 nodes 184738 nps 3622313 time 51 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 f1b5 c7c6 b5e2 g8f6 e1g1 f8e7 f1e1
+info depth 13 multipv 1 score cp 17 nodes 299829 nps 2701162 time 111 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 f1e2 g8f6 e1g1 f8e7 f1e1 e8g8 d2d4
+info depth 14 multipv 1 score cp 19 nodes 512086 nps 2909579 time 176 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 g8f6 f1d3 f8e7 e1g1 e8g8 f1e1 c7c5 d4c5 e7c5
+info depth 15 multipv 1 score cp 19 nodes 811936 nps 2715505 time 299 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8d6 f1d3 d8e7 d3e2 g8f6 e1g1 e8g8 c2c4 d5c4 e2c4
+info depth 16 multipv 1 score cp 22 nodes 1552473 nps 3296121 time 471 pv e2e4 c7c5 g1f3 e7e6 f1e2 b8c6 d2d4 c5d4 f3d4 g8f6 b1c3 d7d6 d4c6 b7c6 e1g1 f8e7
+info depth 17 multipv 1 score cp 26 nodes 2321893 nps 2585626 time 898 pv e2e4 c7c5 g1f3 e7e6 f1e2 b8c6 d2d4 c5d4 f3d4 g8f6 b1c3 f8e7 d4c6 b7c6 e4e5 f6d5 c3d5 c6d5
+info depth 18 multipv 1 score cp 26 nodes 3070043 nps 2291076 time 1340 pv e2e4 c7c5 g1f3 e7e6 f1e2 b8c6 d2d4 c5d4 f3d4 g8f6 b1c3 f8e7 d4c6 b7c6 e4e5 f6d5 c3d5 c6d5
+info depth 19 multipv 1 score cp 31 nodes 4496258 nps 2537391 time 1772 pv e2e4 c7c5 g1f3 e7e6 f1e2 b8c6 c2c3 g8f6 e4e5 f6d5 e1g1 d7d6 d2d4 c5d4 c3d4 d6e5 f3e5 f8e7 f1e1
+info depth 20 multipv 1 score cp 18 nodes 7375967 nps 2830378 time 2606 pv e2e4 c7c5 g1f3 e7e6 f1e2 b8c6 e1g1 g8f6 b1c3 f8e7 d2d4 c5d4 f3d4 e8g8 c1e3 d7d5 e4d5 f6d5 c3d5 d8d5 d4c6 d5c6
+info depth 21 multipv 1 score cp 20 nodes 10174557 nps 2367828 time 4297 pv e2e4 c7c5 g1f3 e7e6 f1e2 b8c6 e1g1 g8f6 b1c3 f8e7 d2d4 c5d4 f3d4 e8g8 c1e3 d7d5 e4d5 e6d5 f1e1 f8e8 h2h3
+info depth 22 multipv 1 score cp 18 nodes 15549879 nps 2612546 time 5952 pv e2e4 c7c5 g1f3 e7e6 f1e2 b8c6 b1c3 g8f6 d2d4 c5d4 f3d4 f8e7 e1g1 e8g8 c1f4 d7d5 e4d5 f6d5 c3d5 d8d5 d4b5 a7a6 d1d5 e6d5
+info depth 23 multipv 1 score cp 18 nodes 21228221 nps 2319770 time 9151 pv e2e4 c7c5 g1f3 e7e6 f1e2 b8c6 b1c3 g8f6 d2d4 c5d4 f3d4 f8e7 c1e3 d7d6 e1g1 e8g8 h2h3 c6d4 d1d4 c8d7 f1d1 d7c6 d1d2
+info depth 24 multipv 1 score cp 19 nodes 52834766 nps 4246143 time 12443 pv g1f3 d7d5 g2g3 g8f6 f1g2 g7g6 d2d4 f8g7 e1g1 e8g8 c2c4 c7c6 b1d2 a7a5 b2b3 a5a4 f1e1 b8d7 c4d5 c6d5 c1a3 b7b5 a1c1 c8b7
+info depth 25 multipv 1 score cp 23 nodes 77081962 nps 2483310 time 31040 pv g1f3 d7d5 g2g3 g8f6 f1g2 g7g6 d2d4 f8g7 e1g1 e8g8 c2c4 c7c6 b1d2 f8e8 b2b3 c8f5 c1b2 b8d7 e2e3 f6e4 a1c1 a8c8 f1e1 e7e6 a2a4 e4d2 d1d2
+```
+
+```
+Score of ChessDotCpp3.18 vs ChessDotCpp3.17: 221 - 151 - 628  [0.535] 1000
+...      ChessDotCpp3.18 playing White: 114 - 70 - 315  [0.544] 499
+...      ChessDotCpp3.18 playing Black: 107 - 81 - 313  [0.526] 501
+...      White vs Black: 195 - 177 - 628  [0.509] 1000
+Elo difference: 24.4 +/- 13.1, LOS: 100.0 %, DrawRatio: 62.8 %
+
+Score of ChessDotCpp3.18 vs weiss2.0: 214 - 137 - 149  [0.577] 500
+...      ChessDotCpp3.18 playing White: 110 - 57 - 83  [0.606] 250
+...      ChessDotCpp3.18 playing Black: 104 - 80 - 66  [0.548] 250
+...      White vs Black: 190 - 161 - 149  [0.529] 500
+Elo difference: 53.9 +/- 25.7, LOS: 100.0 %, DrawRatio: 29.8 %
 ```
