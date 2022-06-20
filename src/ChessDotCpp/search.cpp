@@ -851,6 +851,20 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             {
                 continue;
             }
+
+            // SEE PRUNING
+            if
+            (
+                depth < 6
+            )
+            {
+                constexpr Score marginPerDepth = 64;
+                auto quietSee = See::GetSee(board, move);
+                if (quietSee <= depth * -marginPerDepth)
+                {
+                    continue;
+                }
+            }
         }
 
         // SINGULAR EXTENSION
@@ -1189,6 +1203,7 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
         State.Global.Table.GetPrincipalVariation(board, threadState.SavedPrincipalVariation);
         if (threadId == 0)
         {
+            threadState.Stats.Elapsed = Stopper.GetElapsed();
             Callback(callbackData);
         }
 
@@ -1199,7 +1214,6 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
             break;
         }
 
-        threadState.Stats.Elapsed = Stopper.GetElapsed();
         if (Stopper.ShouldStopDepthIncrease(threadId, State))
         {
             break;
