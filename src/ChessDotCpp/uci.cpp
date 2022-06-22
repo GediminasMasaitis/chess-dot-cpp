@@ -2,6 +2,7 @@
 
 
 #include "datagen.h"
+#include "display.h"
 #include "texel.h"
 #include "trainclassical.h"
 #include "trainnnue.h"

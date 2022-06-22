@@ -40,7 +40,7 @@ MoveScore CalculateStaticMoveScore
     const bool isPrincipalVariation = move.Value == pvMove.Value;
     if (isPrincipalVariation)
     {
-        return 1'000'000'000;
+        return 2'000'000'000;
     }
 
     const ThreadState& threadState = state.Thread[threadId];

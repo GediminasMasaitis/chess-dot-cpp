@@ -14,6 +14,7 @@ Engines tested against:
 | Zurichess | Neuchatel | 2904 |
 | Texel | 1.07 | 3113 |
 | Weiss | 2.0 | 3305 |
+| Seer | 2.5 | 3489 |
 
 
 ### 1.0.1
@@ -4939,4 +4940,42 @@ Score of ChessDotCpp3.19 vs ChessDotCpp3.18: 183 - 150 - 667  [0.516] 1000
 ...      ChessDotCpp3.19 playing Black: 87 - 75 - 339  [0.512] 501
 ...      White vs Black: 171 - 162 - 667  [0.504] 1000
 Elo difference: 11.5 +/- 12.4, LOS: 96.5 %, DrawRatio: 66.7 %
+
+Score of ChessDotCpp3.19 vs weiss2.0: 506 - 189 - 305  [0.658] 1000
+...      ChessDotCpp3.19 playing White: 268 - 82 - 151  [0.686] 501
+...      ChessDotCpp3.19 playing Black: 238 - 107 - 154  [0.631] 499
+...      White vs Black: 375 - 320 - 305  [0.527] 1000
+Elo difference: 114.1 +/- 18.5, LOS: 100.0 %, DrawRatio: 30.5 %
+
+Score of ChessDotCpp3.19 vs seer2.5: 35 - 277 - 188  [0.258] 500
+...      ChessDotCpp3.19 playing White: 15 - 132 - 103  [0.266] 250
+...      ChessDotCpp3.19 playing Black: 20 - 145 - 85  [0.250] 250
+...      White vs Black: 160 - 152 - 188  [0.508] 500
+Elo difference: -183.5 +/- 24.9, LOS: 0.0 %, DrawRatio: 37.6 %
 ```
+
+### 3.20
+
+* Fix move ordering bug with high MVVLVA moves being placed above TT move
+* Begin implmeniting staged movegen
+
+```
+Score of ChessDotCpp3.20 vs ChessDotCpp3.19: 169 - 125 - 706  [0.522] 1000
+...      ChessDotCpp3.20 playing White: 95 - 62 - 344  [0.533] 501
+...      ChessDotCpp3.20 playing Black: 74 - 63 - 362  [0.511] 499
+...      White vs Black: 158 - 136 - 706  [0.511] 1000
+Elo difference: 15.3 +/- 11.6, LOS: 99.5 %, DrawRatio: 70.6 %
+
+Score of ChessDotCpp3.20 vs weiss2.0: 241 - 100 - 159  [0.641] 500
+...      ChessDotCpp3.20 playing White: 121 - 48 - 81  [0.646] 250
+...      ChessDotCpp3.20 playing Black: 120 - 52 - 78  [0.636] 250
+...      White vs Black: 173 - 168 - 159  [0.505] 500
+Elo difference: 100.7 +/- 25.7, LOS: 100.0 %, DrawRatio: 31.8 %
+
+Score of ChessDotCpp3.20 vs seer2.5: 45 - 268 - 187  [0.277] 500
+...      ChessDotCpp3.20 playing White: 20 - 129 - 100  [0.281] 249
+...      ChessDotCpp3.20 playing Black: 25 - 139 - 87  [0.273] 251
+...      White vs Black: 159 - 154 - 187  [0.505] 500
+Elo difference: -166.7 +/- 24.9, LOS: 0.0 %, DrawRatio: 37.4 %
+```
+

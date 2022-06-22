@@ -4,6 +4,7 @@
 #include "movegen.h"
 #include "evaluation.h"
 #include "moveorder.h"
+#include "movepick.h"
 #include "see.h"
 #include "stopper.h"
 #include "options.h"
@@ -13,12 +14,15 @@
 #include <algorithm>
 
 #include "zobrist.h"
+#include "display.h"
 
 #if DATAGEN
 static constexpr bool datagen = true;
 #else
 static constexpr bool datagen = false;
 #endif
+
+#define TESTMOVEGEN 0
 
 bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, TranspositionTableEntry& entry, Score& score, bool& entryExists)
 {
@@ -437,6 +441,19 @@ void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply
     }
 }
 
+/**
+ * \brief 
+ * \param threadId 
+ * \param board 
+ * \param depth 
+ * \param ply 
+ * \param alpha 
+ * \param beta 
+ * \param isPrincipalVariation 
+ * \param isCutNode 
+ * \param nullMoveAllowed 
+ * \return 
+ */
 Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool isCutNode, bool nullMoveAllowed)
 {
     ThreadState& threadState = State.Thread[threadId];
@@ -682,70 +699,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         }
     }
 
-    const Bitboard pinned = pins[board.ColorToMove];
-    MoveArray moves;
-    MoveCount moveCount = 0;
-    ScoreArray seeScores;
-    MoveScoreArray staticMoveScores;
-    Move previousMove1 = !rootNode ? board.History[board.HistoryDepth - 1].Move : Move(0);
-    Move previousMove2 = board.HistoryDepth > 1 ? board.History[board.HistoryDepth - 2].Move : Move(0);
-    const Move countermove = threadState.Countermoves[previousMove1.GetPiece()][previousMove1.GetTo()];
-
-    // PROBCUT
-    //if (
-    //    !inCheck
-    //    && !isPrincipalVariation
-    //    && depth >= 5
-    //    && abs(beta) < Constants::MateThreshold
-    //    && !(
-    //        hashEntryExists
-    //        && entry.Flag == TranspositionTableFlags::Alpha
-    //        && entry.SScore < beta)
-    //    )
-    //{
-    //    MoveGenerator::GetAllPotentialCaptures(board, checkers, pinned, moves, moveCount);
-    //    See::CalculateSeeScores(board, moves, moveCount, seeScores);
-    //    MoveOrdering::CalculateStaticScores(threadId, State, moves, seeScores, moveCount, ply, principalVariationMove, countermove, staticMoveScores);
-    //    Score threshold = beta + 200;
-
-    //    for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
-    //    {
-    //        MoveOrdering::OrderNextMove(threadId, State, ply, moveIndex, moves, seeScores, staticMoveScores, moveCount);
-    //        const Move move = moves[moveIndex];
-
-    //        const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
-    //        if (!valid)
-    //        {
-    //            continue;
-    //        }
-
-    //        const Score seeScore = seeScores[moveIndex];
-    //        if(seeScore < 0)
-    //        {
-    //            break;
-    //        }
-
-    //        board.DoMove(move);
-
-    //        // See if a quiescence search beats pbBeta
-    //        Score pbScore = -Quiescence(threadId, board, depth-1, ply+1, -threshold, -threshold + 1);
-
-    //        // If it did, do a proper search with reduced depth
-    //        if (pbScore >= threshold)
-    //        {
-    //            pbScore = -AlphaBeta(threadId, board, depth - 4, ply + 1, -threshold, -threshold + 1, false, false, true);
-    //        }
-
-    //        board.UndoMove();
-
-    //        // Cut if the reduced depth search beats pbBeta
-    //        if (pbScore >= threshold)
-    //        {
-    //            return pbScore;
-    //        }
-    //    }
-    //}
-
     // FUTILITY PRUNING - DETECTION
     bool futilityPruning = false;
     //const Score futilityPerDepth = Options::TuneScore1;
@@ -761,8 +714,28 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //&& board.PieceMaterial[board.ColorToMove] > 0
     )
     {
-        futilityPruning = true;
+        futilityPruning = true; 
     }
+
+    const Bitboard pinned = pins[board.ColorToMove];
+
+    MovePicker movePicker;
+    movePicker.Reset(State, ply, board, checkers, pinned, principalVariationMove);
+
+#if TESTMOVEGEN
+    MovePicker2 movePicker2;
+    movePicker2.Reset(State, ply, board, checkers, pinned, principalVariationMove);
+#endif
+
+
+    
+    /*MoveArray moves;
+    MoveCount moveCount = 0;
+    ScoreArray seeScores;
+    MoveScoreArray staticMoveScores;*/
+    Move previousMove1 = !rootNode ? board.History[board.HistoryDepth - 1].Move : Move(0);
+    Move previousMove2 = board.HistoryDepth > 1 ? board.History[board.HistoryDepth - 2].Move : Move(0);
+    //const Move countermove = threadState.Countermoves[previousMove1.GetPiece()][previousMove1.GetTo()];
 
     //TablebaseResult parentResult = TablebaseResult::Unknown;
     //if(Tablebases::CanProbe(board))
@@ -779,10 +752,9 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     // MOVE LOOP
     assert(depth > 0);
     SearchedPosition searchedPosition = SearchedPosition(State, threadId, board.Key, ply);
-    moveCount = 0;
-    MoveGenerator::GetAllPotentialMoves(board, checkers, pinned, moves, moveCount);
-    See::CalculateSeeScores(board, moves, moveCount, seeScores);
-    MoveOrdering::CalculateStaticScores(threadId, State, moves, seeScores, moveCount, ply, principalVariationMove, countermove, staticMoveScores, board);
+    //MoveGenerator::GetAllPotentialMoves(board, checkers, pinned, moves, moveCount);
+    
+    
 
     Score bestScore = -Constants::Inf;
     Move bestMove;
@@ -793,34 +765,96 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
     MoveArray failedMoves;
     MoveCount failedMoveCount = 0;
+    MovePickerEntry moveEntry;
     
-    for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
+    //for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
+    while(true)
     {
+#if TESTMOVEGEN
+        if (board.Key == 5885741381098971863 && depth > 0)
+        {
+            auto ab = 123;
+        }
+
+        auto pickerBackup = movePicker;
+        auto picker2Backup = movePicker2;
+        //assert(pickerBackup._moveCount == picker2Backup._moveCount);
+
+#endif
+
+        auto nextMoveExists = movePicker.GetNextMove(moveEntry);
+#if TESTMOVEGEN
+        MovePickerEntry moveEntry2;
+        auto nextMoveExists2 = movePicker2.GetNextMove(moveEntry2);
+        assert(nextMoveExists == nextMoveExists2);
+        if (!nextMoveExists)
+        {
+            break;
+        }
+
+        bool existMatch = nextMoveExists == nextMoveExists2;
+        bool moveMatch = moveEntry.move.Value == moveEntry2.move.Value;
+        bool seeMatch = moveEntry.see == moveEntry2.see;
+        if (!existMatch || !moveMatch || !seeMatch)
+        {
+            Display::DisplayBoard(board);
+            std::cout << "TT:\n" << principalVariationMove.ToDebugString() << "\n\n1:\n" << moveEntry.move.ToDebugString() << "\n\n2:\n" << moveEntry2.move.ToDebugString();
+            auto a = 123;
+        }
+
+        assert(pickerBackup._checkers == picker2Backup._checkers);
+        assert(pickerBackup._pinned == picker2Backup._pinned);
+        assert(pickerBackup._board->Key == picker2Backup._board->Key);
+        //assert(pickerBackup._moveCount == picker2Backup._moveCount);
+
+        //for(auto i = 0; i < pickerBackup._moveCount; i++)
+        //{
+        //    assert(pickerBackup._moves[i].Value == picker2Backup._moves[i].Value);
+        //}
+
+        MovePickerEntry bak1;
+        MovePickerEntry bak2;
+        auto ok1 = pickerBackup.GetNextMove(bak1);
+        auto ok2 = picker2Backup.GetNextMove(bak2);
+
+        assert(pickerBackup._checkers == picker2Backup._checkers);
+        assert(pickerBackup._pinned == picker2Backup._pinned);
+        assert(pickerBackup._board->Key == picker2Backup._board->Key);
+        //assert(pickerBackup._moveCount == picker2Backup._moveCount);
+
+        bool existMatch2 = ok1 == ok2;
+        bool moveMatch2 = bak1.move.Value == bak2.move.Value;
+        bool seeMatch2 = bak1.see == bak2.see;
+        if (!existMatch2 || !moveMatch2 || !seeMatch2)
+        {
+            std::cout << moveEntry.move.ToDebugString() << "\n\n" << moveEntry2.move.ToDebugString();
+            auto a = 123;
+        }
+#endif
+
+        if(!nextMoveExists)
+        {
+            break;
+        }
+
         if(Stopper.Stopped)
         {
             return bestScore;
         }
 
-        MoveOrdering::OrderNextMove(moveIndex, moves, seeScores, staticMoveScores, moveCount);
-        const Move move = moves[moveIndex];
+        const Move move = moveEntry.move;
         
         //if(move.Value == threadState.SingularMove.Value)
         //{
         //    continue;
         //}
 
-        const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
-        if (!valid)
-        {
-            continue;
-        }
-
         const Piece takesPiece = move.GetTakesPiece();
         const bool capture = takesPiece != Pieces::Empty;
         const Piece pawnPromoteTo = move.GetPawnPromoteTo();
         const bool promotion = pawnPromoteTo != Pieces::Empty;
         const bool quiet = !capture && !promotion;
-        const Score seeScore = seeScores[moveIndex];
+        //const Score seeScore = moveEntry.see;
 
         if
         (
@@ -923,7 +957,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             && move.Value != plyState.Killers[0].Value
             && move.Value != plyState.Killers[1].Value
             //&& move.Value != countermove.Value
-            && seeScore <= 0
+            && moveEntry.see <= 0
             && pawnPromoteTo == Pieces::Empty
         )
         {
