@@ -22,8 +22,6 @@ static constexpr bool datagen = true;
 static constexpr bool datagen = false;
 #endif
 
-#define TESTMOVEGEN 0
-
 bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, TranspositionTableEntry& entry, Score& score, bool& entryExists)
 {
     score = 0;
@@ -211,6 +209,24 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
 
     const Bitboard pinned = pins[board.ColorToMove];
 
+    //MovePicker movePicker;
+    //movePicker.Reset(State, ply, board, checkers, pinned, principalVariationMove);
+
+    //Score bestScore = -Constants::Inf;
+    //Move bestMove;
+    //bool raisedAlpha = false;
+    //bool betaCutoff = false;
+    //uint8_t movesEvaluated = 0;
+    //MovePickerEntry moveEntry;
+    //while (true)
+    //{
+    //    auto nextMoveExists = movePicker.GetNextMove<false>(moveEntry);
+    //    if(!nextMoveExists)
+    //    {
+    //        break;
+    //    }
+    //    const Move move = moveEntry.move;
+
     MoveArray moves;
     MoveCount moveCount = 0;
     MoveGenerator::GetAllPotentialCaptures(board, checkers, pinned, moves, moveCount);
@@ -220,7 +236,7 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
 
     ScoreArray seeScores;
     See::CalculateSeeScores(board, moves, moveCount, seeScores);
-    
+
     MoveScoreArray staticMoveScores{};
     MoveOrdering::CalculateStaticScores(threadId, State, moves, seeScores, moveCount, ply, principalVariationMove, countermove, staticMoveScores, board);
 
@@ -269,6 +285,7 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
             )
         )
         {
+            //const Score seeScore = moveEntry.see;
             const Score seeScore = seeScores[moveIndex];
             if (seeScore < 0) // TODO: -10?
             {
@@ -721,14 +738,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
     MovePicker movePicker;
     movePicker.Reset(State, ply, board, checkers, pinned, principalVariationMove);
-
-#if TESTMOVEGEN
-    MovePicker2 movePicker2;
-    movePicker2.Reset(State, ply, board, checkers, pinned, principalVariationMove);
-#endif
-
-
-    
+        
     /*MoveArray moves;
     MoveCount moveCount = 0;
     ScoreArray seeScores;
@@ -770,67 +780,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     //for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
     while(true)
     {
-#if TESTMOVEGEN
-        if (board.Key == 5885741381098971863 && depth > 0)
-        {
-            auto ab = 123;
-        }
-
-        auto pickerBackup = movePicker;
-        auto picker2Backup = movePicker2;
-        //assert(pickerBackup._moveCount == picker2Backup._moveCount);
-
-#endif
-
-        auto nextMoveExists = movePicker.GetNextMove(moveEntry);
-#if TESTMOVEGEN
-        MovePickerEntry moveEntry2;
-        auto nextMoveExists2 = movePicker2.GetNextMove(moveEntry2);
-        assert(nextMoveExists == nextMoveExists2);
-        if (!nextMoveExists)
-        {
-            break;
-        }
-
-        bool existMatch = nextMoveExists == nextMoveExists2;
-        bool moveMatch = moveEntry.move.Value == moveEntry2.move.Value;
-        bool seeMatch = moveEntry.see == moveEntry2.see;
-        if (!existMatch || !moveMatch || !seeMatch)
-        {
-            Display::DisplayBoard(board);
-            std::cout << "TT:\n" << principalVariationMove.ToDebugString() << "\n\n1:\n" << moveEntry.move.ToDebugString() << "\n\n2:\n" << moveEntry2.move.ToDebugString();
-            auto a = 123;
-        }
-
-        assert(pickerBackup._checkers == picker2Backup._checkers);
-        assert(pickerBackup._pinned == picker2Backup._pinned);
-        assert(pickerBackup._board->Key == picker2Backup._board->Key);
-        //assert(pickerBackup._moveCount == picker2Backup._moveCount);
-
-        //for(auto i = 0; i < pickerBackup._moveCount; i++)
-        //{
-        //    assert(pickerBackup._moves[i].Value == picker2Backup._moves[i].Value);
-        //}
-
-        MovePickerEntry bak1;
-        MovePickerEntry bak2;
-        auto ok1 = pickerBackup.GetNextMove(bak1);
-        auto ok2 = picker2Backup.GetNextMove(bak2);
-
-        assert(pickerBackup._checkers == picker2Backup._checkers);
-        assert(pickerBackup._pinned == picker2Backup._pinned);
-        assert(pickerBackup._board->Key == picker2Backup._board->Key);
-        //assert(pickerBackup._moveCount == picker2Backup._moveCount);
-
-        bool existMatch2 = ok1 == ok2;
-        bool moveMatch2 = bak1.move.Value == bak2.move.Value;
-        bool seeMatch2 = bak1.see == bak2.see;
-        if (!existMatch2 || !moveMatch2 || !seeMatch2)
-        {
-            std::cout << moveEntry.move.ToDebugString() << "\n\n" << moveEntry2.move.ToDebugString();
-            auto a = 123;
-        }
-#endif
+        auto nextMoveExists = movePicker.GetNextMove<true>(moveEntry);
 
         if(!nextMoveExists)
         {

@@ -8,3 +8,22 @@ public:
 	static void CalculateStaticScores(const ThreadId threadId, const SearchState& state, const MoveArray& moves, const ScoreArray& seeScores, const MoveCount moveCount, const Ply ply, const Move pvMove, const Move countermove, MoveScoreArray& staticScores, const Board& board);
 	static void OrderNextMove(const MoveCount currentIndex, MoveArray& moves, ScoreArray& seeScores, MoveScoreArray& staticScores, const MoveCount moveCount);
 };
+
+class MoveOrdering2
+{
+public:
+	static void CalculateStaticCaptureScores(const ThreadState& threadState, const MoveArray& moves, const ScoreArray& seeScores, const MoveCount moveCount, MoveScoreArray& staticScores);
+	static void OrderNextCaptureMove(const MoveCount currentIndex, MoveArray& moves, ScoreArray& seeScores, MoveScoreArray& staticScores, const MoveCount moveCount);
+
+	static void CalculateStaticNonCaptureScores
+    (
+        const ThreadState& threadState,
+        const MoveArray& moves,
+        const MoveCount moveCount,
+        Ply ply,
+        const Move countermove,
+        MoveScoreArray& staticScores,
+        const Board& board
+    );
+	static void OrderNextNonCaptureMove(const MoveCount currentIndex, MoveArray& moves, MoveScoreArray& staticScores, const MoveCount moveCount);
+};

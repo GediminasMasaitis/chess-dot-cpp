@@ -489,15 +489,7 @@ void GetAllPotentialMovesForColor(const Board& board, const Bitboard checkers, c
 		GetPotentialKingMoves<TColor>(board, allowedToKing, moves, moveCount);
 		return;
 	}
-
-	//auto boardStr = Fens::Serialize(board);
-	//if(boardStr == "rnbqkbnr/p1pppppp/8/1P6/1P6/8/2PPPPPP/RNBQKBNR b KQkq b3")
-	//{
-	//	auto a = 123;
-	//}
-
-
-
+	
 	if (checkCount == 1)
 	{
 		allowedFrom = ~pinned;
@@ -585,6 +577,73 @@ void MoveGenerator::GetAllPotentialCaptures(const Board& board, const Bitboard c
 	else
 	{
 		GetAllPotentialCapturesForColor<Colors::Black>(board, checkers, pinned, moves, moveCount);
+	}
+}
+
+template<Piece TColor>
+void GetAllPotentialNonCapturesForColor(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, MoveCount& moveCount)
+{
+	Bitboard allowedFrom = ~0ULL;
+	Bitboard allowedTo = board.EmptySquares;
+	Bitboard allowedToKing = allowedTo;
+
+	const auto checkCount = PopCount(checkers);
+	if (checkCount > 1)
+	{
+		GetPotentialKingMoves<TColor>(board, allowedToKing, moves, moveCount);
+		return;
+	}
+
+	if (checkCount == 1)
+	{
+		allowedFrom = ~pinned;
+
+		const Position checkerPos = BitScanForward(checkers);
+		allowedTo = BetweenBitboards.Between[board.KingPositions[board.ColorToMove]][checkerPos];
+	}
+	else
+	{
+		GetPotentialCastlingMoves(board, moves, moveCount);
+	}
+
+	GetPotentialKnightMoves<TColor>(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialBishopMoves<TColor>(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialRookMoves<TColor>(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialQueenMoves<TColor>(board, allowedFrom, allowedTo, moves, moveCount);
+	GetPotentialKingMoves<TColor>(board, allowedToKing, moves, moveCount);
+	GetPotentialPawnMoves<TColor>(board, allowedFrom, allowedTo, moves, moveCount);
+}
+
+void MoveGenerator::GetAllPotentialNonCaptures(const Board& board, const Bitboard checkers, const Bitboard pinned, MoveArray& moves, MoveCount& moveCount)
+{
+	if (board.WhiteToMove)
+	{
+		GetAllPotentialNonCapturesForColor<Colors::White>(board, checkers, pinned, moves, moveCount);
+	}
+	else
+	{
+		GetAllPotentialNonCapturesForColor<Colors::Black>(board, checkers, pinned, moves, moveCount);
+	}
+}
+
+template<Piece TColor>
+void GetAllPossibleMovesForColor(const Board& board, MoveArray& moves, MoveCount& moveCount)
+{
+	const Bitboard checkers = CheckDetector::GetCheckers(board);
+	const Bitboard pinned = GetPinnedForColor<TColor>(board, board.KingPositions[board.ColorToMove]);
+	GetAllPotentialMovesForColor<TColor>(board, checkers, pinned, moves, moveCount);
+	MoveValidator::FilterMovesByKingSafety(board, checkers, pinned, moves, moveCount);
+}
+
+void MoveGenerator::GetAllPossibleMoves(const Board& board, MoveArray& moves, MoveCount& moveCount)
+{
+	if (board.WhiteToMove)
+	{
+		GetAllPossibleMovesForColor<Colors::White>(board, moves, moveCount);
+	}
+	else
+	{
+		GetAllPossibleMovesForColor<Colors::Black>(board, moves, moveCount);
 	}
 }
 
@@ -770,23 +829,27 @@ void MoveValidator::FilterMovesByKingSafety(const Board& board, Bitboard checker
 	moveCount -= toRemove;
 }
 
-template<Piece TColor>
-void GetAllPossibleMovesForColor(const Board& board, MoveArray& moves, MoveCount& moveCount)
+bool MoveValidator::IsPseudoLegal(const Board& board, const Move move)
 {
-	const Bitboard checkers = CheckDetector::GetCheckers(board);
-	const Bitboard pinned = GetPinnedForColor<TColor>(board, board.KingPositions[board.ColorToMove]);
-	GetAllPotentialMovesForColor<TColor>(board, checkers, pinned, moves, moveCount);
-	MoveValidator::FilterMovesByKingSafety(board, checkers, pinned, moves, moveCount);
-}
+	if(move.Value == 0)
+	{
+		return false;
+	}
 
-void MoveGenerator::GetAllPossibleMoves(const Board& board, MoveArray& moves, MoveCount& moveCount)
-{
-	if (board.WhiteToMove)
+	//if(board.ColorToMove != move.GetColorToMove())
+	//{
+	//	return false;
+	//}
+
+	if(board.ArrayBoard[move.GetFrom()] != move.GetPiece())
 	{
-		GetAllPossibleMovesForColor<Colors::White>(board, moves, moveCount);
+		return false;
 	}
-	else
+
+	if(board.ArrayBoard[move.GetTo()] != move.GetTakesPiece())
 	{
-		GetAllPossibleMovesForColor<Colors::Black>(board, moves, moveCount);
+		return false;
 	}
+
+	return true;
 }
