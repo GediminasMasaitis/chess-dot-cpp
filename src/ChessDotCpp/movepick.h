@@ -149,6 +149,7 @@ private:
     int16_t _captureIndex;
     MoveScoreArray _captureScores;
     ScoreArray _seeScores;
+    bool _hasBadCaptures;
 
     MoveArray _nonCaptures;
     MoveCount _nonCaptureCount;
@@ -199,6 +200,7 @@ public:
         _captureIndex = -1;
         _nonCaptureCount = 0;
         _nonCaptureIndex = -1;
+        _hasBadCaptures = false;
         _killerIndex = -1;
 
         //_otherMoveCount = 0;
@@ -435,6 +437,7 @@ public:
                     const MoveScore score = _captureScores[index];
                     if(score < badCapture)
                     {
+                        _hasBadCaptures = true;
                         _stage = MovePickerStage::NonCaptureGen;
                         break;
                     }
@@ -475,7 +478,7 @@ public:
 
                 return true;
             }
-            _captureIndex--;
+            //_captureIndex--;
             [[fallthrough]];
         //case MovePickerStage::Killers:
         //    while (true)
@@ -522,9 +525,9 @@ public:
                 {
                     if constexpr (allowNonCaptures)
                     {
-                        if (_captureIndex < _captureCount)
+                        if (_hasBadCaptures)
                         {
-                            _stage = MovePickerStage::BadCaptures;
+                            _stage = MovePickerStage::FirstBadCapture;
                             break;
                         }
                         else
@@ -574,20 +577,23 @@ public:
                 return true;
             }
             [[fallthrough]];
-        //case MovePickerStage::FirstBadCapture:
-        //    {
-        //        const auto index = static_cast<MoveCount>(_captureIndex);
-        //        const auto& move = _captures[index];
-        //        const bool valid = MoveValidator::IsKingSafeAfterMove2(*_board, move, _checkers, _pinned);
-        //        if (valid)
-        //        {
-        //            entry.move = move;
-        //            entry.see = _seeScores[index];
+        case MovePickerStage::FirstBadCapture:
+            {
+                _stage = MovePickerStage::BadCaptures;
+                assert(_hasBadCaptures);
+                assert(_captureIndex < _captureCount);
+                const auto index = static_cast<MoveCount>(_captureIndex);
+                const auto& move = _captures[index];
+                const bool valid = MoveValidator::IsKingSafeAfterMove2(*_board, move, _checkers, _pinned);
+                if (valid)
+                {
+                    entry.move = move;
+                    entry.see = _seeScores[index];
 
-        //            return true;
-        //        }
-        //    }
-        //    [[fallthrough]];
+                    return true;
+                }
+            }
+            [[fallthrough]];
         case MovePickerStage::BadCaptures:
             while (true)
             {
