@@ -91,7 +91,7 @@ public:
 	}
 	[[nodiscard]] bool GetWhiteToMove() const
 	{
-		return ((Value >> 31) & 0x01) == 1;
+		return ((Value >> 31) & 0x01) == Colors::White;
 	}
 
 	[[nodiscard]] MoveValue GetColorToMove() const

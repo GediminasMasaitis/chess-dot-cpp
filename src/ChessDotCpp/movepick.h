@@ -22,7 +22,7 @@ enum class MovePickerStage
     //Other,
     CaptureGen,
     Captures,
-    //Killers,
+    Killers,
     NonCaptureGen,
     NonCaptures,
     FirstBadCapture,
@@ -255,8 +255,34 @@ public:
         const ThreadState& threadState = _state->Thread[threadId];
         const Move previousMove = _ply != 0 ? _board->History[_board->HistoryDepth - 1].Move : Move(0);
         const Move countermove = threadState.Countermoves[previousMove.GetPiece()][previousMove.GetTo()];
-        MoveOrdering2::CalculateStaticNonCaptureScores(threadState, _nonCaptures, _nonCaptureCount, _ply, countermove, _nonCaptureScores, *_board);
+        MoveOrdering2::CalculateStaticNonCaptureScores(threadState, _nonCaptures, _nonCaptureCount, countermove, _nonCaptureScores, *_board);
     }
+
+#if TESTMOVEPICK
+    bool IsPseudoLegalDebug(Move move)
+    {
+        for (auto i = 0; i < _debugPossibleCount; i++)
+        {
+            if(move.Value == _debugPossibleMoves[i].Value)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool IsLegalDebug(Move move)
+    {
+        for (auto i = 0; i < _debugCount; i++)
+        {
+            if (move.Value == _debugMoves[i].Value)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+#endif
 
     //void InitOther()
     //{
@@ -419,7 +445,7 @@ public:
                 {
                     if constexpr (allowNonCaptures)
                     {
-                        _stage = MovePickerStage::NonCaptureGen;
+                        _stage = MovePickerStage::Killers;
                         break;
                     }
                     else
@@ -431,14 +457,14 @@ public:
                 const auto index = static_cast<MoveCount>(_captureIndex);
                 MoveOrdering2::OrderNextCaptureMove(index, _captures, _seeScores, _captureScores, _captureCount);
                 //MoveOrdering2::OrderNextCaptureMove(index, _captures, _debugSeeCopy, _debugScoresCopy, _captureCount);
-
+                
                 if constexpr (allowNonCaptures)
                 {
                     const MoveScore score = _captureScores[index];
                     if(score < badCapture)
                     {
                         _hasBadCaptures = true;
-                        _stage = MovePickerStage::NonCaptureGen;
+                        _stage = MovePickerStage::Killers;
                         break;
                     }
                 }
@@ -465,54 +491,69 @@ public:
 //#endif
 
 #if TESTMOVEPICK
-                _debugIndex++;
-                if (entry.move.Value != _debugMoves[_debugIndex].Value)
-                {
-                    Display::DisplayBoard(*_board);
-                    std::cout << _debugIndex << "\n";
-                    std::cout << move.ToDebugString() << "\n";
-                    std::cout << _debugMoves[_debugIndex].ToDebugString() << "\n";
-                    assert(false);
-                }
+                //_debugIndex++;
+                //if (entry.move.Value != _debugMoves[_debugIndex].Value)
+                //{
+                //    Display::DisplayBoard(*_board);
+                //    std::cout << _debugIndex << "\n";
+                //    std::cout << move.ToDebugString() << "\n";
+                //    std::cout << _debugMoves[_debugIndex].ToDebugString() << "\n";
+                //    assert(false);
+                //}
 #endif
 
                 return true;
             }
             //_captureIndex--;
             [[fallthrough]];
-        //case MovePickerStage::Killers:
-        //    while (true)
-        //    {
-        //        _killerIndex++;
-        //        const auto& killers = _state->Thread[0].Plies[_ply].Killers;
-        //        if(_killerIndex >= killers.size())
-        //        {
-        //            _stage = MovePickerStage::NonCaptureGen;
-        //            break;
-        //        }
+        case MovePickerStage::Killers:
+            while (true)
+            {
+                _killerIndex++;
+                const auto& killers = _state->Thread[0].Plies[_ply].Killers;
+                if(_killerIndex >= killers.size())
+                {
+                    _stage = MovePickerStage::NonCaptureGen;
+                    break;
+                }
 
-        //        const auto& move = killers[_killerIndex];
-        //        if (move.Value == _ttMove.Value)
-        //        {
-        //            continue;
-        //        }
+                const auto& move = killers[_killerIndex];
+                if (move.Value == _ttMove.Value)
+                {
+                    continue;
+                }
 
-        //        if(!MoveValidator::IsPseudoLegal(*_board, move))
-        //        {
-        //            continue;
-        //        }
+                const bool isPseudoLegal = MoveValidator::IsPseudoLegal(*_board, move);
+#if TESTMOVEPICK
+                const bool isLegal2 = isPseudoLegal && MoveValidator::IsKingSafeAfterMove(*_board, move);
+                const bool isLegalDebug = IsLegalDebug(move);
+                if(isLegal2 != isLegalDebug)
+                {
+                    Display::DisplayBoard(*_board);
+                    std::cout << move.ToDebugString() << "\n";
 
-        //        if (!MoveValidator::IsKingSafeAfterMove(*_board, move))
-        //        {
-        //            continue;
-        //        }
+                    std::cout << "Killer index: " << _killerIndex << "\n";
+                    std::cout << "Legal: " << isLegal2 << "\n";
+                    std::cout << "Debug legal: " << isLegalDebug << "\n";
+                    assert(false);
+                }
+#endif
+                if(!isPseudoLegal)
+                {
+                    continue;
+                }
 
-        //        entry.move = move;
-        //        entry.see = 0;
+                if (!MoveValidator::IsKingSafeAfterMove(*_board, move))
+                {
+                    continue;
+                }
 
-        //        return true;
-        //    }
-        //    [[fallthrough]];
+                entry.move = move;
+                entry.see = 0;
+
+                return true;
+            }
+            [[fallthrough]];
         case MovePickerStage::NonCaptureGen:
             InitNonCaptures();
             _stage = MovePickerStage::NonCaptures;
@@ -550,20 +591,20 @@ public:
                     continue;
                 }
 
-                //bool isKiller = false;
-                //const auto& killers = _state->Thread[0].Plies[_ply].Killers;
-                //for(auto killerIndex = 0; killerIndex < killers.size(); killerIndex++)
-                //{
-                //    if(move.Value == killers[killerIndex].Value)
-                //    {
-                //        isKiller = true;
-                //        break;
-                //    }
-                //}
-                //if(isKiller)
-                //{
-                //    continue;
-                //}
+                bool isKiller = false;
+                const auto& killers = _state->Thread[0].Plies[_ply].Killers;
+                for(auto killerIndex = 0; killerIndex < killers.size(); killerIndex++)
+                {
+                    if(move.Value == killers[killerIndex].Value)
+                    {
+                        isKiller = true;
+                        break;
+                    }
+                }
+                if(isKiller)
+                {
+                    continue;
+                }
 
                 const bool valid = MoveValidator::IsKingSafeAfterMove2(*_board, move, _checkers, _pinned);
                 if (!valid)
@@ -595,6 +636,7 @@ public:
             }
             [[fallthrough]];
         case MovePickerStage::BadCaptures:
+            assert(_hasBadCaptures);
             while (true)
             {
                 _captureIndex++;

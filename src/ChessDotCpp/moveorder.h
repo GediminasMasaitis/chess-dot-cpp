@@ -20,7 +20,6 @@ public:
         const ThreadState& threadState,
         const MoveArray& moves,
         const MoveCount moveCount,
-        Ply ply,
         const Move countermove,
         MoveScoreArray& staticScores,
         const Board& board

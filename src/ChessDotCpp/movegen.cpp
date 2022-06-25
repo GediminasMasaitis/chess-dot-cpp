@@ -841,14 +841,88 @@ bool MoveValidator::IsPseudoLegal(const Board& board, const Move move)
 	//	return false;
 	//}
 
-	if(board.ArrayBoard[move.GetFrom()] != move.GetPiece())
+    const Position from = move.GetFrom();
+	const Position to = move.GetTo();
+    const Piece piece = move.GetPiece();
+	const Piece takesPiece = move.GetTakesPiece();
+
+	if(board.ArrayBoard[from] != piece)
+	{
+		return false;
+	}
+    
+	if(board.ArrayBoard[to] != takesPiece)
 	{
 		return false;
 	}
 
-	if(board.ArrayBoard[move.GetTo()] != move.GetTakesPiece())
+	const Bitboard between = BetweenBitboards.Between[from][to];
+	const Bitboard piecesBetween = board.AllPieces & between;
+	if(piecesBetween != 0)
 	{
 		return false;
+	}
+
+	if(move.GetCastle())
+	{
+		const bool isWhite = board.WhiteToMove;
+		const bool kingSide = to % 8 > 3;
+		const Position castlingRookPos = (kingSide ? 7 : 0) + (board.WhiteToMove ? 0 : 56);
+		const Piece rookPiece = isWhite ? Pieces::WhiteRook : Pieces::BlackRook;
+		if(board.ArrayBoard[castlingRookPos] != rookPiece)
+		{
+			return false;
+		}
+
+		const Bitboard betweenRookAndKing = BetweenBitboards.Between[from][castlingRookPos];
+		const Bitboard piecesBetweenRookAndKing = betweenRookAndKing & board.AllPieces;
+		if(piecesBetweenRookAndKing != 0)
+		{
+			return false;
+		}
+
+		CastlingPermission castlingPermission;
+		Bitboard attackMask;
+		if(isWhite)
+		{
+			if (kingSide)
+			{
+				castlingPermission = CastlingPermissions::WhiteKing;
+				attackMask = BitboardConstants::WhiteKingSideCastleAttackMask;
+			}
+			else
+			{
+				castlingPermission = CastlingPermissions::WhiteQueen;
+				attackMask = BitboardConstants::WhiteQueenSideCastleAttackMask;
+			}
+		}
+		else
+		{
+			if (kingSide)
+			{
+				castlingPermission = CastlingPermissions::BlackKing;
+				attackMask = BitboardConstants::BlackKingSideCastleAttackMask;
+			}
+            else
+            {
+				castlingPermission = CastlingPermissions::BlackQueen;
+				attackMask = BitboardConstants::BlackQueenSideCastleAttackMask;
+            }
+		}
+
+		const bool canCastle = board.CanCastle(castlingPermission);
+		if(!canCastle)
+		{
+			return false;
+		}
+
+		const Bitboard attackedByEnemy = AttacksGenerator::GetAllAttacked(board, !board.WhiteToMove, board.AllPieces);
+		const Bitboard maskAttack = attackedByEnemy & attackMask;
+		const bool isMaskAttacked = maskAttack != 0;
+		if(isMaskAttacked)
+		{
+			return false;
+		}
 	}
 
 	return true;

@@ -48,19 +48,19 @@ static Phase GetPhase(const BoardBase& board)
     return phase;
 }
 
-static constexpr Score MgScore(int s)
+static constexpr Score MgScore(PhaseScore score)
 {
-    return static_cast<int16_t>(static_cast<uint16_t>(static_cast<unsigned>(s)));
+    return static_cast<int16_t>(static_cast<uint16_t>(static_cast<unsigned>(score)));
 }
 
-static constexpr Score EgScore(int s)
+static constexpr Score EgScore(PhaseScore score)
 {
-    return static_cast<int16_t>(static_cast<uint16_t>(static_cast<unsigned>(s + 0x8000) >> 16));
+    return static_cast<int16_t>(static_cast<uint16_t>(static_cast<unsigned>(score + 0x8000) >> 16));
 }
 
-static constexpr int S(const int mg, const int eg)
+static constexpr PhaseScore S(const Score mg, const Score eg)
 {
-    return static_cast<int>(static_cast<unsigned int>(eg) << 16) + mg;
+    return static_cast<PhaseScore>(static_cast<uint32_t>(eg) << 16) + mg;
 }
 
 static constexpr int SS(const int score)

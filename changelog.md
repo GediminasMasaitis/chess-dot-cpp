@@ -5099,3 +5099,43 @@ Score of ChessDotCpp3.22 vs ChessDotCpp3.21: 753 - 727 - 3520  [0.503] 5000
 ...      White vs Black: 785 - 695 - 3520  [0.509] 5000
 Elo difference: 1.8 +/- 5.2, LOS: 75.0 %, DrawRatio: 70.4 %
 ```
+
+### 3.23
+
+Staged killer movegen
+
+```
+info depth 1 multipv 1 score cp 34 nodes 25 nps 25000 time 1 pv d2d4
+info depth 2 multipv 1 score cp 32 nodes 71 nps 71000 time 1 pv d2d4 g8f6
+info depth 3 multipv 1 score cp 12 nodes 190 nps 190000 time 1 pv d2d4 g8f6 b1d2
+info depth 4 multipv 1 score cp 21 nodes 644 nps 644000 time 1 pv e2e4 c7c5 f1e2 g8f6
+info depth 5 multipv 1 score cp 7 nodes 1059 nps 1059000 time 1 pv e2e4 c7c5 f1e2 g8f6 e4e5
+info depth 6 multipv 1 score cp 14 nodes 2001 nps 1000500 time 2 pv e2e4 c7c5 g1e2 b8c6 d2d4 c5d4 e2d4
+info depth 7 multipv 1 score cp 22 nodes 5414 nps 1082800 time 5 pv e2e4 e7e6 b1c3 d7d5 d2d4 d5e4 c3e4
+info depth 8 multipv 1 score cp 26 nodes 10313 nps 1289125 time 8 pv e2e4 e7e6 d2d4 c7c5 g1f3 c5d4 f3d4 g8f6
+info depth 9 multipv 1 score cp 20 nodes 19290 nps 1483846 time 13 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 g8f6 f1b5 c8d7
+info depth 10 multipv 1 score cp 26 nodes 34881 nps 1661000 time 21 pv e2e4 e7e6 b1c3 c7c5 g1f3 b8c6 f1e2 d7d5 e4d5 e6d5
+info depth 11 multipv 1 score cp 29 nodes 74103 nps 1723325 time 43 pv e2e4 c7c5 g1f3 b8c6 b1c3 g8f6 f1b5 c6d4 e4e5 d4b5 c3b5
+info depth 12 multipv 1 score cp 27 nodes 126968 nps 1788281 time 71 pv e2e4 c7c5 g1f3 e7e6 f1e2 g8f6 e4e5 f6d5 b1c3 d5f4 d2d4 f4g2 e1f1
+info depth 13 multipv 1 score cp 17 nodes 310938 nps 1873120 time 166 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 g8f6 f1e2 f8e7 e1g1 e8g8 f1e1
+info depth 14 multipv 1 score cp 17 nodes 485773 nps 1897550 time 256 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 g8f6 c2c3 c7c6 f1d3 f8e7 e1g1 e8g8
+info depth 15 multipv 1 score cp 20 nodes 710712 nps 1915665 time 371 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 g8f6 c2c3 f8e7 f1d3 e8g8 e1g1 c7c5 d4c5 e7c5
+info depth 16 multipv 1 score cp 20 nodes 1136508 nps 1926284 time 590 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8d6 c2c4 g8f6 c4c5 d6e7 f1d3 e8g8 e1g1 f8e8
+info depth 17 multipv 1 score cp 25 nodes 2269855 nps 1928508 time 1177 pv e2e4 c7c5 g1f3 e7e6 b1c3 b8c6 d2d4 c5d4 f3d4 g8f6 d4b5 d7d5 e4d5 f6d5 c3d5 e6d5 f1e2
+info depth 18 multipv 1 score cp 22 nodes 3213572 nps 1931233 time 1664 pv e2e4 c7c5 g1f3 e7e6 f1e2 b8c6 b1c3 g8f6 h2h3 d7d5 e4d5 e6d5 d2d4 f8d6 d4c5 d6c5 e1g1 e8g8
+info depth 19 multipv 1 score cp 26 nodes 4677377 nps 1931204 time 2422 pv e2e4 c7c5 g1f3 e7e6 c2c3 g8f6 e4e5 f6d5 f1c4 d7d6 d2d4 c5d4 c4d5 e6d5 e1g1 d6e5 f3e5 b8c6 f1e1
+info depth 20 multipv 1 score cp 18 nodes 7081740 nps 1925432 time 3678 pv e2e4 c7c5 g1f3 e7e6 c2c3 g8f6 e4e5 f6d5 d2d4 c5d4 c3d4 b8c6 b1c3 f8b4 c1d2 d7d6 c3d5 b4d2 d1d2 e6d5 f1e2 d6e5 f3e5
+info depth 21 multipv 1 score cp 23 nodes 9463331 nps 1923832 time 4919 pv e2e4 c7c5 g1f3 e7e6 c2c3 g8f6 e4e5 f6d5 d2d4 c5d4 c3d4 f8b4 c1d2 d7d6 d2b4 d5b4 f1b5 c8d7 b5d7 d8d7 b1c3 e8g8 a2a3 b4c6
+info depth 22 multipv 1 score cp 23 nodes 15697074 nps 1903137 time 8248 pv e2e4 c7c5 g1f3 e7e6 d2d4 c5d4 f3d4 g8f6 f1d3 b8c6 d4c6 b7c6 e1g1 d7d5 b1d2 f8e7 f1e1 d8c7 h2h3 e8g8 c2c4 f8e8
+info depth 23 multipv 1 score cp 20 nodes 20964899 nps 1899854 time 11035 pv e2e4 c7c5 g1f3 e7e6 d2d4 c5d4 f3d4 g8f6 f1d3 b8c6 d4c6 d7c6 e1g1 e6e5 h2h3 c8e6 c1e3 f8e7 a2a4 e8g8 d1e2 d8c7 f1d1
+info depth 24 multipv 1 score cp 19 nodes 37671978 nps 1898310 time 19845 pv e2e4 c7c5 g1f3 e7e6 c2c4 b8c6 f1e2 g8f6 b1c3 e6e5 e1g1 g7g6 h2h3 f8g7 a1b1 e8g8 d2d3 d7d6 a2a3 f8e8 b2b4 b7b6 c1e3 c6d4
+info depth 25 multipv 1 score cp 19 nodes 47259215 nps 1896817 time 24915 pv e2e4 c7c5 g1f3 e7e6 c2c4 b8c6 f1e2 g8f6 b1c3 e6e5 e1g1 g7g6 h2h3 d7d6 a2a3 f8g7 d2d3 h7h6 c1e3 e8g8 d1d2 g8h7 b2b4 b7b6 c3d5
+```
+
+```
+Score of ChessDotCpp3.23 vs ChessDotCpp3.22: 381 - 358 - 1761  [0.505] 2500
+...      ChessDotCpp3.23 playing White: 211 - 163 - 876  [0.519] 1250
+...      ChessDotCpp3.23 playing Black: 170 - 195 - 885  [0.490] 1250
+...      White vs Black: 406 - 333 - 1761  [0.515] 2500
+Elo difference: 3.2 +/- 7.4, LOS: 80.1 %, DrawRatio: 70.4 %
+```

@@ -203,26 +203,13 @@ MoveScore CalculateStaticNonCaptureScore
 (
     const ThreadState& threadState,
     const Move move,
-    const Ply ply,
     const Move countermove,
     const ContinuationEntry& continuation1,
     const ContinuationEntry& continuation2
 )
 {
-    const PlyData& plyState = threadState.Plies[ply];
-
     const Piece piece = move.GetPiece();
     const Position to = move.GetTo();
-
-    if (move.Value == plyState.Killers[0].Value)
-    {
-        return 90'000'000;
-    }
-
-    if (move.Value == plyState.Killers[1].Value)
-    {
-        return 80'000'000;
-    }
 
     if (move.Value == countermove.Value)
     {
@@ -242,7 +229,6 @@ void MoveOrdering2::CalculateStaticNonCaptureScores
     const ThreadState& threadState,
     const MoveArray& moves,
     const MoveCount moveCount,
-    Ply ply,
     const Move countermove,
     MoveScoreArray& staticScores,
     const Board& board
@@ -256,7 +242,7 @@ void MoveOrdering2::CalculateStaticNonCaptureScores
 
     for (MoveCount i = 0; i < moveCount; i++)
     {
-        const MoveScore score = CalculateStaticNonCaptureScore(threadState, moves[i], ply, countermove, continuation1, continuation2);
+        const MoveScore score = CalculateStaticNonCaptureScore(threadState, moves[i], countermove, continuation1, continuation2);
         staticScores[i] = score;
     }
 }
