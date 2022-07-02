@@ -96,7 +96,7 @@ public:
     
     static void Init()
     {
-        auto file = std::ifstream("C:/Chess/Networks/25/nn-epoch180.nnue", std::ios::binary | std::ios::ate);
+        auto file = std::ifstream("C:/Chess/Networks/29/nn-epoch500.nnue", std::ios::binary | std::ios::ate);
         auto fileSize = static_cast<size_t>(file.tellg());
         file.seekg(0);
 

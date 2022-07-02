@@ -1324,7 +1324,7 @@ void Search::Run(Board& board, const SearchParameters& parameters, SearchResults
         State.NewGame();
     }
     //std::cout << board.Key << std::endl;
-    Stopper.Init(parameters, board.WhiteToMove);
+    Stopper.Init(parameters, board);
     State.NewSearch(board, parameters);
     IterativeDeepenLazySmp(board, results);
     board.enableAccumulatorStack = false;

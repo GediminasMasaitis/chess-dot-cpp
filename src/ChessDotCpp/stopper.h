@@ -16,7 +16,7 @@ public:
     size_t _maxTime;
     bool Stopped;
 
-    void Init(const SearchParameters& parameters, bool whiteToMove)
+    void Init(const SearchParameters& parameters, const Board& board)
     {
         start = std::chrono::high_resolution_clock::now();
         Parameters = parameters;
@@ -28,6 +28,7 @@ public:
         }
         else
         {
+            const bool whiteToMove = board.WhiteToMove;
             const size_t time = whiteToMove ? parameters.WhiteTime : parameters.BlackTime;
             const size_t increment = whiteToMove ? parameters.WhiteTimeIncrement : parameters.BlackTimeIncrement;
             constexpr HistoryPly movesRemaining = 30;
