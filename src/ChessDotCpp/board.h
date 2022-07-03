@@ -134,6 +134,13 @@ public:
 	void FlipColors();
 };
 
+class KeyAnd50Move
+{
+public:
+	ZobristKey Key;
+	HistoryPly FiftyMoveRuleIndex;
+};
+
 class Board : public BoardBase
 {
 public:
@@ -142,6 +149,7 @@ public:
 	HistoryPly FiftyMoveRuleIndex;
 	
 	void DoMove(const Move move);
+	void GetKeyAfterMove(const Move move, KeyAnd50Move& keyAnd50Move) const;
 	void DoMove(const MoveString& moveString);
 	void UndoMove();
 

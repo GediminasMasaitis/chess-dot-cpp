@@ -5339,3 +5339,15 @@ Score of ChessDotCpp3.26 vs ChessDotCpp3.25: 237 - 219 - 1044  [0.506] 1500
 ...      White vs Black: 256 - 200 - 1044  [0.519] 1500
 Elo difference: 4.2 +/- 9.7, LOS: 80.0 %, DrawRatio: 69.6 %
 ```
+
+### 3.27
+
+Improve repetition and 50 move etection on TT hits
+
+```
+Score of ChessDotCpp3.27 vs ChessDotCpp3.26: 249 - 245 - 1006  [0.501] 1500
+...      ChessDotCpp3.27 playing White: 117 - 117 - 516  [0.500] 750
+...      ChessDotCpp3.27 playing Black: 132 - 128 - 490  [0.503] 750
+...      White vs Black: 245 - 249 - 1006  [0.499] 1500
+Elo difference: 0.9 +/- 10.1, LOS: 57.1 %, DrawRatio: 67.1 %
+```

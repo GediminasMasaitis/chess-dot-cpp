@@ -14,6 +14,7 @@
 #include <atomic>
 #include <chrono>
 #include <iomanip>
+#include <optional>
 
 #define MAYBE_UNUSED(x) ((void)(x))
 

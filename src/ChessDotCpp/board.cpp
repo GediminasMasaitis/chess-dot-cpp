@@ -129,7 +129,7 @@ void Board::DoMove(const Move move)
                 PawnKey ^= ZobristKeys.ZPieces[to][takesPiece];
             }
         }
-        FiftyMoveRuleIndex = HistoryDepth - 1;
+        FiftyMoveRuleIndex = static_cast<HistoryPly>(HistoryDepth - 1);
         PieceCounts[takesPiece]--;
         if (takesPawn)
         {
@@ -212,6 +212,109 @@ void Board::DoMove(const Move move)
     
     //SyncCastleTo1();
     SyncExtraBitBoards();
+}
+
+void Board::GetKeyAfterMove(const Move move, KeyAnd50Move& keyAnd50Move) const
+{
+    assert(move.GetTakesPiece() != Pieces::WhiteKing);
+    assert(move.GetTakesPiece() != Pieces::BlackKing);
+
+    const auto originalWhiteToMove = WhiteToMove;
+    const auto originalColorToMove = ColorToMove;
+
+    keyAnd50Move.Key = Key ^ ZobristKeys.ZWhiteToMove;
+    keyAnd50Move.FiftyMoveRuleIndex = FiftyMoveRuleIndex;
+
+    if (EnPassantFile != 0)
+    {
+        keyAnd50Move.Key ^= ZobristKeys.ZEnPassant[EnPassantFileIndex];
+    }
+
+    if (move.GetNullMove())
+    {
+        return;
+    }
+
+    assert(move.GetColorToMove() == originalColorToMove);
+
+    const Position from = move.GetFrom();
+    const Position to = move.GetTo();
+    const Position piece = move.GetPiece();
+    const Piece takesPiece = move.GetTakesPiece();
+
+    // FROM
+    keyAnd50Move.Key ^= ZobristKeys.ZPieces[from][piece];
+
+    const bool isPawn = (piece & ~Pieces::Color) == Pieces::Pawn;
+    if (isPawn)
+    {
+        keyAnd50Move.FiftyMoveRuleIndex = HistoryDepth;
+    }
+
+    // PROMOTIONS
+    Piece promotedPiece;
+    if (move.GetPawnPromoteTo() != Pieces::Empty)
+    {
+        promotedPiece = move.GetPawnPromoteTo();
+    }
+    else
+    {
+        promotedPiece = piece;
+    }
+
+    // TO
+    keyAnd50Move.Key ^= ZobristKeys.ZPieces[to][promotedPiece];
+
+    // TAKES
+    if (takesPiece > 0)
+    {
+        if (!move.GetEnPassant())
+        {
+            keyAnd50Move.Key ^= ZobristKeys.ZPieces[to][takesPiece];
+        }
+        keyAnd50Move.FiftyMoveRuleIndex = HistoryDepth;
+    }
+
+    // EN PASSANT
+    if (move.GetEnPassant())
+    {
+        Position killedPawnPos;
+        if (originalWhiteToMove) // TODO: whitetomove
+        {
+            killedPawnPos = static_cast<Position>(to - 8);
+        }
+        else
+        {
+            killedPawnPos = static_cast<Position>(to + 8);
+        }
+        keyAnd50Move.Key ^= ZobristKeys.ZPieces[killedPawnPos][takesPiece];
+    }
+
+    // PAWN DOUBLE MOVES
+    if ((piece == Pieces::WhitePawn && from + 16 == to) || (piece == Pieces::BlackPawn && from - 16 == to))
+    {
+        const File fileIndex = from % 8;
+        keyAnd50Move.Key ^= ZobristKeys.ZEnPassant[fileIndex];
+    }
+
+    // CASTLING
+    if (move.GetCastle())
+    {
+        const bool kingSide = to % 8 > 3;
+        const Position castlingRookPos = (kingSide ? 7 : 0) + (originalWhiteToMove ? 0 : 56);
+        const Position castlingRookNewPos = (from + to) / 2;
+        const Piece rookPiece = originalWhiteToMove ? Pieces::WhiteRook : Pieces::BlackRook;
+
+        keyAnd50Move.Key ^= ZobristKeys.ZPieces[castlingRookPos][rookPiece];
+        keyAnd50Move.Key ^= ZobristKeys.ZPieces[castlingRookNewPos][rookPiece];
+    }
+
+    const CastlingPermission originalPermissions = CastlingPermissions;
+    CastlingPermission newPermissions = CastlingPermissions;
+    newPermissions &= CastleRevocation.Table[from];
+    newPermissions &= CastleRevocation.Table[to];
+    const CastlingPermission revoked = newPermissions ^ originalPermissions;
+    keyAnd50Move.Key ^= ZobristKeys.ZCastle[revoked];
 }
 
 void Board::UndoMove()

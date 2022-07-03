@@ -164,7 +164,7 @@ private:
 
     int16_t _killerIndex;
 
-    SearchState* _state;
+    ThreadState* _state;
     Ply _ply;
     Board* _board;
     Bitboard _checkers;
@@ -186,7 +186,7 @@ public:
     int16_t _debugIndex;
 #endif
 
-    void Reset(SearchState& state, Ply ply, Board& board, Bitboard checkers, Bitboard pinned, Move ttMove)
+    void Reset(ThreadState& state, Ply ply, Board& board, Bitboard checkers, Bitboard pinned, Move ttMove)
     {
         _state = &state;
         _ply = ply;
@@ -242,20 +242,15 @@ public:
         MoveGenerator::GetAllPotentialCaptures(*_board, _checkers, _pinned, _captures, _captureCount);
         See::CalculateSeeScores(*_board, _captures, _captureCount, _seeScores);
 
-        const ThreadId threadId = 0;
-        const ThreadState& threadState = _state->Thread[threadId];
-        MoveOrdering2::CalculateStaticCaptureScores(threadState, _captures, _seeScores, _captureCount, _captureScores);
+        MoveOrdering2::CalculateStaticCaptureScores(*_state, _captures, _seeScores, _captureCount, _captureScores);
     }
 
     void InitNonCaptures()
     {
         MoveGenerator::GetAllPotentialNonCaptures(*_board, _checkers, _pinned, _nonCaptures, _nonCaptureCount);
-
-        const ThreadId threadId = 0;
-        const ThreadState& threadState = _state->Thread[threadId];
         const Move previousMove = _ply != 0 ? _board->History[_board->HistoryDepth - 1].Move : Move(0);
-        const Move countermove = threadState.Countermoves[previousMove.GetPiece()][previousMove.GetTo()];
-        MoveOrdering2::CalculateStaticNonCaptureScores(threadState, _nonCaptures, _nonCaptureCount, countermove, _nonCaptureScores, *_board);
+        const Move countermove = _state->Countermoves[previousMove.GetPiece()][previousMove.GetTo()];
+        MoveOrdering2::CalculateStaticNonCaptureScores(*_state, _nonCaptures, _nonCaptureCount, countermove, _nonCaptureScores, *_board);
     }
 
 #if TESTMOVEPICK
@@ -311,6 +306,11 @@ public:
             {
                 if (_ttMove.Value != 0)
                 {
+                    if(!MoveValidator::IsPseudoLegal(*_board, _ttMove))
+                    {
+                        Display::DisplayBoard(*_board, _ttMove);
+                        auto a = 123;
+                    }
                     assert(MoveValidator::IsPseudoLegal(*_board, _ttMove));
                     assert(MoveValidator::IsKingSafeAfterMove(*_board, _ttMove));
                     assert(MoveValidator::IsKingSafeAfterMove2(*_board, _ttMove, _checkers, _pinned));
@@ -514,7 +514,7 @@ public:
             while (true)
             {
                 _killerIndex++;
-                const auto& killers = _state->Thread[0].Plies[_ply].Killers;
+                const auto& killers = _state->Plies[_ply].Killers;
                 if(_killerIndex >= killers.size())
                 {
                     _stage = MovePickerStage::NonCaptureGen;
@@ -596,7 +596,7 @@ public:
                 }
 
                 bool isKiller = false;
-                const auto& killers = _state->Thread[0].Plies[_ply].Killers;
+                const auto& killers = _state->Plies[_ply].Killers;
                 for(auto killerIndex = 0; killerIndex < killers.size(); killerIndex++)
                 {
                     if(move.Value == killers[killerIndex].Value)

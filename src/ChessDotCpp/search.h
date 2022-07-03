@@ -52,6 +52,7 @@ public:
     void StoreTranspositionTable(const ThreadState& threadState, const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag);
     Score Contempt(const Board& board) const;
     bool IsRepetitionOr50Move(const Board& board) const;
+    bool IsRepetitionOr50MoveAfterMove(const Board& board, const Move move) const;
     Score Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply ply, Score alpha, Score beta);
     bool TablebaseRootSearch(Board& board);
     void UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply ply, MoveArray& attemptedMoves, MoveCount attemptedMoveCount, Move bestMove, bool betaCutoff);

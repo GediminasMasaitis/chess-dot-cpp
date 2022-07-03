@@ -133,6 +133,28 @@ bool Search::IsRepetitionOr50Move(const Board& board) const
     return false;
 }
 
+bool Search::IsRepetitionOr50MoveAfterMove(const Board& board, const Move move) const
+{
+    KeyAnd50Move keyAnd50Move;
+    board.GetKeyAfterMove(move, keyAnd50Move);
+    if (board.HistoryDepth + 1 - keyAnd50Move.FiftyMoveRuleIndex > 100)
+    {
+        return true;
+    }
+
+    // < or <= ??? <= gains for some reason but it should be wrong
+    for (HistoryPly ply = keyAnd50Move.FiftyMoveRuleIndex; ply < board.HistoryDepth; ply++)
+    {
+        const auto& previousEntry = board.History[ply];
+        const ZobristKey previousKey = previousEntry.Key;
+        if (keyAnd50Move.Key == previousKey)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply ply, Score alpha, Score beta)
 {
     ThreadState& threadState = State.Thread[threadId];
@@ -144,50 +166,40 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
     bool hashEntryExists = true;
     Score probedScore;
     const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, threadState.SingularMove.Value);
-    const bool probeSuccess = TryProbeTranspositionTable(key, 0, alpha, beta, entry, probedScore, hashEntryExists);
-    bool probedMoveLegal = false;
+    bool probeSuccess = TryProbeTranspositionTable(key, 0, alpha, beta, entry, probedScore, hashEntryExists);
 
-    if (probeSuccess)
+    if (hashEntryExists && Options::Threads != 1)
     {
-        if (Options::Threads != 1)
+        const bool isPseudoLegal = MoveValidator::IsPseudoLegal(board, entry.MMove);
+        if (!isPseudoLegal)
         {
-            // Doublecheck TT move legality
-            const Bitboard ttCheckers = CheckDetector::GetCheckers(board);
-            auto ttMoves = MoveArray();
-            EachColor<Bitboard> ttPins;
-            PinDetector::GetPinnedToKings(board, ttPins);
-            const Bitboard ttPinned = ttPins[board.ColorToMove];
-            MoveCount ttMoveCount = 0;
-            MoveGenerator::GetAllPotentialMoves(board, ttCheckers, ttPinned, ttMoves, ttMoveCount);
-            for (int ttMoveIndex = 0; ttMoveIndex < ttMoveCount; ttMoveIndex++)
-            {
-                auto ttMove = ttMoves[ttMoveIndex];
-                if (ttMove.Value == entry.MMove.Value)
-                {
-                    probedMoveLegal = MoveValidator::IsKingSafeAfterMove2(board, ttMove, ttCheckers, ttPinned);
-                    break;
-                }
-            }
+            hashEntryExists = false;
+            probeSuccess = false;
         }
         else
         {
-            probedMoveLegal = true;
+            const bool isLegal = MoveValidator::IsKingSafeAfterMove(board, entry.MMove);
+            if (!isLegal)
+            {
+                hashEntryExists = false;
+                probeSuccess = false;
+            }
         }
     }
 
     const Move principalVariationMove = hashEntryExists ? entry.MMove : Move(0);
-    if (probedMoveLegal)
+    if (probeSuccess)
     {
-            if (probedScore > Constants::MateThreshold)
-            {
-                probedScore -= ply;
-            }
-            else if (probedScore < -Constants::MateThreshold)
-            {
-                probedScore += ply;
-            }
+        if (probedScore > Constants::MateThreshold)
+        {
+            probedScore -= ply;
+        }
+        else if (probedScore < -Constants::MateThreshold)
+        {
+            probedScore += ply;
+        }
 
-            return probedScore;
+        return probedScore;
     }
 
     EachColor<Bitboard> pins;
@@ -571,48 +583,39 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     bool hashEntryExists = true;
     Score probedScore;
     const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, threadState.SingularMove.Value);
-    const bool probeSuccess = TryProbeTranspositionTable(key, depth, alpha, beta, entry, probedScore, hashEntryExists);
-    bool probedMoveLegal = false;
+    bool probeSuccess = TryProbeTranspositionTable(key, depth, alpha, beta, entry, probedScore, hashEntryExists);
 
-    if(probeSuccess)
+    if(hashEntryExists && Options::Threads != 1)
     {
-        if(Options::Threads != 1)
+        const bool isPseudoLegal = MoveValidator::IsPseudoLegal(board, entry.MMove);
+        if(!isPseudoLegal)
         {
-            // Doublecheck TT move legality
-            auto ttMoves = MoveArray();
-            EachColor<Bitboard> ttPins;
-            PinDetector::GetPinnedToKings(board, ttPins);
-            const Bitboard ttPinned = ttPins[board.ColorToMove];
-            MoveCount ttMoveCount = 0;
-            MoveGenerator::GetAllPotentialMoves(board, checkers, ttPinned, ttMoves, ttMoveCount);
-            for (int ttMoveIndex = 0; ttMoveIndex < ttMoveCount; ttMoveIndex++)
-            {
-                auto ttMove = ttMoves[ttMoveIndex];
-                if (ttMove.Value == entry.MMove.Value)
-                {
-                    probedMoveLegal = MoveValidator::IsKingSafeAfterMove2(board, ttMove, checkers, ttPinned);
-                    break;
-                }
-            }
+            hashEntryExists = false;
+            probeSuccess = false;
         }
         else
         {
-            probedMoveLegal = true;
+            const bool isLegal = MoveValidator::IsKingSafeAfterMove(board, entry.MMove);
+            if(!isLegal)
+            {
+                hashEntryExists = false;
+                probeSuccess = false;
+            }
         }
     }
 
     const Move principalVariationMove = hashEntryExists ? entry.MMove : Move(0);
-    if (probedMoveLegal)
+
+    if (probeSuccess)
     {
         bool returnTtValue = !isPrincipalVariation || (!datagen && probedScore > alpha && probedScore < beta);
-        if(returnTtValue /*&& isPrincipalVariation*/)
+        if(returnTtValue)
         {
-            board.DoMove(principalVariationMove);
-            if (IsRepetitionOr50Move(board))
+            const bool isDraw = IsRepetitionOr50MoveAfterMove(board, principalVariationMove);
+            if(isDraw)
             {
                 returnTtValue = false;
             }
-            board.UndoMove();
         }
         if (returnTtValue)
         {
@@ -718,9 +721,9 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     }
 
     const Bitboard pinned = pins[board.ColorToMove];
-
+    
     MovePicker movePicker;
-    movePicker.Reset(State, ply, board, checkers, pinned, principalVariationMove);
+    movePicker.Reset(threadState, ply, board, checkers, pinned, principalVariationMove);
         
     /*MoveArray moves;
     MoveCount moveCount = 0;
@@ -865,7 +868,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //    	}
         //    }
         //}
-
         board.DoMove(move);
 
         // LATE MOVE REDUCTION

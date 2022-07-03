@@ -8,7 +8,7 @@ class Display
 public:
     using DisplayEvaluation = EvaluationNnue2;//EvaluationClassical2;
 
-    static void DisplayBoard(const BoardBase& board, const bool evalPieces = true)
+    static void DisplayBoard(const BoardBase& board, const std::optional<Move> optMove = {}, const bool evalPieces = true)
     {
         std::stringstream ss;
 
@@ -37,7 +37,19 @@ public:
                     const Position pos = static_cast<Position>(rank * 8 + file);
                     const Piece piece = board.ArrayBoard[pos];
                     const char pieceChar = Pieces::CharMap[piece];
-                    ss << "|   " << pieceChar << "   ";
+                    if(optMove.has_value() && optMove.value().GetFrom() == pos)
+                    {
+                        ss << "|FR " << pieceChar << " FR";
+                    }
+                    else if(optMove.has_value() && optMove.value().GetTo() == pos)
+                    {
+                        ss << "|TO " << pieceChar << " TO";
+                    }
+                    else
+                    {
+                        ss << "|   " << pieceChar << "   ";
+                    }
+                    
                 }
                 ss << "|\n";
 
@@ -154,8 +166,13 @@ public:
         //ss << "Endgame: " << EgScore(flippedPhasedEval) << "\n";
         const int32_t phase = static_cast<int32_t>(GetPhase(board));
         ss << "Phase: " << phase << "\n";
-
-        ss << "\n\n";
+        ss << "\n";
+        if(optMove.has_value())
+        {
+            const auto moveDebugStr = optMove.value().ToDebugString();
+            ss << moveDebugStr << "\n";
+        }
+        ss << "\n";
         std::cout << ss.str();
     }
 };
