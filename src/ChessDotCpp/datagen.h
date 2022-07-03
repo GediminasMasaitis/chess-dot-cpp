@@ -14,6 +14,8 @@
 class DataGenerator
 {
 public:
+    static constexpr ThreadId ThreadCount = 16 ;
+
     enum class GameResult
     {
         None,
@@ -215,6 +217,7 @@ public:
     static GameResult RunIteration(Search& search, std::mt19937& rng, std::vector<DataEntry>& data)
     {
         search.State.NewGame();
+        auto threadStateBackup = search.State.Thread;
         Board board = Board();
         Fens::Parse(board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
@@ -251,6 +254,7 @@ public:
         {
             SearchResults results = SearchResults();
             search.Run(board, parameters, results);
+            std::swap(search.State.Thread, threadStateBackup);
 
             const Score score = board.WhiteToMove ? results.SScore : static_cast<Score>(-results.SScore);
 
@@ -305,7 +309,7 @@ public:
     static void RunThread(const ThreadId threadId, const IterationCallback& callback)
     {
         Search search = Search(OnCallback);
-        auto rng = std::mt19937(threadId * 517);
+        auto rng = std::mt19937(threadId * 500001);
         auto data = std::vector<DataEntry>();
 
 
@@ -390,8 +394,7 @@ public:
 
     static void Run()
     {
-        constexpr ThreadId threadCount = 16;
-        auto threads = std::vector<std::thread>(threadCount);
+        auto threads = std::vector<std::thread>(ThreadCount);
         auto mutex = std::mutex();
         auto data = DataEntries();
         auto results = std::vector<GameResult>();
@@ -431,7 +434,7 @@ public:
             results.push_back(result);
         };
 
-        for (ThreadId threadId = 0; threadId < threadCount; threadId++)
+        for (ThreadId threadId = 0; threadId < ThreadCount; threadId++)
         {
             threads.emplace_back([threadId, &callback]()
             {

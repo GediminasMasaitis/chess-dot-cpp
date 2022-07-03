@@ -30,6 +30,9 @@ void BoardBase::SyncExtraBitBoards()
 
 void Board::DoMove(const Move move)
 {
+    assert(move.GetTakesPiece() != Pieces::WhiteKing);
+    assert(move.GetTakesPiece() != Pieces::BlackKing);
+
     History[HistoryDepth].Move = move;
     History[HistoryDepth].Key = Key;
     History[HistoryDepth].PawnKey = PawnKey;
@@ -62,6 +65,8 @@ void Board::DoMove(const Move move)
         // TODO check
         return;
     }
+
+    assert(move.GetColorToMove() == originalColorToMove);
 
     PushAccumulator();
 
@@ -146,7 +151,7 @@ void Board::DoMove(const Move move)
     if (move.GetEnPassant())
     {
         Position killedPawnPos;
-         if (originalWhiteToMove) // TODO: whitetomove
+        if (originalWhiteToMove) // TODO: whitetomove
         {
             killedPawnPos = static_cast<Position>(to - 8);
         }

@@ -311,8 +311,10 @@ public:
             {
                 if (_ttMove.Value != 0)
                 {
-                    entry.move = _ttMove;
+                    assert(MoveValidator::IsPseudoLegal(*_board, _ttMove));
+                    assert(MoveValidator::IsKingSafeAfterMove(*_board, _ttMove));
                     assert(MoveValidator::IsKingSafeAfterMove2(*_board, _ttMove, _checkers, _pinned));
+                    entry.move = _ttMove;
                     if (_ttMove.GetTakesPiece() != Pieces::Empty)
                     {
                         entry.see = See::GetSee(*_board, _ttMove);
@@ -332,8 +334,10 @@ public:
             {
                 if (_ttMove.Value != 0 && _ttMove.GetTakesPiece() != Pieces::Empty)
                 {
-                    entry.move = _ttMove;
+                    assert(MoveValidator::IsPseudoLegal(*_board, _ttMove));
+                    assert(MoveValidator::IsKingSafeAfterMove(*_board, _ttMove));
                     assert(MoveValidator::IsKingSafeAfterMove2(*_board, _ttMove, _checkers, _pinned));
+                    entry.move = _ttMove;
                     entry.see = See::GetSee(*_board, _ttMove);
                     return true;
                 }

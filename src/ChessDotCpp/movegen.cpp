@@ -846,6 +846,32 @@ bool MoveValidator::IsPseudoLegal(const Board& board, const Move move)
     const Piece piece = move.GetPiece();
 	const Piece takesPiece = move.GetTakesPiece();
 
+	if (move.GetEnPassant())
+	{
+		Position killedPawnPos;
+		if (board.WhiteToMove) // TODO: whitetomove
+		{
+			killedPawnPos = static_cast<Position>(to - 8);
+		}
+		else
+		{
+			killedPawnPos = static_cast<Position>(to + 8);
+		}
+		const File killedPawnFile = Files::Get(killedPawnPos);
+		if (board.EnPassantFileIndex != killedPawnFile)
+		{
+			return false;
+		}
+
+		const Piece enemyPawn = Pieces::Pawn | board.ColorToMove ^ 1;
+		if (board.ArrayBoard[killedPawnPos] != enemyPawn)
+		{
+			return false;
+		}
+
+        return true;
+    }
+
 	if(board.ArrayBoard[from] != piece)
 	{
 		return false;
