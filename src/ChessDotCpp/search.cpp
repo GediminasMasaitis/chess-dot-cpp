@@ -717,24 +717,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         }
     }
 
-    // FUTILITY PRUNING - DETECTION
-    bool futilityPruning = false;
-    //const Score futilityPerDepth = Options::TuneScore1;
-    //std::array<Score, 4> futilityMargins{ 0, futilityPerDepth, futilityPerDepth * 2, futilityPerDepth };
-    std::array<Score, 4> futilityMargins { 0, 200, 300, 500 };
-    if
-    (
-        depth <= 3
-        && !isPrincipalVariation
-        && !inCheck
-        && std::abs(alpha) < 9000
-        && staticScore + futilityMargins[depth] <= alpha
-        //&& board.PieceMaterial[board.ColorToMove] > 0
-    )
-    {
-        futilityPruning = true; 
-    }
-
     const Bitboard pinned = pins[board.ColorToMove];
 
     MovePicker movePicker;
@@ -822,16 +804,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             (
                 depth < 8
                 && quietMovesEvaluated > lateMovePruning[depth]
-            )
-            {
-                continue;
-            }
-
-            // FUTILITY PRUNING
-            if
-            (
-                futilityPruning
-                && movesEvaluated > 0
             )
             {
                 continue;

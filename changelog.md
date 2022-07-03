@@ -5245,3 +5245,15 @@ Score of ChessDotCpp3.24 vs seer2.5: 152 - 971 - 877  [0.295] 2000
 ...      White vs Black: 586 - 537 - 877  [0.512] 2000
 Elo difference: -151.1 +/- 11.5, LOS: 0.0 %, DrawRatio: 43.9 %
 ```
+
+### 3.25
+
+Remove plain futility pruning
+
+```
+Score of ChessDotCpp3.25 vs ChessDotCpp3.24: 328 - 313 - 1359  [0.504] 2000
+...      ChessDotCpp3.25 playing White: 175 - 145 - 681  [0.515] 1001
+...      ChessDotCpp3.25 playing Black: 153 - 168 - 678  [0.492] 999
+...      White vs Black: 343 - 298 - 1359  [0.511] 2000
+Elo difference: 2.6 +/- 8.6, LOS: 72.3 %, DrawRatio: 68.0 %
+```
