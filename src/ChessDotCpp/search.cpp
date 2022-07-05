@@ -797,7 +797,8 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         (
             (!datagen || !isPrincipalVariation)
             && !rootNode
-            && quiet
+            && !promotion
+            && movesEvaluated > 0
             && !CheckDetector::DoesGiveCheck(board, move)
         )
         {
@@ -806,7 +807,8 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             constexpr auto lateMovePruning = std::array<Score, 8> { 0, 3, 6, 10, 15, 20, 25, 30 };
             if
             (
-                depth < 8
+                !capture
+                && depth < 8
                 && quietMovesEvaluated > lateMovePruning[depth]
             )
             {
@@ -817,10 +819,11 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             if
             (
                 depth < 6
+                && movesEvaluated > 0
             )
             {
-                constexpr Score marginPerDepth = 64;
-                auto quietSee = See::GetSee(board, move);
+                const Score marginPerDepth = capture ? 128 : 64;
+                auto quietSee = capture ? moveEntry.see : See::GetSee(board, move);
                 if (quietSee <= depth * -marginPerDepth)
                 {
                     continue;
