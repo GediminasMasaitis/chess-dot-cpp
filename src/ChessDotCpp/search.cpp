@@ -790,7 +790,8 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         const bool capture = takesPiece != Pieces::Empty;
         const Piece pawnPromoteTo = move.GetPawnPromoteTo();
         const bool promotion = pawnPromoteTo != Pieces::Empty;
-        const bool quiet = !capture && !promotion;
+        const bool givesCheck = CheckDetector::DoesGiveCheck(board, move);
+        const bool quiet = !capture && !promotion && !givesCheck;
         //const Score seeScore = moveEntry.see;
 
         if
@@ -798,8 +799,8 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             (!datagen || !isPrincipalVariation)
             && !rootNode
             && !promotion
+            && !givesCheck
             && movesEvaluated > 0
-            && !CheckDetector::DoesGiveCheck(board, move)
         )
         {
             // LATE MOVE PRUNING

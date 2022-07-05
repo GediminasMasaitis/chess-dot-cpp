@@ -5515,3 +5515,43 @@ Score of ChessDotCpp3.30 vs ChessDotCpp3.29: 261 - 237 - 1002  [0.508] 1500
 ...      White vs Black: 256 - 242 - 1002  [0.505] 1500
 Elo difference: 5.6 +/- 10.1, LOS: 85.9 %, DrawRatio: 66.8 %
 ```
+
+### 3.31
+
+Fix late move pruning quiet move counting for moves giving check
+
+```
+info depth 1 multipv 1 score cp 20 nodes 25 nps 25000 time 1 pv e2e4
+info depth 2 multipv 1 score cp 23 nodes 73 nps 73000 time 1 pv e2e4 g8f6
+info depth 3 multipv 1 score cp 9 nodes 297 nps 297000 time 1 pv d2d4 g8f6 g1f3
+info depth 4 multipv 1 score cp 20 nodes 455 nps 455000 time 1 pv d2d4 d7d5 g1f3 g8f6
+info depth 5 multipv 1 score cp 15 nodes 1000 nps 1000000 time 1 pv d2d4 d7d5 b1d2 g8f6 g1f3
+info depth 6 multipv 1 score cp 23 nodes 3279 nps 1093000 time 3 pv e2e4 c7c5 f1e2 e7e6 g1f3 f8e7
+info depth 7 multipv 1 score cp 22 nodes 4977 nps 1244250 time 4 pv e2e4 c7c5 g1f3 e7e6 d2d4 c5d4 d1d4
+info depth 8 multipv 1 score cp 27 nodes 9860 nps 1408571 time 7 pv e2e4 b7b6 d2d4 c8b7 b1d2 d7d5 e4d5 d8d5
+info depth 9 multipv 1 score cp 18 nodes 25511 nps 1594437 time 16 pv e2e4 c7c5 g1f3 b8c6 f1b5 g8f6 b5c6 b7c6 b1c3
+info depth 10 multipv 1 score cp 25 nodes 39406 nps 1641916 time 24 pv e2e4 c7c5 g1f3 e7e6 b1c3 b8c6 f1e2 f8e7 d2d4 c5d4 f3d4
+info depth 11 multipv 1 score cp 24 nodes 62593 nps 1691702 time 37 pv e2e4 c7c5 g1f3 e7e6 b1c3 b8c6 f1e2 g8f6 e1g1 d7d5 e4d5 e6d5
+info depth 12 multipv 1 score cp 26 nodes 115764 nps 1780984 time 65 pv e2e4 c7c5 g1f3 b8c6 f1b5 g8f6 b5c6 b7c6 e4e5 f6d5 b1c3 d5c3 d2c3
+info depth 13 multipv 1 score cp 22 nodes 231039 nps 1804992 time 128 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 g8f6 f1d3 f8e7 e1g1 e8g8 f1e1
+info depth 14 multipv 1 score cp 23 nodes 355974 nps 1736458 time 205 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 f8d6 c1g5 g8f6 f1e2 e8g8 e1g1 b8d7
+info depth 15 multipv 1 score cp 23 nodes 576213 nps 1751407 time 329 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 g8f6 f1d3 f8e7 e1g1 e8g8 f1e1 c7c5 d4c5 e7c5
+info depth 16 multipv 1 score cp 28 nodes 1100519 nps 1783661 time 617 pv e2e4 c7c5 g1f3 e7e6 b1c3 b8c6 d2d4 c5d4 f3d4 g8f6 d4c6 b7c6 f1d3 e6e5 e1g1 f8e7
+info depth 17 multipv 1 score cp 21 nodes 2032186 nps 1845763 time 1101 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 g8f6 f1d3 f8e7 e1g1 e8g8 c1f4 c8g4 b1d2 b8d7 f1e1
+info depth 18 multipv 1 score cp 22 nodes 2793160 nps 1865838 time 1497 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 g8f6 f1d3 f8e7 e1g1 e8g8 c1f4 c7c5 b1c3 b8c6 d4c5 e7c5
+info depth 19 multipv 1 score cp 18 nodes 4534498 nps 1878416 time 2414 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 g8f6 f1d3 f8e7 e1g1 e8g8 h2h3 c7c5 d4c5 e7c5 c1g5 f8e8 b1c3
+info depth 20 multipv 1 score cp 24 nodes 6804633 nps 1879732 time 3620 pv e2e4 e7e6 d2d4 d7d5 b1d2 c7c5 e4d5 d8d5 g1f3 g8f6 f1c4 d5d7 e1g1 c5d4 f1e1 f8e7 d2b3 e8g8 b3d4 d7c7
+info depth 21 multipv 1 score cp 17 nodes 10294303 nps 1881956 time 5470 pv e2e4 e7e6 d2d4 d7d5 b1d2 c7c5 e4d5 d8d5 g1f3 c5d4 f1c4 d5d7 e1g1 g8f6 f1e1 f8e7 d2b3 e8g8 d1d4 b8c6 d4d7 c8d7
+info depth 22 multipv 1 score cp 20 nodes 13337475 nps 1883824 time 7080 pv e2e4 e7e6 d2d4 d7d5 b1d2 f8e7 g1f3 g8f6 f1d3 c7c5 d4c5 e7c5 e1g1 e8g8 a2a3 a7a5 h2h3 h7h6 e4e5 f6d7 d1e2 b8c6
+info depth 23 multipv 1 score cp 20 nodes 29407636 nps 1869763 time 15728 pv e2e4 c7c5 g1f3 d7d6 f1b5 b8d7 e1g1 a7a6 b5d7 c8d7 d2d4 c5d4 d1d4 e7e5 d4d3 f8e7 b1c3 d7c6 a2a4 g8f6 c1g5 e8g8 f3d2 f8e8 g5f6 e7f6
+info depth 24 multipv 1 score cp 24 nodes 37717838 nps 1864082 time 20234 pv e2e4 c7c5 g1f3 e7e6 c2c3 b8c6 d2d4 d7d5 e4d5 e6d5 f1b5 f8d6 d4c5 d6c5 e1g1 g8e7 b1d2 e8g8 d2b3 c5b6 f1e1 a7a6 b5e2 e7g6
+info depth 25 multipv 1 score cp 17 nodes 85024417 nps 1829977 time 46462 pv g1f3 g8f6 d2d4 c7c6 c2c4 d7d5 b1c3 d5c4 a2a4 c8f5 e2e3 e7e6 f1c4 f8b4 e1g1 e8g8 d1b3 d8e7 f3h4 f5g4 h2h3 g4h5 g2g4 f6g4 h3g4 e7h4 g4h5
+```
+
+```
+Score of ChessDotCpp3.30 vs ChessDotCpp3.29: 283 - 244 - 973  [0.513] 1500
+...      ChessDotCpp3.30 playing White: 145 - 120 - 485  [0.517] 750
+...      ChessDotCpp3.30 playing Black: 138 - 124 - 488  [0.509] 750
+...      White vs Black: 269 - 258 - 973  [0.504] 1500
+Elo difference: 9.0 +/- 10.4, LOS: 95.5 %, DrawRatio: 64.9 %
+```
