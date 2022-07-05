@@ -5342,7 +5342,7 @@ Elo difference: 4.2 +/- 9.7, LOS: 80.0 %, DrawRatio: 69.6 %
 
 ### 3.27
 
-Improve repetition and 50 move etection on TT hits
+Improve repetition and 50 move detection on TT hits
 
 ```
 Score of ChessDotCpp3.27 vs ChessDotCpp3.26: 249 - 245 - 1006  [0.501] 1500
@@ -5350,4 +5350,28 @@ Score of ChessDotCpp3.27 vs ChessDotCpp3.26: 249 - 245 - 1006  [0.501] 1500
 ...      ChessDotCpp3.27 playing Black: 132 - 128 - 490  [0.503] 750
 ...      White vs Black: 245 - 249 - 1006  [0.499] 1500
 Elo difference: 0.9 +/- 10.1, LOS: 57.1 %, DrawRatio: 67.1 %
+```
+
+### 3.28
+
+Small improvement for TT returns
+
+```
+Score of ChessDotCpp3.28 vs ChessDotCpp3.27: 246 - 235 - 1019  [0.504] 1500
+...      ChessDotCpp3.28 playing White: 125 - 117 - 507  [0.505] 749
+...      ChessDotCpp3.28 playing Black: 121 - 118 - 512  [0.502] 751
+...      White vs Black: 243 - 238 - 1019  [0.502] 1500
+Elo difference: 2.5 +/- 9.9, LOS: 69.2 %, DrawRatio: 67.9 %
+
+Score of ChessDotCpp3.28 vs weiss2.0: 540 - 149 - 311  [0.696] 1000
+...      ChessDotCpp3.28 playing White: 272 - 85 - 142  [0.687] 499
+...      ChessDotCpp3.28 playing Black: 268 - 64 - 169  [0.704] 501
+...      White vs Black: 336 - 353 - 311  [0.491] 1000
+Elo difference: 143.5 +/- 18.6, LOS: 100.0 %, DrawRatio: 31.1 %
+
+Score of ChessDotCpp3.28 vs seer2.5: 87 - 514 - 399  [0.286] 1000
+...      ChessDotCpp3.28 playing White: 42 - 262 - 197  [0.280] 501
+...      ChessDotCpp3.28 playing Black: 45 - 252 - 202  [0.293] 499
+...      White vs Black: 294 - 307 - 399  [0.493] 1000
+Elo difference: -158.5 +/- 17.0, LOS: 0.0 %, DrawRatio: 39.9 %
 ```
