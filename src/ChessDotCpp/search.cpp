@@ -884,8 +884,8 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             //&& (!isPrincipalVariation || movesEvaluated > 3)
             && depth >= 3
             //&& !inCheck
-            && move.Value != plyState.Killers[0].Value
-            && move.Value != plyState.Killers[1].Value
+            //&& move.Value != plyState.Killers[0].Value
+            //&& move.Value != plyState.Killers[1].Value
             //&& move.Value != countermove.Value
             && moveEntry.see <= 0
             && pawnPromoteTo == Pieces::Empty
@@ -895,74 +895,47 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             const auto captureReductionIndex = takesPiece == Pieces::Empty ? 0 : 1;
             reduction = SearchData.Reductions[pvReductionIndex][captureReductionIndex][depth][movesEvaluated];
 
-            if (!isPrincipalVariation && !improving && reduction > 1)
+            if(reduction > 0)
             {
-                reduction++;
-            }
+                if (!isPrincipalVariation && !improving && reduction > 1)
+                {
+                    reduction++;
+                }
 
-            //if
-            //(
-            //    reduction > 0
-            //    &&
-            //    (
-            //        move.Value == plyState.Killers[0].Value
-            //        || move.Value == plyState.Killers[1].Value
-            //    )
-            //)
-            //{
-            //    reduction--;
-            //}
+                if
+                (
+                    move.Value == plyState.Killers[0].Value
+                    || move.Value == plyState.Killers[1].Value
+                )
+                {
+                    reduction--;
+                }
 
-            //if
-            //(
-            //    !isPrincipalVariation
-            //    && threadState.IterationInitialDepth > 6
-            //    && threadState.BestMoveChanges <= 2
-            //)
-            //{
-            //    reduction++;
-            //}
+                MoveScore moveScore = capture
+                    ? threadState.CaptureHistory[move.GetPiece()][move.GetTo()][takesPiece]
+                    : threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()]
+                    + threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[move.GetPiece()][move.GetTo()]
+                    + threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[move.GetPiece()][move.GetTo()];
 
-            MoveScore moveScore = capture
-                ? threadState.CaptureHistory[move.GetPiece()][move.GetTo()][takesPiece]
-                : threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()]
-                  + threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[move.GetPiece()][move.GetTo()]
-                  + threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[move.GetPiece()][move.GetTo()];
-            if
-            (
-                reduction > 0
-                && moveScore > 0
-            )
-            {
-                reduction--;
-            }
+                if(moveScore > 0)
+                {
+                    reduction--;
+                }
+                else if (moveScore < 0)
+                {
+                    reduction++;
+                }
 
-            if (moveScore < 0)
-            {
-                //reduction -= moveScore / 4000;
-                reduction++;
-                //if(moveScore < 5000)
-                //{
-                //    reduction++;
-                //}
-            }
+                if
+                (
+                    !isPrincipalVariation
+                    && threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()] < 0
+                )
+                {
+                    reduction++;
+                }
 
-            //if
-            //(
-            //    isCutNode
-            //    && move.GetTakesPiece() == Pieces::Empty
-            //)
-            //{
-            //    reduction += 2;
-            //}
-
-            if
-            (
-                !isPrincipalVariation
-                && threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()] < 0
-            )
-            {
-                reduction++;
+                reduction = std::max(static_cast<Ply>(0), reduction);
             }
 
             if (searchedPosition.OtherThread)

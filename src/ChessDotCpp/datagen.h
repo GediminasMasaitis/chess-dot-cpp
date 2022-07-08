@@ -309,7 +309,7 @@ public:
     static void RunThread(const ThreadId threadId, const IterationCallback& callback)
     {
         Search search = Search(OnCallback);
-        auto rng = std::mt19937(threadId * 500001);
+        auto rng = std::mt19937(threadId * 10000001);
         auto data = std::vector<DataEntry>();
 
 
@@ -392,6 +392,7 @@ public:
         file.flush();
     }
 
+#if DATAGEN
     static void Run()
     {
         auto threads = std::vector<std::thread>(ThreadCount);
@@ -486,4 +487,10 @@ public:
             }
         }
     }
+#else
+    static void Run()
+    {
+        std::cout << "DATAGEN DISABLED" << std::endl;
+    }
+#endif
 };
