@@ -674,16 +674,19 @@ Score EvalPawnStructure(const BoardBase& board, const AttackDetails& attacks)
 Score GetPawnScore(const BoardBase& board, const AttackDetails& attacks, EvalState& state)
 {
     PhaseScore score;
+#if PAWNTABLE
     if (state.PawnTable.Enable && state.PawnTable.TryProbe(board.PawnKey, score))
     {
         return static_cast<Score>(score);
     }
-
+#endif
     score = EvalPawnStructure(board, attacks);
+#if PAWNTABLE
     if(state.PawnTable.Enable)
     {
         state.PawnTable.Store(board.PawnKey, score);
     }
+#endif
     return static_cast<Score>(score);
 }
 
@@ -959,18 +962,19 @@ Score EvaluateInner(const BoardBase& board, const EachColor<Bitboard>& pins, Eva
 Score ClassicEvaluation::Evaluate(const BoardBase& board, const EachColor<Bitboard>& pins, EvalState& state)
 {
     PhaseScore score;
+#if EVALTABLE
     if(state.EvalTable.Enable && state.EvalTable.TryProbe(board.Key, score))
     {
         return static_cast<Score>(score);
     }
-    
+#endif
     score = EvaluateInner(board, pins, state);
+#if EVALTAKE
     if (state.EvalTable.Enable)
     {
         state.EvalTable.Store(board.Key, score);
     }
-    
-
+#endif
     /*auto clone = board;
     clone.FlipColors();
     EachColor<Bitboard> clonePins{};

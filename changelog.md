@@ -5649,7 +5649,7 @@ Score of ChessDotCpp3.33 vs ChessDotCpp3.32: 371 - 320 - 1309  [0.513] 2000
 Elo difference: 8.9 +/- 8.9, LOS: 97.4 %, DrawRatio: 65.5 %
 ```
 
-### 3.33
+### 3.34
 
 Fix bug with qsearch capture history downcasting
 
@@ -5687,4 +5687,22 @@ Score of ChessDotCpp3.34 vs ChessDotCpp3.33: 357 - 322 - 1321  [0.509] 2000
 ...      ChessDotCpp3.34 playing Black: 162 - 175 - 662  [0.493] 999
 ...      White vs Black: 370 - 309 - 1321  [0.515] 2000
 Elo difference: 6.1 +/- 8.9, LOS: 91.0 %, DrawRatio: 66.0 %
+
+Score of ChessDotCpp3.34 vs ChessDotCpp3.24: 196 - 142 - 662  [0.527] 1000
+...      ChessDotCpp3.34 playing White: 105 - 62 - 333  [0.543] 500
+...      ChessDotCpp3.34 playing Black: 91 - 80 - 329  [0.511] 500
+...      White vs Black: 185 - 153 - 662  [0.516] 1000
+Elo difference: 18.8 +/- 12.5, LOS: 99.8 %, DrawRatio: 66.2 %
+
+Score of ChessDotCpp3.31 vs weiss2.0: 552 - 149 - 299  [0.702] 1000
+...      ChessDotCpp3.31 playing White: 284 - 78 - 138  [0.706] 500
+...      ChessDotCpp3.31 playing Black: 268 - 71 - 161  [0.697] 500
+...      White vs Black: 355 - 346 - 299  [0.504] 1000
+Elo difference: 148.4 +/- 18.9, LOS: 100.0 %, DrawRatio: 29.9 %
+
+Score of ChessDotCpp3.34 vs seer2.5: 84 - 470 - 446  [0.307] 1000
+...      ChessDotCpp3.34 playing White: 47 - 234 - 219  [0.313] 500
+...      ChessDotCpp3.34 playing Black: 37 - 236 - 227  [0.301] 500
+...      White vs Black: 283 - 271 - 446  [0.506] 1000
+Elo difference: -141.4 +/- 16.1, LOS: 0.0 %, DrawRatio: 44.6 %
 ```

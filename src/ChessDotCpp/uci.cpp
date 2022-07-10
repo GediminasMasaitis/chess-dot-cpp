@@ -4,7 +4,6 @@
 #include "datagen.h"
 #include "display.h"
 #include "texel.h"
-#include "trainclassical.h"
 #include "trainnnue.h"
 
 void Uci::OnCallback(SearchCallbackData& data) const
@@ -250,15 +249,6 @@ void Uci::HandleRescore(std::stringstream& reader)
 	NnueTrainer::Run(parameters);
 }
 
-void Uci::HandleTrain(std::stringstream& reader)
-{
-	auto parameters = ClassicalTrainingParameters();
-	parameters.InputFormat = InputFormats::Plain;
-	//parameters.InputPath = "C:/Chess/TrainingOld/data/gensfen_multipvdiff_100_d6_0_0_0.plain";
-	parameters.InputPath = "C:/Chess/TrainingOld/data/results2.plain";
-	ClassicalTrainer::Run(parameters);
-}
-
 bool Uci::HandleInput(const std::string& line)
 {
 	std::stringstream reader(line);
@@ -295,10 +285,6 @@ bool Uci::HandleInput(const std::string& line)
 		else if (word == "rescore")
 		{
 			HandleRescore(reader);
-		}
-		else if (word == "train")
-		{
-			HandleTrain(reader);
 		}
 		else if (word == "tune")
 		{

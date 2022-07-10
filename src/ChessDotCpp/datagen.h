@@ -42,40 +42,6 @@ public:
 
     static void OnCallback(SearchCallbackData& data)
     {
-        //const ThreadState& mainThreadState = data.State.Thread[0];
-        //std::stringstream builder = std::stringstream();
-
-        //builder << "info";
-        //builder << " depth " << std::to_string(data.Depth);
-        //builder << " multipv 1";
-        //builder << " score cp " << std::to_string(data._Score);
-        //builder << " nodes " << std::to_string(mainThreadState.Stats.Nodes);
-        //auto elapsed = mainThreadState.Stats.Elapsed;
-        //if (elapsed == 0)
-        //{
-        //    elapsed = 1;
-        //}
-
-        //Stat nodes = 0;
-        //for (auto i = 0; i < Options::Threads; i++)
-        //{
-        //    nodes += data.State.Thread[i].Stats.Nodes;
-        //}
-
-        //auto nps = (nodes * 1000) / elapsed;
-
-        //builder << " nps " << nps;
-        //builder << " time " << elapsed;
-
-        //builder << " pv";
-        //std::vector<Move>& principalVariation = data.State.Thread[data.Id].SavedPrincipalVariation;
-        //for (size_t ply = 0; ply < principalVariation.size(); ply++)
-        //{
-        //    const auto& entry = principalVariation[ply];
-        //    builder << " " << entry.ToPositionString();
-        //}
-
-        //std::cout << builder.str() << std::endl;
     }
 
     static GameResult AdjudicateMates(Board& board)
@@ -329,36 +295,6 @@ public:
     {
         std::stringstream ss;
         const auto size = static_cast<int32_t>(entries.size());
-        //const auto size = 725000;
-        // r2qkbnr/pppbppp1/2n5/3p3p/5P2/1P2P1P1/P1PP3P/RNBQKBNR w KQkq -
-        // r1b1k1r1/p2npp1p/2pp1n1R/qp6/3PP3/5N2/PPPN1PP1/R2QKB2 b Qq - c9 "1/2-1/2";
-        //for(auto& entry : entries)
-
-        //for(auto entryId = 0; entryId < size; entryId++)
-        //{
-        //    const auto& entry = entries[entryId];
-        //    ss << entry.FFen << " c9 \"";
-        //    switch (entry.Result)
-        //    {
-        //    case GameResult::Win:
-        //        ss << "1-0";
-        //        break;
-        //    case GameResult::Draw:
-        //        ss << "1/2-1/2";
-        //        break;
-        //    case GameResult::Loss:
-        //        ss << "0-1";
-        //        break;
-        //    case GameResult::None:
-        //        Throw();
-        //        break;
-        //    }
-        //    ss << "\";";
-        //    //if(entryId != size - 1)
-        //    //{
-        //        ss << "\n";
-        //    //}
-        //}
 
         for (auto entryId = 0; entryId < size; entryId++)
         {

@@ -78,14 +78,16 @@ Score EvaluateInner(const BoardBase& board)
 Score EvaluationNnue::Evaluate(const BoardBase& board, const EachColor<Bitboard>& pins, EvalState& state)
 {
     PhaseScore score;
+#if EVALTABLE
     if (state.EvalTable.TryProbe(board.Key, score))
     {
         return static_cast<Score>(score);
     }
-
+#endif
     score = EvaluateInner(board);
+#if EVALTABLE
     state.EvalTable.Store(board.Key, score);
-
+#endif
     return static_cast<Score>(score);
 }
 

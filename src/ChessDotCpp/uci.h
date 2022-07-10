@@ -35,7 +35,6 @@ public:
     void HandleIsReady();
     void HandleUciNewGame();
     void HandleRescore(std::stringstream& reader);
-    void HandleTrain(std::stringstream& reader);
     void HandleSetoption(std::stringstream& reader);
     bool HandleInput(const std::string& line);
     void Init();

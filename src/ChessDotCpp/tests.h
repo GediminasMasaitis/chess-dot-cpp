@@ -67,11 +67,14 @@ public:
         Fens::Parse(board, fen);
 
         EvalState state{};
+#if EVALTABLE
         state.EvalTable.SetSize(16 * 1024 * 1024);
         state.EvalTable.Clear();
-
+#endif
+#if PAWNTABLE
         state.PawnTable.SetSize(16 * 1024 * 1024);
         state.PawnTable.Clear();
+#endif
 
         EachColor<Bitboard> pins;
         PinDetector::GetPinnedToKings(board, pins);

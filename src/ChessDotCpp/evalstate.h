@@ -1,5 +1,8 @@
 #pragma once
 
+#define EVALTABLE 0
+#define PAWNTABLE 0
+
 #include "common.h"
 
 struct EvalHashTableEntry
@@ -72,12 +75,20 @@ public:
 class EvalState
 {
 public:
+#if EVALTABLE
     EvalHashTable EvalTable;
+#endif
+#if PAWNTABLE
     EvalHashTable PawnTable;
+#endif
 
     EvalState()
     {
+#if EVALTABLE
         EvalTable = EvalHashTable();
+#endif
+#if PAWNTABLE
         PawnTable = EvalHashTable();
+#endif
     }
 };

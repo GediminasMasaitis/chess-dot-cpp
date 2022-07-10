@@ -245,12 +245,14 @@ public:
     {
         Table.SetSize(16 * 1024 * 1024);
         Table.Clear();
-
+#if EVALTABLE
         Eval.EvalTable.SetSize(16 * 1024 * 1024);
         Eval.EvalTable.Clear();
-
+#endif
+#if PAWNTABLE
         Eval.PawnTable.SetSize(16 * 1024 * 1024);
         Eval.PawnTable.Clear();
+#endif
     }
 
     void NewSearch(const Board& board)
