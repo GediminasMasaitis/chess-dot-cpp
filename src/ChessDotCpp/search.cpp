@@ -289,19 +289,16 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
         (
             !inCheck
             && move.GetPawnPromoteTo() == Pieces::Empty
-            &&
-            (
-                resultMaterial > Constants::EndgameMaterial
-                || move.GetTakesPiece() == Pieces::WhitePawn
-                || move.GetTakesPiece() == Pieces::BlackPawn
-            )
         )
         {
-            //const Score seeScore = moveEntry.see;
             const Score seeScore = seeScores[moveIndex];
-            if (seeScore < 0) // TODO: -10?
+            if (seeScore < 0)
             {
                 continue;
+            }
+            if (standPat + seeScore > beta + 256)
+            {
+                return beta;
             }
         }
 
