@@ -670,25 +670,25 @@ public:
         {
             for(MoveCount movesEvaluated = 1; movesEvaluated < Constants::MaxMoves; movesEvaluated++)
             {
-                const double reductionQuiet = std::log(depth) * std::log(movesEvaluated) * 0.45 + 0.8;
+                const double reductionQuiet = std::log(depth) * std::log(movesEvaluated) * 0.5 + 1;
                 if (reductionQuiet >= 1.5)
                 {
                     Reductions[0][0][depth][movesEvaluated] = static_cast<Ply>(reductionQuiet);
                 }
 
-                const double reductionQuietPv = std::log(depth) * std::log(movesEvaluated) * 0.33 + 0.5;
+                const double reductionQuietPv = std::log(depth) * std::log(movesEvaluated) * 0.5;
                 if(reductionQuietPv >= 1.5)
                 {
                     Reductions[1][0][depth][movesEvaluated] = static_cast<Ply>(reductionQuietPv);
                 }
 
-                const double reductionCapture = std::log(depth) * std::log(movesEvaluated) * 0.45 + 0.8;
+                const double reductionCapture = std::log(depth) * std::log(movesEvaluated) * 0.5 + 1;
                 if (reductionCapture >= 1.5)
                 {
                     Reductions[0][1][depth][movesEvaluated] = static_cast<Ply>(reductionCapture);
                 }
 
-                const double reductionCapturePv = std::log(depth) * std::log(movesEvaluated) * 0.33 + 0.5;
+                const double reductionCapturePv = std::log(depth) * std::log(movesEvaluated) * 0.5;
                 if (reductionCapturePv >= 1.5)
                 {
                     Reductions[1][1][depth][movesEvaluated] = static_cast<Ply>(reductionCapturePv);

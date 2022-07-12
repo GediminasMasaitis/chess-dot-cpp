@@ -5786,3 +5786,22 @@ Score of ChessDotCpp3.36 vs ChessDotCpp3.35: 444 - 412 - 1644  [0.506] 2500
 ...      White vs Black: 454 - 402 - 1644  [0.510] 2500
 Elo difference: 4.4 +/- 8.0, LOS: 86.3 %, DrawRatio: 65.8 %
 ```
+
+### 3.37
+
+Improve base LMR
+
+```
+Score of ChessDotCpp3.37 vs weiss2.0: 574 - 139 - 287  [0.718] 1000
+...      ChessDotCpp3.37 playing White: 301 - 58 - 141  [0.743] 500
+...      ChessDotCpp3.37 playing Black: 273 - 81 - 146  [0.692] 500
+...      White vs Black: 382 - 331 - 287  [0.525] 1000
+Elo difference: 161.9 +/- 19.2, LOS: 100.0 %, DrawRatio: 28.7 %
+
+Score of ChessDotCpp3.37 vs seer2.5: 144 - 723 - 633  [0.307] 1500
+...      ChessDotCpp3.37 playing White: 83 - 330 - 337  [0.335] 750
+...      ChessDotCpp3.37 playing Black: 61 - 393 - 296  [0.279] 750
+...      White vs Black: 476 - 391 - 633  [0.528] 1500
+Elo difference: -141.4 +/- 13.5, LOS: 0.0 %, DrawRatio: 42.2 %
+```
+
