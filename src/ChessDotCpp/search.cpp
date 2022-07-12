@@ -644,11 +644,16 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     // STATIC EVALUATION
     EachColor<Bitboard> pins;
     PinDetector::GetPinnedToKings(board, pins);
-    Score staticScore = Evaluation::Evaluate(board, pins, State.Global.Eval);
-    //if (hashEntryExists && entry.Flag & (probedScore > staticScore ? TranspositionTableFlags::Beta : TranspositionTableFlags::Alpha))
+    Score staticScore;
+    //if (hashEntryExists)
     //{
-    //    staticScore = probedScore;
+    //    staticScore = entry.SScore;
     //}
+    //else
+    //{
+    //    staticScore = Evaluation::Evaluate(board, pins, State.Global.Eval);
+    //}
+    staticScore = Evaluation::Evaluate(board, pins, State.Global.Eval);
     board.StaticEvaluation = staticScore;
     const bool improving = board.HistoryDepth < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation;
 
@@ -820,10 +825,9 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             if
             (
                 depth < 6
-                && movesEvaluated > 0
             )
             {
-                const Score marginPerDepth = capture ? 128 : 64;
+                const Score marginPerDepth = capture ? 128 : 48;
                 auto quietSee = capture ? moveEntry.see : See::GetSee(board, move);
                 if (quietSee <= depth * -marginPerDepth)
                 {
