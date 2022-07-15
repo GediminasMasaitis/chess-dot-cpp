@@ -706,7 +706,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         nullMoveAllowed
         && !rootNode
         && !inCheck
-        && depth > 2
+        && depth > 1
         && staticScore >= beta
         && board.BitBoard[board.ColorToMove] != (board.BitBoard[Pieces::Pawn | board.ColorToMove] | board.BitBoard[Pieces::King | board.ColorToMove])
         //&& board.PieceMaterial[board.ColorToMove] > Constants::EndgameMaterial
