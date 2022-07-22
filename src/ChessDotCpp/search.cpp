@@ -665,11 +665,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         constexpr Score marginPerDepth = 64;
         //const Score marginPerDepth = Options::TuneScore1;
         Score margin = static_cast<Score>(marginPerDepth * depth);
-
-        if(improving)
-        {
-            margin += marginPerDepth / 2;
-        }
         
         if (staticScore - margin >= beta)
         {
