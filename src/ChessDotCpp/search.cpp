@@ -944,6 +944,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         const bool childCut = isReduced || !isCutNode;
         Score childScore;
 
+        auto nodesBefore = threadState.Stats.Nodes;
         if (movesEvaluated > 0)
         {
             childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -alpha - 1, -alpha, false, childCut, true);
@@ -964,6 +965,12 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
                 childScore = -AlphaBeta(threadId, board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, false, true);
             }
         }
+
+        if(rootNode)
+        {
+            auto nodesForMove = threadState.Stats.Nodes - nodesBefore;
+            threadState.NodesPerMove[move.GetFrom()][move.GetTo()] += nodesForMove;
+        }
         
         board.UndoMove();
         movesEvaluated++;
@@ -981,11 +988,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             {
                 alpha = childScore;
                 raisedAlpha = true;
-
-                if (rootNode)
-                {
-                    threadState.BestMoveChanges++;
-                }
 
                 if (childScore >= beta)
                 {
@@ -1040,7 +1042,6 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
 {
     if(depth < 5)
     {
-        State.Thread[threadId].BestMoveChanges = 0;
         const Score fullSearchScore = AlphaBeta(threadId, board, depth, 0, -Constants::Inf, Constants::Inf, true, false, true);
         return fullSearchScore;
     }
@@ -1066,7 +1067,6 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
             beta = Constants::Inf;
         }
 
-        State.Thread[threadId].BestMoveChanges = 0;
         const Score score = AlphaBeta(threadId, board, depth, 0, alpha, beta, true, false, true);
         widen *= 2;
 

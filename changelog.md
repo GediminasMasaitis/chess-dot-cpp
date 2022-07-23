@@ -5902,3 +5902,27 @@ Score of ChessDotCpp3.39 vs ChessDotCpp3.38: 359 - 312 - 1426  [0.511] 2097
 ...      White vs Black: 365 - 306 - 1426  [0.514] 2097
 Elo difference: 7.8 +/- 8.4, LOS: 96.5 %, DrawRatio: 68.0 %
 ```
+
+5+0.05
+```
+Score of ChessDotCpp3.40 vs ChessDotCpp3.39: 264 - 233 - 1003  [0.510] 1500
+...      ChessDotCpp3.40 playing White: 132 - 104 - 514  [0.519] 750
+...      ChessDotCpp3.40 playing Black: 132 - 129 - 489  [0.502] 750
+...      White vs Black: 261 - 236 - 1003  [0.508] 1500
+Elo difference: 7.2 +/- 10.1, LOS: 91.8 %, DrawRatio: 66.9 %
+
+Score of ChessDotCpp3.40 vs weiss2.0: 618 - 130 - 252  [0.744] 1000
+...      ChessDotCpp3.40 playing White: 325 - 61 - 115  [0.763] 501
+...      ChessDotCpp3.40 playing Black: 293 - 69 - 137  [0.724] 499
+...      White vs Black: 394 - 354 - 252  [0.520] 1000
+Elo difference: 185.3 +/- 20.2, LOS: 100.0 %, DrawRatio: 25.2 %
+```
+
+60+0.6
+```
+Score of ChessDotCpp3.40 vs ChessDotCpp3.39: 11 - 12 - 77  [0.495] 100
+...      ChessDotCpp3.40 playing White: 8 - 5 - 37  [0.530] 50
+...      ChessDotCpp3.40 playing Black: 3 - 7 - 40  [0.460] 50
+...      White vs Black: 15 - 8 - 77  [0.535] 100
+Elo difference: -3.5 +/- 32.7, LOS: 41.7 %, DrawRatio: 77.0 %
+```

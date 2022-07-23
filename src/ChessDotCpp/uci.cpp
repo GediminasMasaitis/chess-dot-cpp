@@ -44,6 +44,18 @@ void Uci::OnCallback(SearchCallbackData& data) const
 		const auto& entry = principalVariation[ply];
 		builder << " " << entry.ToPositionString();
 	}
+
+    //MoveArray moves;
+    //MoveCount moveCount = 0;
+    //MoveGenerator::GetAllPossibleMoves(board, moves, moveCount);
+    //for(MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
+    //{
+    //    const auto move = moves[moveIndex];
+    //    const auto moveTotalNodes = mainThreadState.NodesPerMove[move.GetFrom()][move.GetTo()];
+    //    const auto moveNodePercent = (moveTotalNodes * 100) / mainThreadState.Stats.Nodes;
+    //    builder << move.ToPositionString() << " " << moveNodePercent << "% " << moveTotalNodes << " nodes\n";
+    //}
+
 	Out(builder.str());
 }
 

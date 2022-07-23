@@ -122,11 +122,12 @@ public:
     EachPiece<EachPosition<ContinuationEntry>> AllContinuations;
     EachPiece<EachPosition<Move>> Countermoves;
 
+    EachPosition<EachPosition<Stat>> NodesPerMove;
+
     bool StopIteration;
     std::vector<Move> SavedPrincipalVariation{};
     
     Move SingularMove;
-    MoveCount BestMoveChanges;
     Ply IterationsSincePvChange;
     Ply IterationInitialDepth;
     
@@ -169,9 +170,16 @@ public:
                 AllContinuations[piece][to].NewSearch();
             }
         }
+
+        for (Position from = 0; from < Positions::Count; from++)
+        {
+            for (Position to = 0; to < Positions::Count; to++)
+            {
+                NodesPerMove[from][to] = 0;
+            }
+        }
         
         SingularMove = Move(0);
-        BestMoveChanges = 0;
         IterationsSincePvChange = 0;
     }
 

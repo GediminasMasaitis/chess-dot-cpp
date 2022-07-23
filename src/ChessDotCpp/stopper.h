@@ -31,7 +31,7 @@ public:
             const bool whiteToMove = board.WhiteToMove;
             const size_t time = whiteToMove ? parameters.WhiteTime : parameters.BlackTime;
             const size_t increment = whiteToMove ? parameters.WhiteTimeIncrement : parameters.BlackTimeIncrement;
-            constexpr HistoryPly movesRemaining = 30;
+            constexpr HistoryPly movesRemaining = 20;
             const size_t estimatedTime = time + increment * movesRemaining;
             _minTime = std::min(time / 2, estimatedTime / movesRemaining);
             _maxTime = std::min(time * 4 / 5, _minTime * 4);
@@ -79,17 +79,26 @@ public:
     	}
 
         const ThreadState& threadState = state.Thread[threadId];
-        const MoveCount bestMoveChanges = threadState.BestMoveChanges;
-        const Ply iterationsSincePvChange = threadState.IterationsSincePvChange;
-        size_t reduction = 0;
-        if(iterationsSincePvChange > 0)
-        {
-            const auto reductionFactor = std::min(static_cast<size_t>(iterationsSincePvChange), 7ULL);
-            reduction = _minTime * reductionFactor / 10;
-        }
+
+        const Move bestMove = threadState.SavedPrincipalVariation[0];
+        assert(bestMove.Value != 0);
+        const auto bestMoveTotalNodes = threadState.NodesPerMove[bestMove.GetFrom()][bestMove.GetTo()];
+        const auto bestMoveNodePercent = (bestMoveTotalNodes * 100) / threadState.Stats.Nodes;
+        //std::cout << "best " << bestMove.ToPositionString() << " " << bestMoveNodePercent << "% " << bestMoveTotalNodes << " nodes\n";
+
+        // REDUCE BY BESTMOVE CHANGES
+        //const Ply iterationsSincePvChange = threadState.IterationsSincePvChange;
+        //size_t reduction = 0;
+        //if(iterationsSincePvChange > 0)
+        //{
+        //    const auto reductionFactor = std::min(static_cast<size_t>(iterationsSincePvChange), 7ULL);
+        //    reduction = _minTime * reductionFactor / 10;
+        //}
+
+        // REDUCE BY NODE DISTRIBUTION
+        const auto reductionPercent = std::min(static_cast<size_t>(90), bestMoveNodePercent);
+        const auto reduction = (_minTime * reductionPercent) / 100;
         const auto minTime = _minTime - reduction;
-        
-        //std::min(time / 2, estimatedTime / movesRemaining)
         
         const auto elapsed = GetElapsed();
         Stopped = elapsed > minTime;

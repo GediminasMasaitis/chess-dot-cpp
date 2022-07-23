@@ -32,12 +32,30 @@ public:
     alignas(SimdNV::alignment) inline static hidden_weightses_t HiddenWeightses;
     alignas(SimdNV::alignment) inline static output_bias_t OutputBias;
 
-    static constexpr EachPiece<int32_t> pieceIndices = { -1, -1, -1, -1, 0, 6, 1, 7, 2, 8, 3, 9, 4, 10, 5, 11 };
+    static constexpr EachPiece<int32_t> pieceIndices = 
+    {
+        -1,
+        -1,
+        -1,
+        -1,
+        Positions::Count * 0,
+        Positions::Count * 6,
+        Positions::Count * 1,
+        Positions::Count * 7,
+        Positions::Count * 2,
+        Positions::Count * 8,
+        Positions::Count * 3,
+        Positions::Count * 9,
+        Positions::Count * 4,
+        Positions::Count * 10,
+        Positions::Count * 5,
+        Positions::Count * 11
+    };
 
     template<bool TSet>
     static void ApplyPieceSingle(hidden_layer_t& hiddenLayer, const Position pos, const Piece piece)
     {
-        const auto pieceIndex = pieceIndices[piece] * Positions::Count;
+        const auto pieceIndex = pieceIndices[piece];
         assert(pieceIndex >= 0);
 
         const auto inputIndex = pieceIndex + pos;
