@@ -5903,6 +5903,10 @@ Score of ChessDotCpp3.39 vs ChessDotCpp3.38: 359 - 312 - 1426  [0.511] 2097
 Elo difference: 7.8 +/- 8.4, LOS: 96.5 %, DrawRatio: 68.0 %
 ```
 
+### 3.40
+
+Reduce allocated time by best move node count instead of best move changes in iterative deepening
+
 5+0.05
 ```
 Score of ChessDotCpp3.40 vs ChessDotCpp3.39: 264 - 233 - 1003  [0.510] 1500
@@ -5916,6 +5920,12 @@ Score of ChessDotCpp3.40 vs weiss2.0: 618 - 130 - 252  [0.744] 1000
 ...      ChessDotCpp3.40 playing Black: 293 - 69 - 137  [0.724] 499
 ...      White vs Black: 394 - 354 - 252  [0.520] 1000
 Elo difference: 185.3 +/- 20.2, LOS: 100.0 %, DrawRatio: 25.2 %
+
+Score of ChessDotCpp3.40 vs seer2.5: 93 - 448 - 459  [0.323] 1000
+...      ChessDotCpp3.40 playing White: 50 - 215 - 235  [0.335] 500
+...      ChessDotCpp3.40 playing Black: 43 - 233 - 224  [0.310] 500
+...      White vs Black: 283 - 258 - 459  [0.512] 1000
+Elo difference: -129.0 +/- 15.9, LOS: 0.0 %, DrawRatio: 45.9 %
 ```
 
 60+0.6
@@ -5925,4 +5935,12 @@ Score of ChessDotCpp3.40 vs ChessDotCpp3.39: 11 - 12 - 77  [0.495] 100
 ...      ChessDotCpp3.40 playing Black: 3 - 7 - 40  [0.460] 50
 ...      White vs Black: 15 - 8 - 77  [0.535] 100
 Elo difference: -3.5 +/- 32.7, LOS: 41.7 %, DrawRatio: 77.0 %
+```
+
+```
+Score of ChessDotCpp3.41 vs ChessDotCpp3.40: 170 - 190 - 684  [0.490] 1044
+...      ChessDotCpp3.41 playing White: 102 - 84 - 336  [0.517] 522
+...      ChessDotCpp3.41 playing Black: 68 - 106 - 348  [0.464] 522
+...      White vs Black: 208 - 152 - 684  [0.527] 1044
+Elo difference: -6.7 +/- 12.4, LOS: 14.6 %, DrawRatio: 65.5 %
 ```
