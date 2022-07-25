@@ -676,7 +676,7 @@ public:
                     Reductions[0][depth][movesEvaluated] = static_cast<Ply>(reduction);
                 }
 
-                const double reductionPv = std::log(depth) * std::log(movesEvaluated) * 0.5;
+                const double reductionPv = std::log(depth) * std::log(movesEvaluated) * 0.5 + 0.5;
                 if(reductionPv >= 1.5)
                 {
                     Reductions[1][depth][movesEvaluated] = static_cast<Ply>(reductionPv);
