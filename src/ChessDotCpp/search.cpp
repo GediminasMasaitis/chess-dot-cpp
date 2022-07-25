@@ -888,8 +888,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         )
         {
             const auto pvReductionIndex = isPrincipalVariation ? 1 : 0;
-            const auto captureReductionIndex = takesPiece == Pieces::Empty ? 0 : 1;
-            reduction = SearchData.Reductions[pvReductionIndex][captureReductionIndex][depth][movesEvaluated];
+            reduction = SearchData.Reductions[pvReductionIndex][depth][movesEvaluated];
 
             if(reduction > 0)
             {
