@@ -68,12 +68,36 @@ void Board::DoMove(const Move move)
 
     assert(move.GetColorToMove() == originalColorToMove);
 
-    PushAccumulator();
-
     const Position from = move.GetFrom();
     const Position to = move.GetTo();
-    const Position piece = move.GetPiece();
+    const Piece piece = move.GetPiece();
     const Piece takesPiece = move.GetTakesPiece();
+    const Piece pieceNoColor = piece & ~Colors::Mask;
+
+    assert(!AccumulatorInvalidations[Colors::White]);
+    assert(!AccumulatorInvalidations[Colors::Black]);
+
+    if(pieceNoColor == Pieces::King)
+    {
+        const Color kingColor = piece & Colors::Mask;
+        const auto kingFile = Files::Get(to);
+        const bool kingQueenSide = kingFile < 4;
+        const bool oldKingQueenSide = KingSides[kingColor];
+        KingSides[kingColor] = kingQueenSide;
+        if(kingQueenSide != oldKingQueenSide)
+        {
+            AccumulatorInvalidations[kingColor] = true;
+        }
+    }
+
+    /*for(auto color = Colors::White; color < Colors::Black; color++)
+    {
+        const auto kingPos = KingPositions[color];
+        const auto kingFile = Files::Get();
+
+    }*/
+
+    PushAccumulator();
     
     // FROM
     const Bitboard fromPosBitBoard = GetBitboard(from);
@@ -212,6 +236,8 @@ void Board::DoMove(const Move move)
     
     //SyncCastleTo1();
     SyncExtraBitBoards();
+
+    FinalizeAccumulator();
 }
 
 void Board::GetKeyAfterMove(const Move move, KeyAnd50Move& keyAnd50Move) const
@@ -344,12 +370,23 @@ void Board::UndoMove()
         return;
     }
 
-    PopAccumulator();
-
     const Position from = move.GetFrom();
     const Position to = move.GetTo();
     const Piece piece = move.GetPiece();
     const Piece takesPiece = move.GetTakesPiece();
+    const Piece pieceNoColor = piece & ~Colors::Mask;
+
+    assert(!AccumulatorInvalidations[Colors::White]);
+    assert(!AccumulatorInvalidations[Colors::Black]);
+    if (pieceNoColor == Pieces::King)
+    {
+        const Color kingColor = piece & Colors::Mask;
+        const auto kingFile = Files::Get(from);
+        const bool kingQueenSide = kingFile < 4;
+        KingSides[kingColor] = kingQueenSide;
+    }
+
+    PopAccumulator();
     
     // FROM
     Bitboard fromPosBitBoard = GetBitboard(from);

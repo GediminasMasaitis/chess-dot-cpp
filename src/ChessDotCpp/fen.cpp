@@ -79,13 +79,19 @@ void Fens::Parse(TBoard& board, Fen fen)
             board.ArrayBoard[fixedBoardPosition] = piece;
             board.SetAccumulatorPiece(fixedBoardPosition, piece);
             board.PieceCounts[piece]++;
+            const auto file = Files::Get(fixedBoardPosition);
+            const auto queenSide = file < 4;
             if (piece == Pieces::WhiteKing)
             {
                 board.KingPositions[Colors::White] = fixedBoardPosition;
+                board.KingSides[Colors::White] = queenSide;
+                board.AccumulatorInvalidations[Colors::White] = false;
             }
             else if (piece == Pieces::BlackKing)
             {
                 board.KingPositions[Colors::Black] = fixedBoardPosition;
+                board.KingSides[Colors::Black] = queenSide;
+                board.AccumulatorInvalidations[Colors::Black] = false;
             }
             boardPosition++;
             continue;
@@ -181,8 +187,6 @@ void Fens::Parse(TBoard& board, Fen fen)
         board.EnPassantFileIndex = -1;
         board.EnPassantRankIndex = -1;
     }
-
-    // TODO
 
     board.SyncExtraBitBoards();
     SyncMaterial(board);
