@@ -670,7 +670,7 @@ public:
         {
             for(MoveCount movesEvaluated = 1; movesEvaluated < Constants::MaxMoves; movesEvaluated++)
             {
-                const double reduction = std::log(depth) * std::log(movesEvaluated) * 0.5 + 1;
+                const double reduction = std::log(depth) * std::log(movesEvaluated) * 0.5 + 1.5;
                 if (reduction >= 1.5)
                 {
                     Reductions[0][depth][movesEvaluated] = static_cast<Ply>(reduction);
