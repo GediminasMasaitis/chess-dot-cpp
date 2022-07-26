@@ -932,22 +932,18 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         if (movesEvaluated > 0)
         {
             childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -alpha - 1, -alpha, false, true);
-            if (!zeroWindow && childScore > alpha)
-            {
-                childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
-            }
             if (reduction > 0 && childScore > alpha)
+            {
+                childScore = -AlphaBeta(threadId, board, depth + extension - 1, ply + 1, -alpha - 1, -alpha, false, true);
+            }
+            if (!zeroWindow && childScore > alpha && childScore < beta)
             {
                 childScore = -AlphaBeta(threadId, board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
             }
         }
         else
         {
-            childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
-            if (reduction > 0 && childScore > alpha)
-            {
-                childScore = -AlphaBeta(threadId, board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
-            }
+            childScore = -AlphaBeta(threadId, board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
         }
 
         if(rootNode)
