@@ -468,20 +468,7 @@ void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply
     }
 }
 
-/**
- * \brief 
- * \param threadId 
- * \param board 
- * \param depth 
- * \param ply 
- * \param alpha 
- * \param beta 
- * \param isPrincipalVariation 
- * \param isCutNode 
- * \param nullMoveAllowed 
- * \return 
- */
-Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool isCutNode, bool nullMoveAllowed)
+Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed)
 {
     ThreadState& threadState = State.Thread[threadId];
     PlyData& plyState = threadState.Plies[ply];
@@ -710,7 +697,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         const Ply nullDepthReduction = 3 + depth / 5 + static_cast<Ply>(std::min(3, (staticScore - beta) / 256));
         const Move nullMove = Move(0, 0, Pieces::Empty);
         board.DoMove(nullMove);
-        const Score nullMoveScore = -AlphaBeta(threadId, board, depth - nullDepthReduction - 1, ply + 1, -beta, -beta + 1, false, !isCutNode, false);
+        const Score nullMoveScore = -AlphaBeta(threadId, board, depth - nullDepthReduction - 1, ply + 1, -beta, -beta + 1, false, false);
         board.UndoMove();
         if (nullMoveScore >= beta)
         {
@@ -897,14 +884,14 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
                     reduction++;
                 }
 
-                if
-                (
-                    move.Value == plyState.Killers[0].Value
-                    || move.Value == plyState.Killers[1].Value
-                )
-                {
-                    reduction--;
-                }
+                //if
+                //(
+                //    move.Value == plyState.Killers[0].Value
+                //    || move.Value == plyState.Killers[1].Value
+                //)
+                //{
+                //    reduction--;
+                //}
 
                 MoveScore moveScore = capture
                     ? threadState.CaptureHistory[move.GetPiece()][move.GetTo()][takesPiece]
@@ -939,29 +926,27 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             }
         }
 
-        const bool isReduced = reduction > 0;
-        const bool childCut = isReduced || !isCutNode;
         Score childScore;
 
         auto nodesBefore = threadState.Stats.Nodes;
         if (movesEvaluated > 0)
         {
-            childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -alpha - 1, -alpha, false, childCut, true);
+            childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -alpha - 1, -alpha, false, true);
             if (!zeroWindow && childScore > alpha)
             {
-                childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, childCut, true);
+                childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
             }
             if (reduction > 0 && childScore > alpha)
             {
-                childScore = -AlphaBeta(threadId, board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, childCut, true);
+                childScore = -AlphaBeta(threadId, board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
             }
         }
         else
         {
-            childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, childCut, true);
+            childScore = -AlphaBeta(threadId, board, depth + extension - reduction - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
             if (reduction > 0 && childScore > alpha)
             {
-                childScore = -AlphaBeta(threadId, board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, false, true);
+                childScore = -AlphaBeta(threadId, board, depth + extension - 1, ply + 1, -beta, -alpha, isPrincipalVariation, true);
             }
         }
 
@@ -1041,7 +1026,7 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
 {
     if(depth < 5)
     {
-        const Score fullSearchScore = AlphaBeta(threadId, board, depth, 0, -Constants::Inf, Constants::Inf, true, false, true);
+        const Score fullSearchScore = AlphaBeta(threadId, board, depth, 0, -Constants::Inf, Constants::Inf, true, true);
         return fullSearchScore;
     }
 
@@ -1066,7 +1051,7 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
             beta = Constants::Inf;
         }
 
-        const Score score = AlphaBeta(threadId, board, depth, 0, alpha, beta, true, false, true);
+        const Score score = AlphaBeta(threadId, board, depth, 0, alpha, beta, true, true);
         widen *= 2;
 
         if (score <= alpha)
@@ -1097,7 +1082,7 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
     ThreadState& threadState = State.Thread[threadId];
     Ply depth = 1;
     threadState.IterationInitialDepth = depth;
-    Score score = AlphaBeta(threadId, board, depth, 0, -Constants::Inf, Constants::Inf, true, false, true);
+    Score score = AlphaBeta(threadId, board, depth, 0, -Constants::Inf, Constants::Inf, true, true);
 
     threadState.SavedPrincipalVariation.clear();
     State.Global.Table.GetPrincipalVariation(board, threadState.SavedPrincipalVariation);
@@ -1193,7 +1178,7 @@ void Search::IterativeDeepenLazySmpOld(Board& board, SearchResults& results)
     ThreadState& mainThreadState = State.Thread[0];
     Ply depth = 1;
     mainThreadState.IterationInitialDepth = depth;
-    Score score = AlphaBeta(0, board, 1, 0, -Constants::Inf, Constants::Inf, true, false, true);
+    Score score = AlphaBeta(0, board, 1, 0, -Constants::Inf, Constants::Inf, true, true);
 
     mainThreadState.SavedPrincipalVariation.clear();
     State.Global.Table.GetPrincipalVariation(board, mainThreadState.SavedPrincipalVariation);
