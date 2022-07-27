@@ -699,10 +699,10 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //&& board.PieceMaterial[board.ColorToMove] > Constants::EndgameMaterial
     )
     {
-        const Ply nullDepthReduction = 3 + depth / 4 + static_cast<Ply>(std::min(3, (staticScore - beta) / 256));
+        const Ply nullDepthReduction = 4 + depth / 4 + static_cast<Ply>(std::min(3, (staticScore - beta) / 256));
         const Move nullMove = Move(0, 0, Pieces::Empty);
         board.DoMove(nullMove);
-        const Score nullMoveScore = -AlphaBeta(threadId, board, depth - nullDepthReduction - 1, ply + 1, -beta, -beta + 1, false, false);
+        const Score nullMoveScore = -AlphaBeta(threadId, board, depth - nullDepthReduction, ply + 1, -beta, -beta + 1, false, false);
         board.UndoMove();
         if (nullMoveScore >= beta)
         {
