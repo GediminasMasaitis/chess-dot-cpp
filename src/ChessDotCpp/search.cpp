@@ -639,7 +639,12 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     //}
     staticScore = Evaluation::Evaluate(board, pins, State.Global.Eval);
     board.StaticEvaluation = staticScore;
-    const bool improving = board.HistoryDepth < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation;
+    const bool improving = ply < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation;
+
+    //if(hashEntryExists)
+    //{
+    //    staticScore = entry.SScore;
+    //}
 
     // STATIC EVALUATION PRUNING
     if
@@ -879,9 +884,9 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
             if(reduction > 0)
             {
-                if (!isPrincipalVariation && !improving && reduction > 1)
+                if (improving)
                 {
-                    reduction++;
+                    reduction--;
                 }
 
                 //if
