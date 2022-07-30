@@ -868,7 +868,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         if
         (
             movesEvaluated > 1
-            && (!rootNode || movesEvaluated > 3)
+            //&& (!rootNode || movesEvaluated > 3)
             //&& (!isPrincipalVariation || movesEvaluated > 3)
             && depth >= 3
             //&& !inCheck
