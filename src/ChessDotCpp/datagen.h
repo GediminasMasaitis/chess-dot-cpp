@@ -275,7 +275,7 @@ public:
     static void RunThread(const ThreadId threadId, const IterationCallback& callback)
     {
         Search search = Search(OnCallback);
-        auto rng = std::mt19937(threadId * 10000004);
+        auto rng = std::mt19937(threadId * 10000011);
         auto data = std::vector<DataEntry>();
 
 
