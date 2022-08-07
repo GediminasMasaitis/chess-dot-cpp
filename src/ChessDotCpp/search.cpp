@@ -211,11 +211,6 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
         return beta;
     }
 
-    //if(standPat + 1024 < alpha)
-    //{
-    //    return alpha;
-    //}
-
     if (alpha < standPat)
     {
         alpha = standPat;
@@ -273,27 +268,29 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
             continue;
         }
 
+        const Score takesMaterial = EvaluationConstants::PieceValues[move.GetTakesPiece()];
+        const Score opponentMaterial = board.PieceMaterial[board.ColorToMove ^ 1];
+        const Score resultMaterial = opponentMaterial - takesMaterial;
+        
+        // DELTA PRUNING
+        if
+        (
+            !inCheck
+            && standPat + takesMaterial + 200 < alpha
+            && resultMaterial > Constants::EndgameMaterial
+            && move.GetPawnPromoteTo() == Pieces::Empty
+        )
+        {
+            continue;
+        }
+
+        // SEE PRUNING
         if
         (
             !inCheck
             && move.GetPawnPromoteTo() == Pieces::Empty
-            //&& !CheckDetector::DoesGiveCheck(board, move)
         )
         {
-            // DELTA PRUNING
-            const Score takesMaterial = EvaluationConstants::PieceValues[move.GetTakesPiece()];
-            const Score opponentMaterial = board.PieceMaterial[board.ColorToMove ^ 1];
-            const Score resultMaterial = opponentMaterial - takesMaterial;
-            if
-            (
-                standPat + takesMaterial + 200 < alpha
-                && resultMaterial > Constants::EndgameMaterial
-            )
-            {
-                continue;
-            }
-
-            // SEE PRUNING
             const Score seeScore = seeScores[moveIndex];
             if (seeScore < 0)
             {
