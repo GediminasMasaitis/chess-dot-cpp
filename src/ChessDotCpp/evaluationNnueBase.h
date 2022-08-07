@@ -32,7 +32,7 @@ public:
     alignas(SimdNV::alignment) inline static hidden_weightses_t HiddenWeightses;
     alignas(SimdNV::alignment) inline static output_bias_t OutputBias;
 
-    static constexpr EachPiece<int32_t> pieceIndices = 
+    static constexpr EachPiece<int32_t> pieceIndices =
     {
         -1,
         -1,
@@ -53,12 +53,14 @@ public:
     };
 
     template<bool TSet>
-    static void ApplyPieceSingle(hidden_layer_t& hiddenLayer, const Position pos, const Piece piece)
+    static void ApplyPieceSingle(hidden_layer_t& hiddenLayer, const Position pos, const Piece piece, const bool kingQueenSide)
     {
         const auto pieceIndex = pieceIndices[piece];
         assert(pieceIndex >= 0);
 
-        const auto inputIndex = pieceIndex + pos;
+        const auto posIndex = kingQueenSide ? pos ^ 7 : pos;
+        //const auto posIndex = pos;
+        const auto inputIndex = pieceIndex + posIndex;
         const auto hiddenLayerPtr = SimdNV::reinterpret(hiddenLayer.data());
         const auto inputWeightsPtr = SimdNV::reinterpret(InputWeights[inputIndex].data());
         for (auto hiddenIndex = 0; hiddenIndex < (HiddenCount / SimdNV::stride); hiddenIndex++)
@@ -75,29 +77,35 @@ public:
     }
 
     template<bool TSet>
-    static void ApplyPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece)
+    static void ApplyPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide)
     {
         const Position flippedPos = pos ^ 56;
         const Piece flippedPiece = piece ^ 1;
-        ApplyPieceSingle<TSet>(hiddenLayers[Colors::White], pos, piece);
-        ApplyPieceSingle<TSet>(hiddenLayers[Colors::Black], flippedPos, flippedPiece);
+        ApplyPieceSingle<TSet>(hiddenLayers[Colors::White], pos, piece, kingsQueenSide[Colors::White]);
+        ApplyPieceSingle<TSet>(hiddenLayers[Colors::Black], flippedPos, flippedPiece, kingsQueenSide[Colors::Black]);
     }
 
-    static void SetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece)
+    static void SetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide)
     {
-        ApplyPiece<true>(hiddenLayers, pos, piece);
+        ApplyPiece<true>(hiddenLayers, pos, piece, kingsQueenSide);
     }
 
-    static void UnsetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece)
+    static void UnsetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide)
     {
-        ApplyPiece<false>(hiddenLayers, pos, piece);
+        ApplyPiece<false>(hiddenLayers, pos, piece, kingsQueenSide);
+    }
+
+    static void ResetSingle(hidden_layer_t& hiddenLayer)
+    {
+        std::copy(std::begin(HiddenBiases), std::end(HiddenBiases), std::begin(hiddenLayer));
     }
 
     static void Reset(hidden_layers_t& hiddenLayers)
     {
-        for(Color color = 0; color < Colors::Count; color++)
+        for (Color color = 0; color < Colors::Count; color++)
         {
-            std::copy(std::begin(HiddenBiases), std::end(HiddenBiases), std::begin(hiddenLayers[color]));
+            auto& hiddenLayer = hiddenLayers[color];
+            ResetSingle(hiddenLayer);
         }
     }
 
@@ -111,10 +119,10 @@ public:
         const auto result = *resultPtr;
         return result;
     }
-    
+
     static void Init()
     {
-        auto file = std::ifstream("C:/Chess/Networks/35/nn-epoch500.nnue", std::ios::binary | std::ios::ate);
+        auto file = std::ifstream("C:/Chess/Networks/37/nn-epoch500.nnue", std::ios::binary | std::ios::ate);
         auto fileSize = static_cast<size_t>(file.tellg());
         file.seekg(0);
 
@@ -135,7 +143,7 @@ public:
             HiddenBiases[hiddenIndex] = bias;
         }
 
-        for(auto hiddenNum = 0; hiddenNum < 2; hiddenNum++)
+        for (auto hiddenNum = 0; hiddenNum < 2; hiddenNum++)
         {
             for (auto hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
             {
@@ -148,7 +156,7 @@ public:
         assert(!file.eof());
         OutputBias = Read<int32_t>(file);
 
-        constexpr size_t valueCount = InputCount * HiddenCount + HiddenCount + HiddenCount*2;
+        constexpr size_t valueCount = InputCount * HiddenCount + HiddenCount + HiddenCount * 2;
         constexpr size_t expectedPos = sizeof(NnueValue) * valueCount + sizeof(FinalValue);
         auto pos = static_cast<size_t>(file.tellg());
         assert(pos == expectedPos);

@@ -25,6 +25,8 @@ class BoardBase
 {
 public:
 	bool enableAccumulatorStack = false;
+	EachColor<bool> KingSides;
+	EachColor<bool> AccumulatorInvalidations;
 #if USEACCUMULATOR
 	static constexpr bool useAccumulator = true;
 
@@ -69,13 +71,44 @@ public:
 	void SetAccumulatorPiece(const Position pos, const Piece piece)
 	{
 		auto& accumulators = accumulatorStack[accumulatorStack.size() - 1].accumulators;
-		EvaluationNnueBase::SetPiece(accumulators, pos, piece);
+		EvaluationNnueBase::SetPiece(accumulators, pos, piece, KingSides);
 	}
 
 	void UnsetAccumulatorPiece(const Position pos, const Piece piece)
 	{
 		auto& accumulators = accumulatorStack[accumulatorStack.size() - 1].accumulators;
-		EvaluationNnueBase::UnsetPiece(accumulators, pos, piece);
+		EvaluationNnueBase::UnsetPiece(accumulators, pos, piece, KingSides);
+	}
+
+	void FinalizeAccumulator()
+	{
+		for (Color color = 0; color < Colors::Count; color++)
+		{
+			if(AccumulatorInvalidations[color])
+			{
+				auto& accumulators = accumulatorStack[accumulatorStack.size() - 1].accumulators;
+				auto& accumulator = accumulators[color];
+				const auto kingQueenSide = KingSides[color];
+				EvaluationNnueBase::ResetSingle(accumulator);
+				for(Position pos = 0; pos < Positions::Count; pos++)
+				{
+					const Piece piece = ArrayBoard[pos];
+					if(piece != Pieces::Empty)
+					{
+						Position flippedPos = pos;
+						Piece flippedPiece = piece;
+						if(color == Colors::Black)
+						{
+							flippedPos ^= 56;
+							flippedPiece ^= 1;
+						}
+
+						EvaluationNnueBase::ApplyPieceSingle<true>(accumulator, flippedPos, flippedPiece, kingQueenSide);
+					}
+				}
+				AccumulatorInvalidations[color] = false;
+			}
+		}
 	}
 
 #else
@@ -106,8 +139,6 @@ public:
 	bool WhiteToMove;
 	CastlingPermission CastlingPermissions;
 
-	//Bitboard WhitePieces;
-	//Bitboard BlackPieces;
 	Bitboard EmptySquares;
 	Bitboard AllPieces;
 
