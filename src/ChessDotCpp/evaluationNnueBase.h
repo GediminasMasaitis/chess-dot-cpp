@@ -53,14 +53,12 @@ public:
     };
 
     template<bool TSet>
-    static void ApplyPieceSingle(hidden_layer_t& hiddenLayer, const Position pos, const Piece piece, const bool kingQueenSide)
+    static void ApplyPieceSingle(hidden_layer_t& hiddenLayer, const Position pos, const Piece piece)
     {
         const auto pieceIndex = pieceIndices[piece];
         assert(pieceIndex >= 0);
 
-        const auto posIndex = kingQueenSide ? pos ^ 7 : pos;
-        //const auto posIndex = pos;
-        const auto inputIndex = pieceIndex + posIndex;
+        const auto inputIndex = pieceIndex + pos;
         const auto hiddenLayerPtr = SimdNV::reinterpret(hiddenLayer.data());
         const auto inputWeightsPtr = SimdNV::reinterpret(InputWeights[inputIndex].data());
         for (auto hiddenIndex = 0; hiddenIndex < (HiddenCount / SimdNV::stride); hiddenIndex++)
@@ -77,36 +75,29 @@ public:
     }
 
     template<bool TSet>
-    static void ApplyPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide)
+    static void ApplyPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece)
     {
         const Position flippedPos = pos ^ 56;
         const Piece flippedPiece = piece ^ 1;
-        ApplyPieceSingle<TSet>(hiddenLayers[Colors::White], pos, piece, kingsQueenSide[Colors::White]);
-        ApplyPieceSingle<TSet>(hiddenLayers[Colors::Black], flippedPos, flippedPiece, kingsQueenSide[Colors::Black]);
+        ApplyPieceSingle<TSet>(hiddenLayers[Colors::White], pos, piece);
+        ApplyPieceSingle<TSet>(hiddenLayers[Colors::Black], flippedPos, flippedPiece);
     }
 
-    static void
-    SetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide)
+    static void SetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece)
     {
-        ApplyPiece<true>(hiddenLayers, pos, piece, kingsQueenSide);
+        ApplyPiece<true>(hiddenLayers, pos, piece);
     }
 
-    static void UnsetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide)
+    static void UnsetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece)
     {
-        ApplyPiece<false>(hiddenLayers, pos, piece, kingsQueenSide);
-    }
-
-    static void ResetSingle(hidden_layer_t& hiddenLayer)
-    {
-        std::copy(std::begin(HiddenBiases), std::end(HiddenBiases), std::begin(hiddenLayer));
+        ApplyPiece<false>(hiddenLayers, pos, piece);
     }
 
     static void Reset(hidden_layers_t& hiddenLayers)
     {
         for(Color color = 0; color < Colors::Count; color++)
         {
-            auto& hiddenLayer = hiddenLayers[color];
-            ResetSingle(hiddenLayer);
+            std::copy(std::begin(HiddenBiases), std::end(HiddenBiases), std::begin(hiddenLayers[color]));
         }
     }
 
@@ -123,7 +114,7 @@ public:
     
     static void Init()
     {
-        auto file = std::ifstream("C:/Chess/Networks/34/nn-epoch500.nnue", std::ios::binary | std::ios::ate);
+        auto file = std::ifstream("C:/Chess/Networks/35/nn-epoch500.nnue", std::ios::binary | std::ios::ate);
         auto fileSize = static_cast<size_t>(file.tellg());
         file.seekg(0);
 

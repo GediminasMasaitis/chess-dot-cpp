@@ -56,7 +56,7 @@ public:
     Score Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply ply, Score alpha, Score beta);
     bool TablebaseRootSearch(Board& board);
     void UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply ply, MoveArray& attemptedMoves, MoveCount attemptedMoveCount, Move bestMove, bool betaCutoff);
-    Score AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool isCutNode, bool nullMoveAllowed);
+    Score AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed);
     Score Aspiration(const ThreadId threadId, Board& board, const Ply depth, const Score previous);
     //void RunSingleThread(Board& board);
     //void RunMultiThread(Board& board);
