@@ -6579,3 +6579,22 @@ Score of ChessDotCpp3.51 vs seer2.5: 212 - 587 - 701  [0.375] 1500
 ...      White vs Black: 413 - 386 - 701  [0.509] 1500
 Elo difference: -88.7 +/- 12.8, LOS: 0.0 %, DrawRatio: 46.7 %
 ```
+
+### 3.52
+
+Allow more time usage
+
+```
+Score of ChessDotCpp3.52 vs ChessDotCpp3.51: 273 - 210 - 1017  [0.521] 1500
+...      ChessDotCpp3.52 playing White: 145 - 109 - 496  [0.524] 750
+...      ChessDotCpp3.52 playing Black: 128 - 101 - 521  [0.518] 750
+...      White vs Black: 246 - 237 - 1017  [0.503] 1500
+Elo difference: 14.6 +/- 10.0, LOS: 99.8 %, DrawRatio: 67.8 %
+
+60+0.6
+Score of ChessDotCpp3.52 vs ChessDotCpp3.51: 15 - 10 - 75  [0.525] 100
+...      ChessDotCpp3.52 playing White: 8 - 6 - 37  [0.520] 51
+...      ChessDotCpp3.52 playing Black: 7 - 4 - 38  [0.531] 49
+...      White vs Black: 12 - 13 - 75  [0.495] 100
+Elo difference: 17.4 +/- 34.0, LOS: 84.1 %, DrawRatio: 75.0 %
+```
