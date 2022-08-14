@@ -660,7 +660,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         
         if (staticScore - margin >= beta)
         {
-            return staticScore - margin;
+            return beta;
         }
     }
 
