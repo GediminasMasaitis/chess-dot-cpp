@@ -647,16 +647,16 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     //}
 
     // STATIC EVALUATION PRUNING
+    assert(depth > 0);
     if
     (
-        depth < 4
+        depth < 6
         && !isPrincipalVariation
         && !inCheck
     )
     {
-        constexpr Score marginPerDepth = 64;
-        //const Score marginPerDepth = Options::TuneScore1;
-        Score margin = static_cast<Score>(marginPerDepth * depth);
+        constexpr std::array<Score, 6> margins = { 0, 64, 128, 256, 512, 768 };
+        const Score margin = margins[depth];
         
         if (staticScore - margin >= beta)
         {
@@ -666,7 +666,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
     // RAZORING
     constexpr Score razorMargin = 200;
-    //const Score razorMargin = Options::Tune1;
     if
     (
         depth < 4

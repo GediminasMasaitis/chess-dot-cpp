@@ -6698,3 +6698,43 @@ Score of ChessDotCpp3.53 vs ChessDotCpp3.52: 606 - 538 - 2356  [0.510] 3500
 ...      White vs Black: 594 - 550 - 2356  [0.506] 3500
 Elo difference: 6.8 +/- 6.6, LOS: 97.8 %, DrawRatio: 67.3 %
 ```
+
+### 3.54 Fail-hard on static eval pruning
+
+Improved static eval pruning to prune at depth < 6
+
+```
+info depth 1 multipv 1 score cp 23 nodes 24 nps 24000 time 1 pv e2e4
+info depth 2 multipv 1 score cp 28 nodes 67 nps 67000 time 1 pv e2e4 g8f6
+info depth 3 multipv 1 score cp 17 nodes 338 nps 338000 time 1 pv d2d4 g8f6 g1f3
+info depth 4 multipv 1 score cp 40 nodes 683 nps 683000 time 1 pv e2e4 e7e6 e4e5 f8c5
+info depth 5 multipv 1 score cp 15 nodes 1399 nps 1399000 time 1 pv e2e4 e7e6 f1e2 d8g5 e2f1
+info depth 6 multipv 1 score cp 27 nodes 2608 nps 1304000 time 2 pv e2e4 c7c5 g1f3 e7e6 f1e2 g8f6
+info depth 7 multipv 1 score cp 22 nodes 4949 nps 1237250 time 4 pv e2e4 e7e6 f1e2 d7d5 e4d5 e6d5 g1f3
+info depth 8 multipv 1 score cp 28 nodes 8118 nps 1623600 time 5 pv e2e4 e7e6 g1f3 f8e7 d2d4 d7d5 e4d5 e6d5
+info depth 9 multipv 1 score cp 26 nodes 13412 nps 1676500 time 8 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 f1e2 g8f6 e1g1
+info depth 10 multipv 1 score cp 21 nodes 25570 nps 1704666 time 15 pv e2e4 c7c5 g1f3 b8c6 f1e2 g8f6 b1c3 d7d5 e4d5 f6d5 c3d5 d8d5
+info depth 11 multipv 1 score cp 21 nodes 42385 nps 1766041 time 24 pv e2e4 c7c5 g1f3 b8c6 f1e2 g8f6 b1c3 d7d5 e4d5 f6d5 c3d5 d8d5
+info depth 12 multipv 1 score cp 27 nodes 80032 nps 1818909 time 44 pv e2e4 c7c5 g1f3 b8c6 b1c3 e7e6 f1e2 f8e7 e1g1 d7d5 e4d5 e6d5
+info depth 13 multipv 1 score cp 16 nodes 208431 nps 1877756 time 111 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8d6 f1d3 g8f6 e1g1 e8g8 f1e1
+info depth 14 multipv 1 score cp 18 nodes 358399 nps 1896291 time 189 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8d6 f1d3 d8e7 c1e3 g8f6 e1g1 e8g8 f1e1
+info depth 15 multipv 1 score cp 18 nodes 701460 nps 1916557 time 366 pv g1f3 g8f6 d2d4 e7e6 c2c4 f8e7 e2e3 e8g8 f1e2 d7d5 e1g1 f8e8 b1c3 d5c4 e2c4
+info depth 16 multipv 1 score cp 22 nodes 1113614 nps 1916719 time 581 pv g1f3 g8f6 d2d4 e7e6 c2c4 f8e7 e2e3 e8g8 f1e2 d7d5 e1g1 d5c4 e2c4 c7c5 d4c5 e7c5
+info depth 17 multipv 1 score cp 25 nodes 1923013 nps 1915351 time 1004 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8d6 f1d3 g8f6 e1g1 e8g8 c1g5 f8e8 b1d2 c7c5 d4c5 d6c5
+info depth 18 multipv 1 score cp 28 nodes 2805027 nps 1923886 time 1458 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8d6 f1d3 g8f6 e1g1 e8g8 c1g5 f8e8 b1d2 b8d7 c2c4 c7c6
+info depth 19 multipv 1 score cp 27 nodes 4093750 nps 1899651 time 2155 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8d6 f1d3 g8f6 e1g1 e8g8 c1g5 f8e8 h2h3 b8d7 f1e1 e8e1 d1e1 c7c6
+info depth 20 multipv 1 score cp 21 nodes 5834417 nps 1908543 time 3057 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8d6 f1d3 g8f6 e1g1 e8g8 c1g5 b8d7 b1d2 h7h6 g5h4 f8e8 c2c4 c7c6
+info depth 21 multipv 1 score cp 18 nodes 12181851 nps 1901631 time 6406 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8d6 f1d3 g8f6 e1g1 e8g8 c1g5 b8d7 b1d2 h7h6 g5h4 f8e8 h2h3 c7c5 c2c4
+info depth 22 multipv 1 score cp 22 nodes 14040369 nps 1902746 time 7379 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8d6 f1d3 g8f6 e1g1 e8g8 c1g5 c8g4 b1d2 b8d7 c2c4 h7h6 g5h4 c7c5 c4d5 c5d4
+info depth 23 multipv 1 score cp 18 nodes 20030841 nps 1924746 time 10407 pv e2e4 e7e6 g1f3 d7d5 e4d5 e6d5 d2d4 f8d6 f1d3 g8f6 e1g1 e8g8 c1g5 f8e8 b1d2 h7h6 g5h4 b8d7 c2c4 c7c5 c4d5 d8b6 d4c5 d7c5
+info depth 24 multipv 1 score cp 19 nodes 29361166 nps 1947414 time 15077 pv g1f3 g8f6 d2d4 e7e6 c2c4 f8e7 g2g3 e8g8 f1g2 d7d5 e1g1 c7c6 b1c3 b8d7 b2b3 b7b6 d1d3 h7h6 f1d1 c8a6 e2e4 d5c4 b3c4 c6c5
+info depth 25 multipv 1 score cp 23 nodes 45272657 nps 1957736 time 23125 pv g1f3 g8f6 d2d4 e7e6 c2c4 f8e7 g2g3 e8g8 f1g2 d7d5 e1g1 c7c6 b1c3 b8d7 b2b3 b7b6 d1d3 d5c4 b3c4 c8a6 f1d1 f6d5 a2a3 d5c3 d3c3
+```
+
+```
+Score of ChessDotCpp3.54 vs ChessDotCpp3.53: 687 - 628 - 2685  [0.507] 4000
+...      ChessDotCpp3.54 playing White: 359 - 308 - 1334  [0.513] 2001
+...      ChessDotCpp3.54 playing Black: 328 - 320 - 1351  [0.502] 1999
+...      White vs Black: 679 - 636 - 2685  [0.505] 4000
+Elo difference: 5.1 +/- 6.2, LOS: 94.8 %, DrawRatio: 67.1 %
+```
