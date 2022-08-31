@@ -404,12 +404,12 @@ public:
 void UpdateHistoryEntry(MoveScore& score, const MoveScore value)
 {
     const MoveScore absValue = std::abs(value);
-    if (absValue > 324)
+    if (absValue > 256)
     {
         return;
     }
 
-    score -= (score * absValue) / 324;
+    score -= (score * absValue) / 256;
     score += value * 32;
 }
 
