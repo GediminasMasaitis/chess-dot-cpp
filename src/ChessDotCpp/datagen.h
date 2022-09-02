@@ -1,7 +1,7 @@
 #pragma once
 
+#include "attacks.h"
 #include "common.h"
-#include "evaluation.h"
 #include "search.h"
 #include "movegen.h"
 
@@ -40,15 +40,16 @@ public:
             
     };
 
-    static void OnCallback(SearchCallbackData& data)
+    static void OnCallback(const SearchCallbackData& data)
     {
+        (void)data;
     }
 
     static GameResult AdjudicateMates(Board& board)
     {
         MoveCount moveCount = 0;
         MoveArray moves;
-        Bitboard checkers = CheckDetector::GetCheckers(board);
+        const Bitboard checkers = CheckDetector::GetCheckers(board);
         const bool inCheck = checkers != 0;
         EachColor<Bitboard> pins;
         PinDetector::GetPinnedToKings(board, pins);
@@ -57,7 +58,7 @@ public:
         bool hasValidMove = false;
         for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
         {
-            const bool isValid = MoveValidator::IsKingSafeAfterMove2(board, moves[moveIndex], checkers, pinned);
+            const bool isValid = MoveValidator::IsKingSafeAfterMove2(board, moves[moveIndex], pinned);
             if (isValid)
             {
                 hasValidMove = true;
@@ -154,7 +155,7 @@ public:
         return mateAdjudication;
     }
 
-    static bool ShouldIncludeInDataset(const Board& board, const DataEntries& entries, const DataEntry& currentEntry, const Move& move)
+    static bool ShouldIncludeInDataset(const Board& board, const DataEntry& currentEntry, const Move& move)
     {
         constexpr Score scoreLimit = 2000;
         //constexpr Score scoreLimit = Constants::MateThreshold;
@@ -231,7 +232,7 @@ public:
             entry.FFen = Fens::Serialize(board);
             entry.SScore = score;
             entry.Key = board.Key;
-            entry.IncludeInDataset = ShouldIncludeInDataset(board, iterationData, entry, results.BestMove);
+            entry.IncludeInDataset = ShouldIncludeInDataset(board, entry, results.BestMove);
 
             if(totalPly < 16)
             {
@@ -266,7 +267,6 @@ public:
             iterationData.push_back(entry);
         }
 
-        const auto a = 123;
         return result;
     }
 

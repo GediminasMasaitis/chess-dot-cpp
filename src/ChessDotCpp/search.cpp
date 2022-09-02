@@ -158,7 +158,6 @@ bool Search::IsRepetitionOr50MoveAfterMove(const Board& board, const Move move) 
 Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply ply, Score alpha, Score beta)
 {
     ThreadState& threadState = State.Thread[threadId];
-    const bool rootNode = ply == 0;
     
     ++threadState.Stats.Nodes;
 
@@ -204,7 +203,7 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
 
     EachColor<Bitboard> pins;
     PinDetector::GetPinnedToKings(board, pins);
-    const Score standPat = Evaluation::Evaluate(board, pins, State.Global.Eval);
+    const Score standPat = CallEval(board, pins);
 
     if (standPat >= beta)
     {
@@ -443,14 +442,13 @@ void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply
 Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed)
 {
     ThreadState& threadState = State.Thread[threadId];
-    PlyData& plyState = threadState.Plies[ply];
     const bool rootNode = ply == 0;
     const bool zeroWindow = alpha == beta - 1;
     
     // TIME CONTROL
     if (depth > 2 && (threadState.StopIteration || Stopper.ShouldStop(threadId, State)))
     {
-        const Score score = Contempt(board);
+        //const Score score = Contempt(board);
         return beta;
     }
     
@@ -609,7 +607,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     //{
     //    staticScore = Evaluation::Evaluate(board, pins, State.Global.Eval);
     //}
-    staticScore = Evaluation::Evaluate(board, pins, State.Global.Eval);
+    staticScore = CallEval(board, pins);
     board.StaticEvaluation = staticScore;
     const bool improving = ply < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation;
 
@@ -1061,7 +1059,7 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
     threadState.Stats.Elapsed = Stopper.GetElapsed();
     SearchCallbackData callbackData(threadId, board, State, 1, score, false);
 
-    if (threadId == 0)
+    if (threadId == 0 && Callback != nullptr)
     {
         Callback(callbackData);
     }
@@ -1090,7 +1088,7 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
         
         threadState.SavedPrincipalVariation.clear();
         State.Global.Table.GetPrincipalVariation(board, threadState.SavedPrincipalVariation);
-        if (threadId == 0)
+        if (threadId == 0 && Callback != nullptr)
         {
             threadState.Stats.Elapsed = Stopper.GetElapsed();
             Callback(callbackData);
@@ -1157,7 +1155,10 @@ void Search::IterativeDeepenLazySmpOld(Board& board, SearchResults& results)
     
     mainThreadState.Stats.Elapsed = Stopper.GetElapsed();
     SearchCallbackData callbackData(0, board, State, 1, score, false);
-    Callback(callbackData);
+    if (Callback != nullptr)
+    {
+        Callback(callbackData);
+    }
     //State.Global.Table.PrintOccupancy();
 
     if (Stopper.ShouldStopDepthIncrease(0, State))
@@ -1213,7 +1214,10 @@ void Search::IterativeDeepenLazySmpOld(Board& board, SearchResults& results)
 
         mainThreadState.SavedPrincipalVariation.clear();
         State.Global.Table.GetPrincipalVariation(board, mainThreadState.SavedPrincipalVariation);
-        Callback(callbackData);
+        if (Callback != nullptr)
+        {
+            Callback(callbackData);
+        }
         //State.Global.Table.PrintOccupancy();
     }
     GetSearchResults(results, depth, score);

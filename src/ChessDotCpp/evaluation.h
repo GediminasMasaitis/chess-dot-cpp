@@ -1,16 +1,15 @@
 #pragma once
 
-#include "eval2.h"
+#define EVALPINS 0
+
 #include "evaluationClassical2.h"
-#include "evaluationClassical.h"
-#include "evaluationNnue.h"
 #include "evaluationNnue2.h"
 
 //using Evaluation = EvaluationClassical2;
-//using Evaluation = ClassicEvaluation;
-
-//using Evaluation = Eval2;
-
-//using Evaluation = Eval3;
-//using Evaluation = EvaluationNnue;
 using Evaluation = EvaluationNnue2;
+
+#if EVALPINS
+#define CallEval(board, pins) Evaluation::Evaluate(board, pins)
+#else
+#define CallEval(board, pins) Evaluation::Evaluate(board)
+#endif

@@ -1,10 +1,7 @@
 #pragma once
 #include "board.h"
-#include "evalstate.h"
 #include "options.h"
 #include "searchhash.h"
-//#include "abdada.h"
-//#include "threadpool_old.h"
 
 class SearchParameters
 {
@@ -78,10 +75,6 @@ public:
         }
     }
 };
-//
-//static inline ContinuationEntry EmptyContinuation{};
-
-
 
 class PlyData
 {
@@ -89,18 +82,11 @@ public:
     constexpr static Ply MaxContinuationCount = 6;
     
     using KillerArray = std::array<Move, 2>;
-    //using CurrentContinuationsType = std::array<ContinuationEntry*, MaxContinuationCount>;
-    
     KillerArray Killers;
-    //CurrentContinuationsType CurrentContinuations;
     
 
     void NewSearch()
     {
-        //for(Ply i = 0; i < MaxContinuationCount; i++)
-        //{
-        //    CurrentContinuations[i] = &EmptyContinuation;
-        //}
     }
 
     void NewGame()
@@ -239,7 +225,6 @@ public:
     using BreadcrumbArray = std::array<Breadcrumb, BreadcrumbCount>;
     
     TranspositionTable Table{};
-    EvalState Eval{};
     Color ColorToMove;
     BreadcrumbArray Breadcrumbs{};
     SearchParameters Parameters{};

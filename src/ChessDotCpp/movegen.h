@@ -25,8 +25,8 @@ class MoveValidator
 {
 public:
 	static bool IsKingSafeAfterMove(const Board& board, const Move move);
-	static bool IsKingSafeAfterMove2(const Board& board, const Move move, Bitboard checkers, Bitboard pinnedPieces);
-	static void FilterMovesByKingSafety(const Board& board, Bitboard checkers, Bitboard pinnedPieces, MoveArray& moves, MoveCount& moveCount);
+	static bool IsKingSafeAfterMove2(const Board& board, const Move move, Bitboard pinnedPieces);
+	static void FilterMovesByKingSafety(const Board& board, Bitboard pinnedPieces, MoveArray& moves, MoveCount& moveCount);
 
 	static bool IsPseudoLegal(const Board& board, const Move move);
 };

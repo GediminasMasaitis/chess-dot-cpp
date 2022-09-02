@@ -3,8 +3,6 @@
 #include "common.h"
 #include "evalbase.h"
 #include "board.h"
-#include "evalstate.h"
-#include "attacks.h"
 #include "magics.h"
 
 class EvaluationClassical2
@@ -382,7 +380,6 @@ public:
         constexpr Color opponent = color ^ 1;
         constexpr Piece pieceNoColor = Pieces::Pawn;
         constexpr Piece piece = pieceNoColor | color;
-        constexpr PieceIndex pieceIndex = GetPieceIndex(piece);
         PhaseScore score = 0;
 
         constexpr Piece opponentPawn = Pieces::Pawn | opponent;
@@ -621,7 +618,7 @@ public:
         uint8_t tableIndex = data.KingAttackWeight[color];
         if (tableIndex >= kingSafetyTable.size())
         {
-            tableIndex = kingSafetyTable.size() - 1;
+            tableIndex = static_cast<uint8_t>(kingSafetyTable.size() - 1);
         }
         score += kingSafetyTable[tableIndex];
         TraceIncr(kingSafetyTable[tableIndex]);
@@ -735,11 +732,6 @@ public:
     }
 
     static Score Evaluate(const BoardBase& board, const EachColor<Bitboard>& pins)
-    {
-        return EvaluateInner(board, pins);
-    }
-
-    static Score Evaluate(const BoardBase& board, const EachColor<Bitboard>& pins, EvalState& state)
     {
         return EvaluateInner(board, pins);
     }

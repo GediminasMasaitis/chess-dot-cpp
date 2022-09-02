@@ -632,7 +632,7 @@ void GetAllPossibleMovesForColor(const Board& board, MoveArray& moves, MoveCount
 	const Bitboard checkers = CheckDetector::GetCheckers(board);
 	const Bitboard pinned = GetPinnedForColor<TColor>(board, board.KingPositions[board.ColorToMove]);
 	GetAllPotentialMovesForColor<TColor>(board, checkers, pinned, moves, moveCount);
-	MoveValidator::FilterMovesByKingSafety(board, checkers, pinned, moves, moveCount);
+	MoveValidator::FilterMovesByKingSafety(board, pinned, moves, moveCount);
 }
 
 void MoveGenerator::GetAllPossibleMoves(const Board& board, MoveArray& moves, MoveCount& moveCount)
@@ -731,7 +731,7 @@ bool MoveValidator::IsKingSafeAfterMove(const Board& board, const Move move)
 	return true;
 }
 
-bool MoveValidator::IsKingSafeAfterMove2(const Board& board, Move move, Bitboard checkers, Bitboard pinnedPieces)
+bool MoveValidator::IsKingSafeAfterMove2(const Board& board, Move move, Bitboard pinnedPieces)
 {
 	const bool kingMove = move.GetPiece() == Pieces::King + board.ColorToMove;
 	const bool isPinned = (pinnedPieces & GetBitboard(move.GetFrom())) != 0;
@@ -749,13 +749,13 @@ bool MoveValidator::IsKingSafeAfterMove2(const Board& board, Move move, Bitboard
 	return true;
 }
 
-void MoveValidator::FilterMovesByKingSafety(const Board& board, Bitboard checkers, Bitboard pinnedPieces, MoveArray& moves, MoveCount& moveCount)
+void MoveValidator::FilterMovesByKingSafety(const Board& board, Bitboard pinnedPieces, MoveArray& moves, MoveCount& moveCount)
 {
-	size_t toRemove = 0;
+	MoveCount toRemove = 0;
 	for (size_t i = 0; i < moveCount; i++)
 	{
-		auto move = moves[i];
-		bool safe = IsKingSafeAfterMove2(board, move, checkers, pinnedPieces);
+		const auto move = moves[i];
+		const bool safe = IsKingSafeAfterMove2(board, move, pinnedPieces);
 		if (safe)
 		{
 			if (toRemove > 0)
@@ -800,7 +800,7 @@ bool MoveValidator::IsPseudoLegal(const Board& board, const Move move)
 			return false;
 		}
 
-		const Piece enemyPawn = Pieces::Pawn | board.ColorToMove ^ 1;
+		const Piece enemyPawn = Pieces::Pawn | (board.ColorToMove ^ 1);
 		if (board.ArrayBoard[killedPawnPos] != enemyPawn)
 		{
 			return false;

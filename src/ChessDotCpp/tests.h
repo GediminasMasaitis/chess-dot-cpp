@@ -6,12 +6,10 @@
 #include "fen.h"
 #include "magics.h"
 #include "see.h"
-#include "likeliness.h"
 #include "movegen.h"
 #include "tablebases.h"
 #include "zobrist.h"
 #include "evaluation.h"
-#include "pgn.h"
 #include "fathom/tbprobe.h"
 
 class Tests
@@ -47,13 +45,10 @@ public:
         }
         commands.push("quit");
         Game::RunCommands(commands);
-        Likeliness::PrintStats();
     }
 
     static void TestEval()
     {
-        using TestEvalClass = EvaluationNnue2;
-
         //TestEvalClass::Init();
         EvaluationNnueBase::Init();
 
@@ -66,41 +61,10 @@ public:
         Board board{};
         Fens::Parse(board, fen);
 
-        EvalState state{};
-#if EVALTABLE
-        state.EvalTable.SetSize(16 * 1024 * 1024);
-        state.EvalTable.Clear();
-#endif
-#if PAWNTABLE
-        state.PawnTable.SetSize(16 * 1024 * 1024);
-        state.PawnTable.Clear();
-#endif
-
         EachColor<Bitboard> pins;
         PinDetector::GetPinnedToKings(board, pins);
-        const auto score = TestEvalClass::Evaluate(board, pins, state);
+        const auto score = CallEval(board, pins);
         std::cout << score << std::endl;
-    }
-    
-    //static void TestSfen()
-    //{
-    //    Fen fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    //    Board board{};
-    //    Fens::Parse(board, fen);
-
-    //    auto bytes = std::array<uint8_t, 32>();
-    //    Sfens::Serialize(board, bytes.data());
-
-    //    auto a = 123;
-    //}
-
-    static void TestPgnParse()
-    {
-        std::ifstream file;
-        file.open("C:\\Chess\\Runners\\CuteChess\\out.pgn");
-        std::vector<BoardBase> boards{};
-        Pgns::ParseMultiple(file, boards);
-        file.close();
     }
 
     static void TestFenSerialize()
@@ -159,8 +123,7 @@ public:
         board.DoMove("c5c6");
         
         //const ZobristKey key = ZobristKeys.CalculateKey(board);
-        auto callback = [&](SearchCallbackData& data) { };
-        auto search = Search(callback);
+        auto search = Search(nullptr);
 
         auto isRepetition = search.IsRepetitionOr50Move(board);
         

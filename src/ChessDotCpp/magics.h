@@ -3,8 +3,6 @@
 #include "common.h"
 #include "constants.h"
 
-//#include "magicMoveboardFixed.h"
-
 class HyperbolaQuintessence
 {
 private:

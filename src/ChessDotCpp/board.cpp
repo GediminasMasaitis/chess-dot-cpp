@@ -1,7 +1,6 @@
 #include "board.h"
 
 #include "zobrist.h"
-#include "likeliness.h"
 
 bool BoardBase::CanCastle(const CastlingPermission permission) const
 {
@@ -246,7 +245,7 @@ void Board::GetKeyAfterMove(const Move move, KeyAnd50Move& keyAnd50Move) const
     assert(move.GetTakesPiece() != Pieces::BlackKing);
 
     const auto originalWhiteToMove = WhiteToMove;
-    const auto originalColorToMove = ColorToMove;
+    assert(move.GetColorToMove() == ColorToMove);
 
     keyAnd50Move.Key = Key ^ ZobristKeys.ZWhiteToMove;
     keyAnd50Move.FiftyMoveRuleIndex = FiftyMoveRuleIndex;
@@ -260,8 +259,6 @@ void Board::GetKeyAfterMove(const Move move, KeyAnd50Move& keyAnd50Move) const
     {
         return;
     }
-
-    assert(move.GetColorToMove() == originalColorToMove);
 
     const Position from = move.GetFrom();
     const Position to = move.GetTo();

@@ -6,9 +6,8 @@
 #include <iostream>
 #include <chrono>
 #include <algorithm>
-#include <fstream>
 
-size_t GetNodesInner(Board& board, Move parentMove, Ply depth, MoveStack& moveStack)
+size_t GetNodesInner(Board& board, Ply depth, MoveStack& moveStack)
 {
 	if (depth == 0)
 	{
@@ -20,13 +19,6 @@ size_t GetNodesInner(Board& board, Move parentMove, Ply depth, MoveStack& moveSt
 	MoveGenerator::GetAllPossibleMoves(board, possibleMoves, possibleMoveCount);
 	if (depth == 1)
 	{
-		//std::cout << parentMove.ToPositionString() << ": " << Fens::Serialize(board) << " " << possibleMoveCount << std::endl;
-		//std::sort(possibleMoves.begin(), possibleMoves.begin() + possibleMoveCount, [](const Move& lhs, const Move& rhs) {return lhs.ToPositionString() < rhs.ToPositionString(); });
-		//for (auto i = 0; i < possibleMoveCount; i++)
-		//{
-		//	auto& move = possibleMoves[i];
-		//	std::cout << move.ToPositionString() << std::endl;
-		//}
 		return possibleMoveCount;
 	}
 
@@ -35,7 +27,7 @@ size_t GetNodesInner(Board& board, Move parentMove, Ply depth, MoveStack& moveSt
 	{
 		auto& move = possibleMoves[i];
 		board.DoMove(move);
-		const size_t childNodes = GetNodesInner(board, move, depth - 1, moveStack);
+		const size_t childNodes = GetNodesInner(board, depth - 1, moveStack);
 		board.UndoMove();
 		nodes += childNodes;
 	}
@@ -53,12 +45,9 @@ size_t InternalPerftClient::GetMovesAndNodes(Board& board, Ply depth, MoveStack&
 	for (MoveCount i = 0; i < possibleMoveCount; i++)
 	{
 		auto& move = possibleMoves[i];
-		//auto boardStr1 = Fens::Serialize(board);
 		board.DoMove(move);
-		const size_t nodes = GetNodesInner(board, move, depth - 1, moveStack);
+		const size_t nodes = GetNodesInner(board, depth - 1, moveStack);
 		board.UndoMove();
-		//auto boardStr2 = Fens::Serialize(board);
-		//assert(boardStr1 == boardStr2);
 		totalNodes += nodes;
 		const auto moveStr = move.ToPositionString();
 		const auto moveAndNodes = MoveAndNodes(moveStr, nodes, move);
@@ -71,12 +60,7 @@ size_t RunIteration(Fen fen, Ply depth)
 {
 	auto board = Board();
 	Fens::Parse(board, fen);
-	//board.DoMove("a2a4");
-	
-	/*board.UndoMove();
-	board.DoMove("b2b4");*/
-	
-	auto moveStack = MoveStack();
+    auto moveStack = MoveStack();
 	MoveAndNodeArray movesAndNodes;
 	size_t moveAndNodeCount = 0;
 	auto start = std::chrono::high_resolution_clock::now();

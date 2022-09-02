@@ -4,7 +4,6 @@
 #include "datagen.h"
 #include "display.h"
 #include "texel.h"
-#include "trainnnue.h"
 
 void Uci::OnCallback(SearchCallbackData& data) const
 {
@@ -229,7 +228,6 @@ void Uci::HandleSetoption(std::stringstream& reader)
 	else if (name == "TUNE3") {
 		Options::Tune3 = static_cast<int32_t>(std::stoi(value));
 	}
-	auto a = 123;
 }
 
 void Uci::HandleIsReady()
@@ -241,24 +239,6 @@ void Uci::HandleUciNewGame()
 {
 	search.State.NewGame();
 	Fens::Parse(board, StartingFen);
-}
-
-void Uci::HandleRescore(std::stringstream& reader)
-{
-	auto parameters = TrainingParameters();
-	parameters.SearchParams.WhiteTime = 1000;
-	parameters.SearchParams.WhiteTimeIncrement = 50;
-	parameters.SearchParams.BlackTime = 1000;
-	parameters.SearchParams.BlackTimeIncrement = 50;
-	//parameters.SearchParams.SkipNewSearch = true;
-	parameters.InputFormat = InputFormats::Plain;
-	//parameters.InputPath = "C:/Chess/TrainingOld/data/gensfen_multipvdiff_100_d6_0_0_0.plain";
-	parameters.InputPath = "C:/Chess/TrainingOld/data/gensfen_multipvdiff_100_d6_0_0.plain";
-	parameters.OffsetPath = "C:/Chess/TrainingOld/data/offset.txt";
-	parameters.OutputPath = "C:/Chess/TrainingOld/data/results.plain";
-	parameters.OutputFormat = OutputFormats::Plain;
-	ReadSearchParameters(reader, parameters.SearchParams);
-	NnueTrainer::Run(parameters);
 }
 
 bool Uci::HandleInput(const std::string& line)
@@ -293,10 +273,6 @@ bool Uci::HandleInput(const std::string& line)
 		else if (word == "isready")
 		{
 			HandleIsReady();
-		}
-		else if (word == "rescore")
-		{
-			HandleRescore(reader);
 		}
 		else if (word == "tune")
 		{

@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "fen.h"
+#include "evaluation.h"
 
 class Display
 {
@@ -14,7 +15,7 @@ public:
 
         EachColor<Bitboard> pins;
         PinDetector::GetPinnedToKings(board, pins);
-        Score eval = DisplayEvaluation::Evaluate(board, pins);
+        Score eval = CallEval(board, pins);
         eval = board.WhiteToMove ? eval : -eval;
 
         if (evalPieces)
@@ -70,20 +71,20 @@ public:
 
                         EachColor<Bitboard> noPiecePins;
                         PinDetector::GetPinnedToKings(clone, noPiecePins);
-                        Score noPieceEval = DisplayEvaluation::Evaluate(clone, noPiecePins);
+                        Score noPieceEval = CallEval(clone, noPiecePins);
                         noPieceEval = board.WhiteToMove ? noPieceEval : -noPieceEval;
                         const Score difference = static_cast<Score>(eval - noPieceEval);
                         const std::string diffStr = std::to_string(difference);
-                        const auto padLeft = (7 - diffStr.size()) / 2;
-                        const auto padRight = 7 - diffStr.size() - padLeft;
+                        const auto padLeft = static_cast<int32_t>((7 - diffStr.size()) / 2);
+                        const auto padRight = static_cast<int32_t>(7 - diffStr.size() - padLeft);
 
                         ss << "|";
-                        for (auto i = 0; i < padLeft; i++)
+                        for (int32_t i = 0; i < padLeft; i++)
                         {
                             ss << " ";
                         }
                         ss << diffStr;
-                        for (auto i = 0; i < padRight; i++)
+                        for (int32_t i = 0; i < padRight; i++)
                         {
                             ss << " ";
                         }

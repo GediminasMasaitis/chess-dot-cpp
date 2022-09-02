@@ -4,7 +4,6 @@
 #include "tests.h"
 #include "uci.h"
 #include "evaluation.h"
-#include "perft.h"
 #include "tablebases.h"
 #include "texel.h"
 #include "datagen.h"
@@ -14,7 +13,6 @@ void Run(int argc, char** argv)
 {
     EvaluationNnueBase::Init();
     Tablebases::Init();
-    Eval2::InitEvalMasks();
     EvaluationClassical2::Init();
     if(argc > 1)
     {

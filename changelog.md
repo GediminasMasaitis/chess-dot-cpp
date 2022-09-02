@@ -6836,3 +6836,11 @@ Score of ChessDotCpp3.56 vs ChessDotCpp3.55: 429 - 401 - 1670  [0.506] 2500
 ...      White vs Black: 428 - 402 - 1670  [0.505] 2500
 Elo difference: 3.9 +/- 7.8, LOS: 83.4 %, DrawRatio: 66.8 %
 ```
+
+```
+Score of ChessDotCpp3.57 vs ChessDotCpp3.56: 510 - 519 - 1971  [0.498] 3000
+...      ChessDotCpp3.57 playing White: 286 - 253 - 961  [0.511] 1500
+...      ChessDotCpp3.57 playing Black: 224 - 266 - 1010  [0.486] 1500
+...      White vs Black: 552 - 477 - 1971  [0.512] 3000
+Elo difference: -1.0 +/- 7.3, LOS: 39.0 %, DrawRatio: 65.7 %
+```

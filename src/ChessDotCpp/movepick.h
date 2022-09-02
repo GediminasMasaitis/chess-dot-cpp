@@ -102,7 +102,7 @@ public:
                 {
                     assert(MoveValidator::IsPseudoLegal(*_board, _ttMove));
                     assert(MoveValidator::IsKingSafeAfterMove(*_board, _ttMove));
-                    assert(MoveValidator::IsKingSafeAfterMove2(*_board, _ttMove, _checkers, _pinned));
+                    assert(MoveValidator::IsKingSafeAfterMove2(*_board, _ttMove, _pinned));
                     entry.move = _ttMove;
                     if (_ttMove.GetTakesPiece() != Pieces::Empty)
                     {
@@ -122,7 +122,7 @@ public:
                 {
                     assert(MoveValidator::IsPseudoLegal(*_board, _ttMove));
                     assert(MoveValidator::IsKingSafeAfterMove(*_board, _ttMove));
-                    assert(MoveValidator::IsKingSafeAfterMove2(*_board, _ttMove, _checkers, _pinned));
+                    assert(MoveValidator::IsKingSafeAfterMove2(*_board, _ttMove, _pinned));
                     entry.move = _ttMove;
                     entry.see = See::GetSee(*_board, _ttMove);
                     return true;
@@ -172,7 +172,7 @@ public:
                     continue;
                 }
 
-                const bool valid = MoveValidator::IsKingSafeAfterMove2(*_board, move, _checkers, _pinned);
+                const bool valid = MoveValidator::IsKingSafeAfterMove2(*_board, move, _pinned);
                 if (!valid)
                 {
                     continue;
@@ -189,7 +189,7 @@ public:
             {
                 _killerIndex++;
                 const auto& killers = _state->Plies[_ply].Killers;
-                if(_killerIndex >= killers.size())
+                if(_killerIndex >= static_cast<int16_t>(killers.size()))
                 {
                     _stage = MovePickerStage::NonCaptureGen;
                     break;
@@ -257,7 +257,7 @@ public:
 
                 bool isKiller = false;
                 const auto& killers = _state->Plies[_ply].Killers;
-                for(auto killerIndex = 0; killerIndex < killers.size(); killerIndex++)
+                for(int16_t killerIndex = 0; killerIndex < static_cast<int16_t>(killers.size()); killerIndex++)
                 {
                     if(move.Value == killers[killerIndex].Value)
                     {
@@ -270,7 +270,7 @@ public:
                     continue;
                 }
 
-                const bool valid = MoveValidator::IsKingSafeAfterMove2(*_board, move, _checkers, _pinned);
+                const bool valid = MoveValidator::IsKingSafeAfterMove2(*_board, move, _pinned);
                 if (!valid)
                 {
                     continue;
@@ -289,7 +289,7 @@ public:
                 assert(_captureIndex < _captureCount);
                 const auto index = static_cast<MoveCount>(_captureIndex);
                 const auto& move = _captures[index];
-                const bool valid = MoveValidator::IsKingSafeAfterMove2(*_board, move, _checkers, _pinned);
+                const bool valid = MoveValidator::IsKingSafeAfterMove2(*_board, move, _pinned);
                 if (valid)
                 {
                     entry.move = move;
@@ -320,7 +320,7 @@ public:
                     continue;
                 }
 
-                const bool valid = MoveValidator::IsKingSafeAfterMove2(*_board, move, _checkers, _pinned);
+                const bool valid = MoveValidator::IsKingSafeAfterMove2(*_board, move, _pinned);
                 if (!valid)
                 {
                     continue;

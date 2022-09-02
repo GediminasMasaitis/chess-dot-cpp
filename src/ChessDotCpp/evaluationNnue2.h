@@ -1,9 +1,7 @@
 #pragma once
 
 #include "common.h"
-#include "evalbase.h"
 #include "board.h"
-#include "evalstate.h"
 #include "evaluationNnueBase.h"
 
 #include <immintrin.h>
@@ -27,7 +25,7 @@ public:
             auto accumulatorPtr = SimdNV::reinterpret_const(accumulator.data());
             auto& hiddenWeights = HiddenWeightses[relativeSide];
             auto hiddenWeightsPtr = SimdNV::reinterpret_const(hiddenWeights.data());
-            for (auto hiddenIndex = 0; hiddenIndex < (HiddenCount / SimdNV::stride); hiddenIndex++)
+            for (size_t hiddenIndex = 0; hiddenIndex < HiddenCount / SimdNV::stride; hiddenIndex++)
             {
                 const auto hiddenValue = SimdNV::max(zero, accumulatorPtr[hiddenIndex]);
                 const auto hiddenWeight = hiddenWeightsPtr[hiddenIndex];
@@ -39,15 +37,5 @@ public:
         const FinalValue outputValue = SimdFV::sumRegisterEpi32(outputSimd) + OutputBias;
         const Score score = static_cast<Score>(outputValue / scale);
         return score;
-    }
-
-    static Score Evaluate(const BoardBase& board, const EachColor<Bitboard>& pins)
-    {
-        return Evaluate(board);
-    }
-
-    static Score Evaluate(const BoardBase& board, const EachColor<Bitboard>& pins, EvalState& state)
-    {
-        return Evaluate(board);
     }
 };

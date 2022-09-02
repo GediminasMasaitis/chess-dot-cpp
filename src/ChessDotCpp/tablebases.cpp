@@ -5,7 +5,7 @@
 
 void Tablebases::Init()
 {
-    tb_init("C:\\Chess\\Tablebases\\3-4-5piecesSyzygy\\3-4-5");
+    tb_init("C:\\Chess\\Tablebases\\3-4-5piecesSyzygy\\3-4-5"); // TODO: Options
 }
 
 bool Tablebases::CanProbe(const Board& board)
@@ -17,13 +17,6 @@ bool Tablebases::CanProbe(const Board& board)
 
 GameOutcome Tablebases::Probe(const Board& board)
 {
-    //const auto canProbe = CanProbe(board);
-    //if (!canProbe)
-    //{
-    //    return TablebaseResult::Unknown;
-    //}
-    
-    const HistoryPly rule50 = board.HistoryDepth - board.FiftyMoveRuleIndex;
     const auto externalResult = tb_probe_wdl
     (
         board.BitBoard[Colors::White],
@@ -91,12 +84,6 @@ bool Tablebases::ProbeRoot(const Board& board, Move& tbMove)
 {
     tbMove = Move(0);
 
- //   const auto canProbe = CanProbe(board);
-    //if(!canProbe)
-    //{
- //       return false;
-    //}
-    
     const HistoryPly rule50 = board.HistoryDepth - board.FiftyMoveRuleIndex;
     auto extraResults = std::array<unsigned, TB_MAX_MOVES>{};
     const auto externalResult = tb_probe_root
@@ -125,7 +112,6 @@ bool Tablebases::ProbeRoot(const Board& board, Move& tbMove)
     const auto from = static_cast<Position>(TB_GET_FROM(externalResult));
     const auto to = static_cast<Position>(TB_GET_TO(externalResult));
     const auto promote = GetPromote(board.ColorToMove, externalResult);
-    const auto dtz = TB_GET_DTZ(externalResult);
 
     auto moves = MoveArray();
     MoveCount moveCount = 0;

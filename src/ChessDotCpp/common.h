@@ -84,38 +84,14 @@ static std::string ToUserFriendly(T number)
     }
 }
 
-static std::string HumanReadableDuration(std::chrono::seconds input_seconds)
-{
-    using namespace std::chrono;
-    typedef duration<int, std::ratio<86400>> days;
-    const auto d = duration_cast<days>(input_seconds);
-    input_seconds -= d;
-    const auto h = duration_cast<hours>(input_seconds);
-    input_seconds -= h;
-    const auto m = duration_cast<minutes>(input_seconds);
-    input_seconds -= m;
-    const auto s = duration_cast<seconds>(input_seconds);
-
-    std::stringstream ss;
-    ss.fill('0');
-    ss << d.count() << ".";
-    ss << std::setw(2);
-    ss << h.count() << ":";
-    ss << std::setw(2);
-    ss << m.count() << ":";
-    ss << std::setw(2);
-    ss << s.count();
-    return ss.str();
-}
-
 constexpr Rank GetRank(const Position position)
 {
-    return position >> 3;
+    return static_cast<Rank>(position >> 3);
 }
 
 constexpr File GetFile(const Position position)
 {
-    return position & 7;
+    return static_cast<File>(position & 7);
 }
 
 constexpr Position GetPosition(const File file, const Rank rank)

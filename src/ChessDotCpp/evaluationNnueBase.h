@@ -8,8 +8,10 @@
 class EvaluationNnueBase
 {
 public:
-    static constexpr size_t InputCount = 12 * 64;
-    static constexpr size_t HiddenCount = 512;
+    using NnueCount = int16_t;
+
+    static constexpr NnueCount InputCount = 12 * 64;
+    static constexpr NnueCount HiddenCount = 512;
 
     using NnueValue = int16_t;
     using FinalValue = int32_t;
@@ -63,7 +65,7 @@ public:
         const auto inputIndex = pieceIndex + posIndex;
         const auto hiddenLayerPtr = SimdNV::reinterpret(hiddenLayer.data());
         const auto inputWeightsPtr = SimdNV::reinterpret(InputWeights[inputIndex].data());
-        for (auto hiddenIndex = 0; hiddenIndex < (HiddenCount / SimdNV::stride); hiddenIndex++)
+        for (NnueCount hiddenIndex = 0; hiddenIndex < static_cast<NnueCount>(HiddenCount / SimdNV::stride); hiddenIndex++)
         {
             if constexpr (TSet)
             {
@@ -122,11 +124,9 @@ public:
 
     static void Init()
     {
-        auto file = std::ifstream("C:/Chess/Networks/37/nn-epoch500.nnue", std::ios::binary | std::ios::ate);
-        auto fileSize = static_cast<size_t>(file.tellg());
-        file.seekg(0);
+        auto file = std::ifstream("C:/Chess/Networks/37/nn-epoch500.nnue", std::ios::binary);
 
-        for (auto inputIndex = 0; inputIndex < InputCount; inputIndex++)
+        for (size_t inputIndex = 0; inputIndex < InputCount; inputIndex++)
         {
             for (auto hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
             {
@@ -136,7 +136,7 @@ public:
             }
         }
 
-        for (auto hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
+        for (size_t hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
         {
             assert(!file.eof());
             const NnueValue bias = Read<int16_t>(file);
@@ -156,10 +156,6 @@ public:
         assert(!file.eof());
         OutputBias = Read<int32_t>(file);
 
-        constexpr size_t valueCount = InputCount * HiddenCount + HiddenCount + HiddenCount * 2;
-        constexpr size_t expectedPos = sizeof(NnueValue) * valueCount + sizeof(FinalValue);
-        auto pos = static_cast<size_t>(file.tellg());
-        assert(pos == expectedPos);
-        assert(pos == fileSize);
+        assert(static_cast<size_t>(file.tellg()) == sizeof(NnueValue) * (InputCount * HiddenCount + HiddenCount + HiddenCount * 2) + sizeof(FinalValue));
     }
 };
