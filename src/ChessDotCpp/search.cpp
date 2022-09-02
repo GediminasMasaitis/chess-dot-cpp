@@ -221,52 +221,23 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
 
     const Bitboard pinned = pins[board.ColorToMove];
 
-    //MovePicker movePicker;
-    //movePicker.Reset(State, ply, board, checkers, pinned, principalVariationMove);
-
-    //Score bestScore = -Constants::Inf;
-    //Move bestMove;
-    //bool raisedAlpha = false;
-    //bool betaCutoff = false;
-    //uint8_t movesEvaluated = 0;
-    //MovePickerEntry moveEntry;
-    //while (true)
-    //{
-    //    auto nextMoveExists = movePicker.GetNextMove<false>(moveEntry);
-    //    if(!nextMoveExists)
-    //    {
-    //        break;
-    //    }
-    //    const Move move = moveEntry.move;
-
-    MoveArray moves;
-    MoveCount moveCount = 0;
-    MoveGenerator::GetAllPotentialCaptures(board, checkers, pinned, moves, moveCount);
-
-    const Move previousMove = rootNode ? Move(0) : board.History[board.HistoryDepth - 1].Move;
-    const Move countermove = threadState.Countermoves[previousMove.GetPiece()][previousMove.GetTo()];
-
-    ScoreArray seeScores;
-    See::CalculateSeeScores(board, moves, moveCount, seeScores);
-
-    MoveScoreArray staticMoveScores{};
-    MoveOrdering::CalculateStaticScores(threadId, State, moves, seeScores, moveCount, ply, principalVariationMove, countermove, staticMoveScores, board);
+    MovePicker movePicker;
+    movePicker.Reset(threadState, ply, board, checkers, pinned, principalVariationMove);
 
     Score bestScore = -Constants::Inf;
     Move bestMove;
     bool raisedAlpha = false;
     bool betaCutoff = false;
     uint8_t movesEvaluated = 0;
-    for (MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
+    MovePickerEntry moveEntry;
+    while (true)
     {
-        MoveOrdering::OrderNextMove(moveIndex, moves, seeScores, staticMoveScores, moveCount);
-        const Move move = moves[moveIndex];
-        
-        const bool valid = MoveValidator::IsKingSafeAfterMove2(board, move, checkers, pinned);
-        if (!valid)
+        auto nextMoveExists = movePicker.GetNextMove<false>(moveEntry);
+        if(!nextMoveExists)
         {
-            continue;
+            break;
         }
+        const Move move = moveEntry.move;
 
         const Score takesMaterial = EvaluationConstants::PieceValues[move.GetTakesPiece()];
         const Score opponentMaterial = board.PieceMaterial[board.ColorToMove ^ 1];
@@ -291,7 +262,8 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
             && move.GetPawnPromoteTo() == Pieces::Empty
         )
         {
-            const Score seeScore = seeScores[moveIndex];
+            //const Score seeScore = seeScores[moveIndex];
+            const Score seeScore = moveEntry.see;
             if (seeScore < 0)
             {
                 continue;

@@ -647,33 +647,6 @@ void MoveGenerator::GetAllPossibleMoves(const Board& board, MoveArray& moves, Mo
 	}
 }
 
-//bool IsKingSafeAfterMoveOld(const Board& board, const Move move)
-//{
-//	Bitboard allPieces = board.AllPieces;
-//	const Bitboard inverseFromBitboard = ~GetBitboard(move.GetFrom());
-//	const Bitboard toBitboard = GetBitboard(move.GetTo());
-//	allPieces &= inverseFromBitboard;
-//	allPieces |= toBitboard;
-//	if (move.GetEnPassant())
-//	{
-//		const Bitboard enPassantedBitboard = board.WhiteToMove ? toBitboard >> 8 : toBitboard << 8;
-//		allPieces &= ~enPassantedBitboard;
-//	}
-//	
-//	const auto enemyAttackedAfterMove = AttacksGenerator::GetAllAttacked(board, !board.WhiteToMove, allPieces, ~toBitboard);
-//
-//	auto myKings = board.WhiteToMove ? board.BitBoard[ChessPiece::WhiteKing] : board.BitBoard[ChessPiece::BlackKing];
-//	if ((board.WhiteToMove && move.GetPiece() == ChessPiece::WhiteKing) || (!board.WhiteToMove && move.GetPiece() == ChessPiece::BlackKing))
-//	{
-//		myKings &= inverseFromBitboard;
-//		myKings |= toBitboard;
-//	}
-//
-//	const bool isSafe = (enemyAttackedAfterMove & myKings) == 0;
-//	return isSafe;
-//}
-
-
 bool MoveValidator::IsKingSafeAfterMove(const Board& board, const Move move)
 {
 	const Position from = move.GetFrom();
@@ -737,7 +710,7 @@ bool MoveValidator::IsKingSafeAfterMove(const Board& board, const Move move)
 		return false;
 	}
 
-	const Bitboard pawnAttack = BitboardJumps.PawnJumps[board.ColorToMove][myKingPos]; //AttacksService.GetAttackedByPawns(myKings, board.WhiteToMove);
+	const Bitboard pawnAttack = BitboardJumps.PawnJumps[board.ColorToMove][myKingPos];
 	if ((pawnAttack & pawns) != 0)
 	{
 		return false;
@@ -760,40 +733,9 @@ bool MoveValidator::IsKingSafeAfterMove(const Board& board, const Move move)
 
 bool MoveValidator::IsKingSafeAfterMove2(const Board& board, Move move, Bitboard checkers, Bitboard pinnedPieces)
 {
-	//return IsKingSafeAfterMove(board, move);
 	const bool kingMove = move.GetPiece() == Pieces::King + board.ColorToMove;
 	const bool isPinned = (pinnedPieces & GetBitboard(move.GetFrom())) != 0;
 
-	//auto checkCount = PopCount(checkers);
-	//if (checkCount == 1 && !kingMove)
-	//{
-	//    if (isPinned)
-	//    {
-	//        return false;
-	//    }
-
-	//	auto toBitboard = GetBitboard(move.GetTo());
-	//    auto checkerPos = BitScanForward(checkers);
-	//    auto canMoveTo = BetweenBitboards.Between[board.KingPositions[board.ColorToMove]][checkerPos] | checkers;
-
-	//    if ((canMoveTo & toBitboard) == 0)
-	//    {
-	//        return false;
-	//    }
-
-	//    return true;
-	//}
-	
-	//if (isPinned)
-	//{
-	//	auto toBitboard = GetBitboard(move.GetTo());
-	//    auto canMoveTo = BetweenBitboards.Between[board.KingPositions[board.ColorToMove]][move.GetFrom()];
-	//    if ((canMoveTo & toBitboard) != 0)
-	//    {
-	//        return true;
-	//    }
-	//}
-	
 	if
 	(
 		move.GetEnPassant()
@@ -836,11 +778,6 @@ bool MoveValidator::IsPseudoLegal(const Board& board, const Move move)
 		return false;
 	}
 
-	//if(board.ColorToMove != move.GetColorToMove())
-	//{
-	//	return false;
-	//}
-
     const Position from = move.GetFrom();
 	const Position to = move.GetTo();
     const Piece piece = move.GetPiece();
@@ -849,7 +786,7 @@ bool MoveValidator::IsPseudoLegal(const Board& board, const Move move)
 	if (move.GetEnPassant())
 	{
 		Position killedPawnPos;
-		if (board.WhiteToMove) // TODO: whitetomove
+		if (board.WhiteToMove)
 		{
 			killedPawnPos = static_cast<Position>(to - 8);
 		}
