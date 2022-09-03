@@ -47,6 +47,18 @@ public:
         Game::RunCommands(commands);
     }
 
+    static void TestUciFen()
+    {
+        std::queue<std::string> commands = std::queue<std::string>();
+        commands.push("uci");
+        commands.push("ucinewgame");
+        //commands.push("position fen 8/1p3p1p/p4P1k/P4P1p/6pP/6Pq/5P2/6K1 b - - moves h3g3 f2g3");
+        commands.push("position fen 8/1p3p1p/p4P1k/P4P1p/6pP/6Pq/5P2/6K1 b - - moves");
+        commands.push("go infinite");
+        commands.push("quit");
+        Game::RunCommands(commands);
+    }
+
     static void TestEval()
     {
         //TestEvalClass::Init();

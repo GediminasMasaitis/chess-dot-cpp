@@ -1,5 +1,6 @@
 #pragma once
 
+#include "evalbase.h"
 #include "attacks.h"
 #include "common.h"
 #include "search.h"
@@ -275,7 +276,7 @@ public:
     static void RunThread(const ThreadId threadId, const IterationCallback& callback)
     {
         Search search = Search(OnCallback);
-        auto rng = std::mt19937(threadId * 10000032);
+        auto rng = std::mt19937(threadId * 10000035);
         auto data = std::vector<DataEntry>();
 
 
@@ -388,7 +389,7 @@ public:
             const auto now = std::chrono::high_resolution_clock::now();
             const auto elapsed = now - trainStart;
             const auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(elapsed);
-            const auto humanReadableDuration = HumanReadableDuration(elapsedSeconds);
+            //const auto humanReadableDuration = HumanReadableDuration(elapsedSeconds);
             auto elapsedSecondCount = static_cast<int32_t>(elapsedSeconds.count());
             if (elapsedSecondCount == 0)
             {
@@ -402,7 +403,7 @@ public:
             const auto ppsInt = static_cast<size_t>(pps);
 
             std::stringstream ss = std::stringstream();
-            ss << "[" << humanReadableDuration << "]";
+            //ss << "[" << humanReadableDuration << "]";
             ss << " Games: " << std::right << std::setw(4) << games;
             ss << " Positions: " << std::right << std::setw(9) << positions;
             ss << " (" << std::right << std::setw(3) << ppsInt << " PPS)";

@@ -16,8 +16,26 @@ void Uci::OnCallback(SearchCallbackData& data) const
 		//builder << " aborted";
 	}
 	builder << " depth " << std::to_string(data.Depth);
+	builder << " seldepth " << std::to_string(data.State.Thread[0].SelectiveDepth);
+
 	builder << " multipv 1";
-	builder << " score cp " << std::to_string(data._Score);
+	if(data._Score > Constants::MateThreshold)
+	{
+		const Score mateInPlies = static_cast<Score>(Constants::Mate - data._Score);
+		const Score mateInMoves = static_cast<Score>((mateInPlies + 1) / 2);
+		builder << " score mate " << std::to_string(mateInMoves);
+	}
+	else if(data._Score < -Constants::MateThreshold)
+	{
+		const Score mateInPlies = static_cast<Score>(Constants::Mate + data._Score);
+		const Score mateInMoves = static_cast<Score>((mateInPlies + 1) / 2);
+		builder << " score mate -" << std::to_string(mateInMoves);
+	}
+	else
+	{
+		builder << " score cp " << std::to_string(data._Score);
+	}
+	
 	builder << " nodes " << std::to_string(mainThreadState.Stats.Nodes);
 	auto elapsed = mainThreadState.Stats.Elapsed;
 	if (elapsed == 0)
@@ -160,9 +178,10 @@ void ReadSearchParameters(std::stringstream& reader, SearchParameters& parameter
 		}
 		else if (word == "nodes")
 		{
-
-			parameters.MinNodes = 5000;
-			parameters.MaxNodes = 5000;
+			size_t nodes;
+			reader >> nodes;
+			parameters.MinNodes = nodes;
+			parameters.MaxNodes = nodes;
 		}
 		else if (word == "infinite")
 		{

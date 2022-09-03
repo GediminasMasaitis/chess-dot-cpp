@@ -116,6 +116,7 @@ public:
     Move SingularMove;
     Ply IterationsSincePvChange;
     Ply IterationInitialDepth;
+    Ply SelectiveDepth;
     
 
     void NewSearch()

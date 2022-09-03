@@ -42,6 +42,10 @@ void Run(int argc, char** argv)
 
 void Test()
 {
+    EvaluationNnueBase::Init();
+    Tablebases::Init();
+    EvaluationClassical2::Init();
+
     //std::cout << sizeof(TranspositionTableEntry) << std::endl;
 
     //Game::RunTestCommands();
@@ -52,8 +56,9 @@ void Test()
     //Tests::TestZobrist();
     //Tests::TestRepetitions();
     //Tests::TestUci();
-    Tests::TestEval();
+    //Tests::TestEval();
     //Tests::TestTablebases();
+    Tests::TestUciFen();
     
     //Tests::TestSfen();
     //Tests::TestFenSerialize();

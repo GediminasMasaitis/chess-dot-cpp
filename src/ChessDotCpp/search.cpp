@@ -22,7 +22,7 @@ static constexpr bool datagen = true;
 static constexpr bool datagen = false;
 #endif
 
-bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Score alpha, const Score beta, TranspositionTableEntry& entry, Score& score, bool& entryExists)
+bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Ply ply, const Score alpha, const Score beta, TranspositionTableEntry& entry, Score& score, bool& entryExists)
 {
     score = 0;
     entryExists = false;
@@ -42,21 +42,31 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
     }
 
     entryExists = true;
-
+    
     if (entry.Depth < depth)
     {
         //State.Stats.HashInsufficientDepth++;
         return false;
     }
 
+    Score adjustedScore = entry.SScore;
+    if (entry.SScore > Constants::MateThreshold)
+    {
+        adjustedScore -= ply;
+    }
+    else if (entry.SScore < -Constants::MateThreshold)
+    {
+        adjustedScore += ply;
+    }
+
     switch (entry.Flag)
     {
     case TranspositionTableFlags::Exact:
-        score = entry.SScore;
+        score = adjustedScore;
         return true;
 
     case TranspositionTableFlags::Alpha:
-        if (entry.SScore <= alpha)
+        if (adjustedScore <= alpha)
         {
             score = alpha;
             return true;
@@ -64,7 +74,7 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
         return false;
 
     case TranspositionTableFlags::Beta:
-        if (entry.SScore >= beta)
+        if (adjustedScore >= beta)
         {
             score = beta;
             return true;
@@ -79,14 +89,24 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
     return false;
 }
 
-void Search::StoreTranspositionTable(const ThreadState& threadState, const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag)
+void Search::StoreTranspositionTable(const ThreadState& threadState, const ZobristKey key, const Move move, const Ply depth, const Ply ply, const Score score, const TtFlag flag)
 {
     if (threadState.StopIteration || Stopper.Stopped)
     {
         return;
     }
-    
-    State.Global.Table.Store(key, move, depth, score, flag);
+
+    Score adjustedScore = score;
+    if(score > Constants::MateThreshold)
+    {
+        adjustedScore = static_cast<Score>(score + ply);
+    }
+    else if(score < -Constants::MateThreshold)
+    {
+        adjustedScore -= static_cast<Score>(score - ply);
+    }
+
+    State.Global.Table.Store(key, move, depth, adjustedScore, flag);
 }
 
 Score Search::Contempt(const Board& board) const
@@ -160,13 +180,18 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
     ThreadState& threadState = State.Thread[threadId];
     
     ++threadState.Stats.Nodes;
+    if(ply > threadState.SelectiveDepth)
+    {
+        threadState.SelectiveDepth = ply;
+    }
 
     TranspositionTableEntry entry;
     bool hashEntryExists = true;
     Score probedScore;
     const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, threadState.SingularMove.Value);
-    bool probeSuccess = TryProbeTranspositionTable(key, 0, alpha, beta, entry, probedScore, hashEntryExists);
-
+    bool probeSuccess = TryProbeTranspositionTable(key, 0, ply, alpha, beta, entry, probedScore, hashEntryExists);
+    //probeSuccess = false;
+    //hashEntryExists = false;
     if (hashEntryExists && Options::Threads != 1)
     {
         const bool isPseudoLegal = MoveValidator::IsPseudoLegal(board, entry.MMove);
@@ -303,16 +328,16 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
         {
             if (betaCutoff)
             {
-                StoreTranspositionTable(threadState, key, bestMove, 0, bestScore, TranspositionTableFlags::Beta);
+                StoreTranspositionTable(threadState, key, bestMove, 0, ply, bestScore, TranspositionTableFlags::Beta);
             }
             else
             {
-                StoreTranspositionTable(threadState, key, bestMove, 0, bestScore, TranspositionTableFlags::Exact);
+                StoreTranspositionTable(threadState, key, bestMove, 0, ply, bestScore, TranspositionTableFlags::Exact);
             }
         }
         else
         {
-            StoreTranspositionTable(threadState, key, bestMove, 0, bestScore, TranspositionTableFlags::Alpha);
+            StoreTranspositionTable(threadState, key, bestMove, 0, ply, bestScore, TranspositionTableFlags::Alpha);
         }
     }
 
@@ -472,7 +497,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             const auto tbWin = Tablebases::ProbeRoot(board, tbMove);
             if (tbWin)
             {
-                StoreTranspositionTable(threadState, board.Key, tbMove, 42, Constants::TablebaseMate, TranspositionTableFlags::Exact);
+                StoreTranspositionTable(threadState, board.Key, tbMove, 42, ply, Constants::TablebaseMate, TranspositionTableFlags::Exact);
                 return Constants::TablebaseMate;
             }
         }
@@ -537,7 +562,9 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     bool hashEntryExists = true;
     Score probedScore;
     const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, threadState.SingularMove.Value);
-    bool probeSuccess = TryProbeTranspositionTable(key, depth, alpha, beta, entry, probedScore, hashEntryExists);
+    bool probeSuccess = TryProbeTranspositionTable(key, depth, ply, alpha, beta, entry, probedScore, hashEntryExists);
+    //probeSuccess = false;
+    //hashEntryExists = false;
 
     if(hashEntryExists && Options::Threads != 1)
     {
@@ -573,15 +600,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         }
         if (returnTtValue)
         {
-            if (probedScore > Constants::MateThreshold)
-            {
-                probedScore -= ply;
-            }
-            else if (probedScore < -Constants::MateThreshold)
-            {
-                probedScore += ply;
-            }
-
             if (principalVariationMove.GetTakesPiece() == Pieces::Empty)
             {
                 UpdateHistoryEntry(threadState.History[principalVariationMove.GetColorToMove()][principalVariationMove.GetFrom()][principalVariationMove.GetTo()], bonus);
@@ -961,7 +979,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         UpdateHistory(threadId, board, depth, ply, failedMoves, failedMoveCount, bestMove, betaCutoff);
         if(betaCutoff)
         {
-            StoreTranspositionTable(threadState, key, bestMove, depth, bestScore, TranspositionTableFlags::Beta);
+            StoreTranspositionTable(threadState, key, bestMove, depth, ply, bestScore, TranspositionTableFlags::Beta);
             return beta;
         }
     }
@@ -977,16 +995,13 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         return Contempt(board);
     }
 
-    //if (threadState.SingularMove.Value == 0)
+    if (raisedAlpha)
     {
-        if (raisedAlpha)
-        {
-            StoreTranspositionTable(threadState, key, bestMove, depth, bestScore, TranspositionTableFlags::Exact);
-        }
-        else
-        {
-            StoreTranspositionTable(threadState, key, bestMove, depth, bestScore, TranspositionTableFlags::Alpha);
-        }
+        StoreTranspositionTable(threadState, key, bestMove, depth, ply, bestScore, TranspositionTableFlags::Exact);
+    }
+    else
+    {
+        StoreTranspositionTable(threadState, key, bestMove, depth, ply, bestScore, TranspositionTableFlags::Alpha);
     }
     
     return alpha;
@@ -1073,6 +1088,7 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
     for (depth = depth + 1; depth < State.Global.Parameters.MaxDepth; depth++)
     {
         threadState.IterationInitialDepth = depth;
+        threadState.SelectiveDepth = 0;
         score = Aspiration(threadId, board, depth, score);
         callbackData.Depth = depth;
         callbackData._Score = score;
