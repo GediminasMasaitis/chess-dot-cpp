@@ -660,7 +660,7 @@ static constexpr BetweenBitboardsClass BetweenBitboards = BetweenBitboardsClass(
 class SearchDataClass
 {
 public:
-    using ReductionsTableType = std::array<EachDepth<EachMove<Ply>>, 2>;
+    using ReductionsTableType = EachDepth<EachMove<Ply>>;
 
     ReductionsTableType Reductions{};
 
@@ -673,13 +673,7 @@ public:
                 const double reduction = std::log(depth) * std::log(movesEvaluated) * 0.4 + 1.5;
                 if (reduction >= 1.5)
                 {
-                    Reductions[0][depth][movesEvaluated] = static_cast<Ply>(reduction);
-                }
-
-                const double reductionPv = std::log(depth) * std::log(movesEvaluated) * 0.5 + 0.5;
-                if(reductionPv >= 1.5)
-                {
-                    Reductions[1][depth][movesEvaluated] = static_cast<Ply>(reductionPv);
+                    Reductions[depth][movesEvaluated] = static_cast<Ply>(reduction);
                 }
             }
         }

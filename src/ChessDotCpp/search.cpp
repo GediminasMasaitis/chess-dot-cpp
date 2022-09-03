@@ -866,8 +866,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             && pawnPromoteTo == Pieces::Empty
         )
         {
-            const auto pvReductionIndex = isPrincipalVariation ? 1 : 0;
-            reduction = SearchData.Reductions[pvReductionIndex][depth][movesEvaluated];
+            reduction = SearchData.Reductions[depth][movesEvaluated];
 
             if(reduction > 0)
             {
@@ -896,15 +895,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
                     reduction--;
                 }
                 else if (moveScore < 0)
-                {
-                    reduction++;
-                }
-
-                if
-                (
-                    !isPrincipalVariation
-                    && threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()] < 0
-                )
                 {
                     reduction++;
                 }
