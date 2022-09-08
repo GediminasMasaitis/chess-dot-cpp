@@ -875,6 +875,11 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
                     reduction--;
                 }
 
+                if(!isPrincipalVariation)
+                {
+                    reduction++;
+                }
+
                 //if
                 //(
                 //    move.Value == plyState.Killers[0].Value
