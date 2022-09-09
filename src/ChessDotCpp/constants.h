@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <cassert>
 #include <vector>
 #include <cmath>
 
@@ -671,10 +672,7 @@ public:
             for(MoveCount movesEvaluated = 1; movesEvaluated < Constants::MaxMoves; movesEvaluated++)
             {
                 const double reduction = std::log(depth) * std::log(movesEvaluated) * 0.5 + 1.0;
-                if (reduction >= 1.5)
-                {
-                    Reductions[depth][movesEvaluated] = static_cast<Ply>(reduction);
-                }
+                Reductions[depth][movesEvaluated] = static_cast<Ply>(reduction);
             }
         }
     }
