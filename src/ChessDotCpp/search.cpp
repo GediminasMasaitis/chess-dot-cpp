@@ -230,7 +230,7 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
     PinDetector::GetPinnedToKings(board, pins);
     const Score standPat = CallEval(board, pins);
 
-    if (standPat >= beta)
+    if (standPat >= beta || ply >= Constants::MaxPly)
     {
         return beta;
     }
@@ -548,7 +548,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     }
 
     // QUIESCENCE
-    if(depth <= 0)
+    if(depth <= 0 || ply >= Constants::MaxSearchPly)
     {
         const Score eval = Quiescence(threadId, board, depth, ply, alpha, beta);
         return eval;

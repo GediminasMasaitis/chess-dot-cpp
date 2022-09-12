@@ -95,7 +95,8 @@ public:
         Killers[1].Value = 0;
     }
 };
-using PlyDataArray = std::array<PlyData, Constants::MaxDepth>;
+
+using PlyDataArray = std::array<PlyData, Constants::MaxPly>;
 
 class ThreadState
 {
@@ -123,7 +124,7 @@ public:
     {
         Stats.NewSearch();
 
-        for(Ply i = 0; i < Constants::MaxDepth; i++)
+        for(Ply i = 0; i < Constants::MaxPly; i++)
         {
             Plies[i].NewSearch();
         }
@@ -172,7 +173,7 @@ public:
 
     void NewGame()
     {
-        for (Ply i = 0; i < Constants::MaxDepth; i++)
+        for (Ply i = 0; i < Constants::MaxPly; i++)
         {
             Plies[i].NewGame();
         }

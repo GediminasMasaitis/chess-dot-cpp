@@ -53,8 +53,9 @@ public:
         commands.push("uci");
         commands.push("ucinewgame");
         //commands.push("position fen 8/1p3p1p/p4P1k/P4P1p/6pP/6Pq/5P2/6K1 b - - moves h3g3 f2g3");
-        commands.push("position fen 8/1p3p1p/p4P1k/P4P1p/6pP/6Pq/5P2/6K1 b - - moves");
-        commands.push("go infinite");
+        //commands.push("position fen 8/1p3p1p/p4P1k/P4P1p/6pP/6Pq/5P2/6K1 b - - moves");
+        commands.push("position fen 8/1p4R1/brp5/kpP5/1p3p2/1p1PpP1p/1P2P2P/K7 w - -");
+        commands.push("go depth 30");
         commands.push("quit");
         Game::RunCommands(commands);
     }

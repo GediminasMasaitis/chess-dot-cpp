@@ -277,6 +277,10 @@ bool Uci::HandleInput(const std::string& line)
 		{
 			HandleGo(reader);
 		}
+		else if (word == "gi")
+		{
+			HandleInput("go infinite");
+		}
 		else if (word == "uci")
 		{
 			HandleUci();
