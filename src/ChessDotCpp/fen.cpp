@@ -77,7 +77,7 @@ void Fens::Parse(TBoard& board, Fen fen)
             const auto pieceBitBoard = GetBitboard(fixedBoardPosition);
             board.BitBoard[piece] |= pieceBitBoard;
             board.ArrayBoard[fixedBoardPosition] = piece;
-            board.SetAccumulatorPiece(fixedBoardPosition, piece);
+            //board.SetAccumulatorPiece(fixedBoardPosition, piece);
             board.PieceCounts[piece]++;
             const auto file = Files::Get(fixedBoardPosition);
             const auto queenSide = file < 4;
@@ -85,13 +85,15 @@ void Fens::Parse(TBoard& board, Fen fen)
             {
                 board.KingPositions[Colors::White] = fixedBoardPosition;
                 board.KingSides[Colors::White] = queenSide;
-                board.AccumulatorInvalidations[Colors::White] = false;
+                board.Buckets[Colors::White] = EvaluationNnueBase::GetBucket(fixedBoardPosition, Colors::White);
+                board.AccumulatorInvalidations[Colors::White] = true;
             }
             else if (piece == Pieces::BlackKing)
             {
                 board.KingPositions[Colors::Black] = fixedBoardPosition;
                 board.KingSides[Colors::Black] = queenSide;
-                board.AccumulatorInvalidations[Colors::Black] = false;
+                board.Buckets[Colors::Black] = EvaluationNnueBase::GetBucket(fixedBoardPosition, Colors::Black);
+                board.AccumulatorInvalidations[Colors::Black] = true;
             }
             boardPosition++;
             continue;
@@ -192,6 +194,8 @@ void Fens::Parse(TBoard& board, Fen fen)
     SyncMaterial(board);
     board.Key = ZobristKeys.CalculateKey(board);
     board.PawnKey = ZobristKeys.CalculatePawnKey(board);
+
+    board.FinalizeAccumulator();
 }
 
 char PieceToChar(Piece piece)

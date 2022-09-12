@@ -10,7 +10,7 @@ class EvaluationNnueBase
 public:
     using NnueCount = int16_t;
 
-    static constexpr NnueCount InputCount = 12 * 64;
+    static constexpr NnueCount InputCount = 8 * 2 * 6 * 64;
     static constexpr NnueCount HiddenCount = 512;
 
     using NnueValue = int16_t;
@@ -34,6 +34,28 @@ public:
     alignas(SimdNV::alignment) inline static hidden_weightses_t HiddenWeightses;
     alignas(SimdNV::alignment) inline static output_bias_t OutputBias;
 
+    using Bucket = uint8_t;
+    static constexpr EachPosition<Bucket> BucketMap = {
+        0,  1,  2,  3,  3,  2,  1,  0,
+        4,  4,  5,  5,  5,  5,  4,  4,
+        6,  6,  6,  6,  6,  6,  6,  6,
+        6,  6,  6,  6,  6,  6,  6,  6,
+        7,  7,  7,  7,  7,  7,  7,  7,
+        7,  7,  7,  7,  7,  7,  7,  7,
+        7,  7,  7,  7,  7,  7,  7,  7,
+        7,  7,  7,  7,  7,  7,  7,  7,
+    };
+
+    static constexpr Bucket GetBucket(Position position, const Color color)
+    {
+        if (color == Colors::Black)
+        {
+            position ^= 56;
+        }
+
+        return BucketMap[position];
+    }
+
     static constexpr EachPiece<int32_t> pieceIndices =
     {
         -1,
@@ -55,14 +77,15 @@ public:
     };
 
     template<bool TSet>
-    static void ApplyPieceSingle(hidden_layer_t& hiddenLayer, const Position pos, const Piece piece, const bool kingQueenSide)
+    static void ApplyPieceSingle(hidden_layer_t& hiddenLayer, const Position pos, const Piece piece, const bool kingQueenSide, const Bucket bucket)
     {
         const auto pieceIndex = pieceIndices[piece];
         assert(pieceIndex >= 0);
 
         const auto posIndex = kingQueenSide ? pos ^ 7 : pos;
         //const auto posIndex = pos;
-        const auto inputIndex = pieceIndex + posIndex;
+        const auto bucketIndex = bucket * 2 * 6 * 64;
+        const auto inputIndex = bucketIndex + pieceIndex + posIndex;
         const auto hiddenLayerPtr = SimdNV::reinterpret(hiddenLayer.data());
         const auto inputWeightsPtr = SimdNV::reinterpret(InputWeights[inputIndex].data());
         for (NnueCount hiddenIndex = 0; hiddenIndex < static_cast<NnueCount>(HiddenCount / SimdNV::stride); hiddenIndex++)
@@ -79,22 +102,22 @@ public:
     }
 
     template<bool TSet>
-    static void ApplyPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide)
+    static void ApplyPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide, const EachColor<Bucket>& buckets)
     {
         const Position flippedPos = pos ^ 56;
         const Piece flippedPiece = piece ^ 1;
-        ApplyPieceSingle<TSet>(hiddenLayers[Colors::White], pos, piece, kingsQueenSide[Colors::White]);
-        ApplyPieceSingle<TSet>(hiddenLayers[Colors::Black], flippedPos, flippedPiece, kingsQueenSide[Colors::Black]);
+        ApplyPieceSingle<TSet>(hiddenLayers[Colors::White], pos, piece, kingsQueenSide[Colors::White], buckets[Colors::White]);
+        ApplyPieceSingle<TSet>(hiddenLayers[Colors::Black], flippedPos, flippedPiece, kingsQueenSide[Colors::Black], buckets[Colors::Black]);
     }
 
-    static void SetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide)
+    static void SetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide, const EachColor<Bucket>& buckets)
     {
-        ApplyPiece<true>(hiddenLayers, pos, piece, kingsQueenSide);
+        ApplyPiece<true>(hiddenLayers, pos, piece, kingsQueenSide, buckets);
     }
 
-    static void UnsetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide)
+    static void UnsetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide, const EachColor<Bucket>& buckets)
     {
-        ApplyPiece<false>(hiddenLayers, pos, piece, kingsQueenSide);
+        ApplyPiece<false>(hiddenLayers, pos, piece, kingsQueenSide, buckets);
     }
 
     static void ResetSingle(hidden_layer_t& hiddenLayer)
@@ -124,7 +147,7 @@ public:
 
     static void Init()
     {
-        auto file = std::ifstream("C:/Chess/Networks/37/nn-epoch500.nnue", std::ios::binary);
+        auto file = std::ifstream("C:/Chess/Networks/42/nn-epoch500.nnue", std::ios::binary);
 
         for (size_t inputIndex = 0; inputIndex < InputCount; inputIndex++)
         {

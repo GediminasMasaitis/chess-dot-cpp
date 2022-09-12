@@ -87,6 +87,14 @@ void Board::DoMove(const Move move)
         {
             AccumulatorInvalidations[kingColor] = true;
         }
+
+        const Bucket oldBucket = Buckets[kingColor];
+        const Bucket newBucket = EvaluationNnueBase::GetBucket(to, kingColor);
+        Buckets[kingColor] = newBucket;
+        if(oldBucket != newBucket)
+        {
+            AccumulatorInvalidations[kingColor] = true;
+        }
     }
 
     /*for(auto color = Colors::White; color < Colors::Black; color++)
@@ -381,6 +389,7 @@ void Board::UndoMove()
         const auto kingFile = Files::Get(from);
         const bool kingQueenSide = kingFile < 4;
         KingSides[kingColor] = kingQueenSide;
+        Buckets[kingColor] = EvaluationNnueBase::GetBucket(from, kingColor);
     }
 
     PopAccumulator();

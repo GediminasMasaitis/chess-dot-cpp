@@ -33,6 +33,9 @@ public:
 	using value_t = EvaluationNnueBase::NnueValue;
 	using accumulator_t = EvaluationNnueBase::hidden_layer_t;
 	using accumulators_t = EvaluationNnueBase::hidden_layers_t;
+	using Bucket = EvaluationNnueBase::Bucket;
+
+	EachColor<Bucket> Buckets;
 
     struct accumulator_wrapper_t
     {
@@ -71,13 +74,13 @@ public:
 	void SetAccumulatorPiece(const Position pos, const Piece piece)
 	{
 		auto& accumulators = accumulatorStack[accumulatorStack.size() - 1].accumulators;
-		EvaluationNnueBase::SetPiece(accumulators, pos, piece, KingSides);
+		EvaluationNnueBase::SetPiece(accumulators, pos, piece, KingSides, Buckets);
 	}
 
 	void UnsetAccumulatorPiece(const Position pos, const Piece piece)
 	{
 		auto& accumulators = accumulatorStack[accumulatorStack.size() - 1].accumulators;
-		EvaluationNnueBase::UnsetPiece(accumulators, pos, piece, KingSides);
+		EvaluationNnueBase::UnsetPiece(accumulators, pos, piece, KingSides, Buckets);
 	}
 
 	void FinalizeAccumulator()
@@ -89,6 +92,7 @@ public:
 				auto& accumulators = accumulatorStack[accumulatorStack.size() - 1].accumulators;
 				auto& accumulator = accumulators[color];
 				const auto kingQueenSide = KingSides[color];
+				const auto bucket = Buckets[color];
 				EvaluationNnueBase::ResetSingle(accumulator);
 				for(Position pos = 0; pos < Positions::Count; pos++)
 				{
@@ -103,7 +107,7 @@ public:
 							flippedPiece ^= 1;
 						}
 
-						EvaluationNnueBase::ApplyPieceSingle<true>(accumulator, flippedPos, flippedPiece, kingQueenSide);
+						EvaluationNnueBase::ApplyPieceSingle<true>(accumulator, flippedPos, flippedPiece, kingQueenSide, bucket);
 					}
 				}
 				AccumulatorInvalidations[color] = false;
