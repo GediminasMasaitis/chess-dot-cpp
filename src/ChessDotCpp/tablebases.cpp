@@ -3,17 +3,37 @@
 #include "movegen.h"
 #include "fathom/tbprobe.h"
 
-void Tablebases::Init()
+#include <iostream>
+
+void Tablebases::Init(const std::string& path)
 {
-    tb_init("C:\\Chess\\Tablebases\\3-4-5piecesSyzygy\\3-4-5"); // TODO: Options
+    const bool isEmpty = path.empty() || path == "<empty>";
+    if(isEmpty)
+    {
+        Initialized = false;
+        return;
+    }
+
+    const bool success = tb_init(path.c_str());
+    if(!success)
+    {
+        std::cout << "Failed to initialize tablebases\n";
+        Initialized = false;
+    }
+
+    Initialized = true;
 }
 
 bool Tablebases::CanProbe(const Board& board)
 {
+    if(!Initialized)
+    {
+        return false;
+    }
+
     const auto pieceCount = PopCount(board.AllPieces);
     return pieceCount <= 5;
 }
-
 
 GameOutcome Tablebases::Probe(const Board& board)
 {

@@ -17,7 +17,6 @@ class Tests
 public:
     static void TestUci()
     {
-        Tablebases::Init();
         //std::vector<Fen> moveses =
         //{
         //    "e2e4 c7c5 g1f3 d7d6 d2d4 c5d4 d1d4 b8c6 f1b5 c8d7 d4d3 g7g6 e1g1 g8f6 b1c3 f8g7 c1f4 e8g8 a2a3 a7a6 b5c4 e7e5 f4e3 b7b5 c4b3 c6a5 d3d6 a5b3 c2b3 d7e6 d6b4 d8b8 e3g5 a6a5 b4b5 b8b5 c3b5 a8b8 b5c7 e6b3 g5f6 g7f6 a1c1 a5a4 c7a6 b8b5 c1c7 g6g5 a6c5 g5g4 f3d2 f6d8 c7c6 d8g5 d2b3 a4b3 f1d1 g5e7 c5d7 f8d8 c6c3 g8g7 c3c7 b5b6 g1f1 b6d6 d1d6 e7d6 c7b7 h7h5 a3a4 d8a8 d7b6 a8a6 b6c4 d6c5 c4e5 a6a4 b7f7 g7g8 f7f5 c5e7 f5h5 a4e4 h5f5 e4a4 f1e2 e7f8 e5d3 a4a7 f5g5 a7g7 g5g7 g8g7 e2d2 f8d6 d2c3 d6h2 g2g3 g7f6 c3b3 f6e6 b3a4 e6d5 b2b4 d5e4 b4b5 e4d5 b5b6 d5c6 a4a5 c6b7 d3c5 b7c6 b6b7 c6c7 a5a6 h2g1 a6a7 g1f2 b7b8Q c7c6 b8e8 c6c5 e8f8 c5c4 f8f2 c4d3 f2f5 d3c4 f5g4 c4c3 g4f3 c3c4 f3e4 c4c3 e4f3", // 69
@@ -52,10 +51,13 @@ public:
         std::queue<std::string> commands = std::queue<std::string>();
         commands.push("uci");
         commands.push("ucinewgame");
+        commands.push("setoption name SyzygyPath value C:\\Chess\\Tablebases\\3-4-5piecesSyzygy\\3-4-5");
         //commands.push("position fen 8/1p3p1p/p4P1k/P4P1p/6pP/6Pq/5P2/6K1 b - - moves h3g3 f2g3");
         //commands.push("position fen 8/1p3p1p/p4P1k/P4P1p/6pP/6Pq/5P2/6K1 b - - moves");
-        commands.push("position fen 8/1p4R1/brp5/kpP5/1p3p2/1p1PpP1p/1P2P2P/K7 w - -");
-        commands.push("go depth 30");
+        commands.push("position fen r1bqkbnr/1pp1ppp1/p1n5/3p3p/3P1P2/2P2N2/PP2P1PP/RNBQKB1R w KQkq - 0 1 moves e2e3 c8f5 f1e2 e7e6 e1g1 g8f6 b1d2 f8d6 f3g5 c6e7 d2f3 g7g6 c3c4 c7c6 c4c5 d6c7 b2b4 f6e4 d1b3 f7f6 g5e4 d5e4 f3d2 e7d5 a2a4 g6g5 f4g5 f6g5 d2c4 g5g4 c4d6 c7d6 c5d6 g4g3 b4b5 a6b5 e2b5 g3h2 g1h1 e8g8 b5c4 d8g5 b3b7 f5h3 a1a2 f8f1 c4f1 a8f8 f1c4 g5g3 b7b2 h5h4 d6d7 h3g4 b2c2 d5e3 c2d2 e3c4 d2g5 g8f7 c1f4 g3b3 g5g4 b3a2 g4h5 f7g8 h5g6 g8h8 g6h6 h8g8 h6e6 g8h7 e6e4 h7h8 e4e7 h8g8 e7g5 g8f7 g5f5 f7g8 f5g6 g8h8 h1h2 a2f2 g6h6 h8g8 d4d5 c6d5 h6f8 g8f8 d7d8q f8g7 d8g5 g7h8 a4a5 f2a7 g5h4 h8g8 h4g5 g8h8 g5h5 h8g7 h5h6 g7g8 h6g6 g8h8 a5a6 d5d4 g6f6 h8g8 h2g3 d4d3 f6g6 g8h8 g6h6 h8g8 h6e6 a7f7 e6f7 g8f7 a6a7 c4b6 g3f2 f7e6 f2e3 e6d5 e3d3 d5c6 d3e4 c6b7");
+        commands.push("go nodes 10000");
+        commands.push("position fen r1bqkbnr/1pp1ppp1/p1n5/3p3p/3P1P2/2P2N2/PP2P1PP/RNBQKB1R w KQkq - 0 1 moves e2e3 c8f5 f1e2 e7e6 e1g1 g8f6 b1d2 f8d6 f3g5 c6e7 d2f3 g7g6 c3c4 c7c6 c4c5 d6c7 b2b4 f6e4 d1b3 f7f6 g5e4 d5e4 f3d2 e7d5 a2a4 g6g5 f4g5 f6g5 d2c4 g5g4 c4d6 c7d6 c5d6 g4g3 b4b5 a6b5 e2b5 g3h2 g1h1 e8g8 b5c4 d8g5 b3b7 f5h3 a1a2 f8f1 c4f1 a8f8 f1c4 g5g3 b7b2 h5h4 d6d7 h3g4 b2c2 d5e3 c2d2 e3c4 d2g5 g8f7 c1f4 g3b3 g5g4 b3a2 g4h5 f7g8 h5g6 g8h8 g6h6 h8g8 h6e6 g8h7 e6e4 h7h8 e4e7 h8g8 e7g5 g8f7 g5f5 f7g8 f5g6 g8h8 h1h2 a2f2 g6h6 h8g8 d4d5 c6d5 h6f8 g8f8 d7d8q f8g7 d8g5 g7h8 a4a5 f2a7 g5h4 h8g8 h4g5 g8h8 g5h5 h8g7 h5h6 g7g8 h6g6 g8h8 a5a6 d5d4 g6f6 h8g8 h2g3 d4d3 f6g6 g8h8 g6h6 h8g8 h6e6 a7f7 e6f7 g8f7 a6a7 c4b6 g3f2 f7e6 f2e3 e6d5 e3d3 d5c6 d3e4 c6b7 a7a8q b6a8");
+        commands.push("go nodes 10000");
         commands.push("quit");
         Game::RunCommands(commands);
     }
@@ -154,9 +156,7 @@ public:
         MoveArray engineMoves = MoveArray();
         MoveCount engineMoveCount = 0;
         MoveGenerator::GetAllPossibleMoves(board, engineMoves, engineMoveCount);
-        
 
-        Tablebases::Init();
         auto result = Tablebases::Probe(board);
 
         //TbRootMoves moves;

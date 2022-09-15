@@ -83,6 +83,7 @@ public:
         const Move bestMove = threadState.SavedPrincipalVariation[0];
         assert(bestMove.Value != 0);
         const auto bestMoveTotalNodes = threadState.NodesPerMove[bestMove.GetFrom()][bestMove.GetTo()];
+        const auto totalNodes = threadState.Stats.Nodes > 0 ? threadState.Stats.Nodes : 1;
         const auto bestMoveNodePercent = (bestMoveTotalNodes * 100) / threadState.Stats.Nodes;
         //std::cout << "best " << bestMove.ToPositionString() << " " << bestMoveNodePercent << "% " << bestMoveTotalNodes << " nodes\n";
 

@@ -21,16 +21,29 @@
 class Options
 {
 public:
-	//using MetadataMap = std::unordered_map<std::string, OptionMetadata>;
-	//static inline MetadataMap Metadata = MetadataMap();
-	
-	static inline size_t Hash = 16;
-	static inline ThreadId Threads = 1;
-	static inline int MoveOverhead = 0;
+	class Defaults
+	{
+	public:
+		static constexpr size_t Hash = 16;
+		static constexpr ThreadId Threads = 1;
 
-	static inline int32_t Tune1 = 100;
-	static inline int32_t Tune2 = 0;
-	static inline int32_t Tune3 = 0;
-	
+		static constexpr std::string_view SyzygyPath = "";
+
+		static constexpr int32_t Tune1 = 100;
+		static constexpr int32_t Tune2 = 0;
+		static constexpr int32_t Tune3 = 0;
+
+		Defaults() = delete;
+	};
+
+	static inline size_t Hash = Defaults::Hash;
+	static inline ThreadId Threads = Defaults::Threads;
+
+	static inline std::string SyzygyPath = std::string(Defaults::SyzygyPath);
+
+	static inline int32_t Tune1 = Defaults::Tune1;
+	static inline int32_t Tune2 = Defaults::Tune2;
+	static inline int32_t Tune3 = Defaults::Tune3;
+
 	Options() = delete;
 };

@@ -200,13 +200,23 @@ void Uci::HandleGo(std::stringstream& reader)
 	Out("bestmove " + results.BestMove.ToPositionString());
 }
 
+std::string GetOptionStrValue(const std::string& input)
+{
+    if(input == "<empty>")
+    {
+		return "";
+    }
+	return input;
+}
+
 void Uci::PrintOptions()
 {
-	Out("option name Hash type spin default " + std::to_string(Options::Hash) + " min 1 max 1024");
-	Out("option name Threads type spin default " + std::to_string(Options::Threads) + " min 1 max 64");
+	Out("option name Hash type spin default " + std::to_string(Options::Defaults::Hash) + " min 1 max 1024");
+	Out("option name Threads type spin default " + std::to_string(Options::Defaults::Threads) + " min 1 max 64");
+	Out("option name SyzygyPath type string default <empty> min 1 max 64");
 	Out("option name TUNE1 type spin default 0 min -2147483647 max 2147483647");
 	Out("option name TUNE2 type spin default 0 min -2147483647 max 2147483647");
-	Out("option name TUNE2 type spin default 0 min -2147483647 max 2147483647");
+	Out("option name TUNE3 type spin default 0 min -2147483647 max 2147483647");
 }
 
 void Uci::HandleUci()
@@ -217,6 +227,8 @@ void Uci::HandleUci()
 	PrintOptions();
 	Out("uciok");
 }
+
+
 
 void Uci::HandleSetoption(std::stringstream& reader)
 {
@@ -237,6 +249,10 @@ void Uci::HandleSetoption(std::stringstream& reader)
 		Options::Threads = static_cast<ThreadId>(std::stoull(value));
 		//search.State.NewGame();
 		search.State.Initialized = false;
+	}
+	else if (name == "SyzygyPath") {
+		Options::SyzygyPath = GetOptionStrValue(value);
+		Tablebases::Init(Options::SyzygyPath);
 	}
 	else if (name == "TUNE1") {
 		Options::Tune1 = static_cast<int32_t>(std::stoi(value));

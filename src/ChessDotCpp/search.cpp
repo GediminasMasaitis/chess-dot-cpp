@@ -411,7 +411,9 @@ void UpdateHistoryEntry(MoveScore& score, const MoveScore value)
 
 void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply ply, MoveArray& attemptedMoves, MoveCount attemptedMoveCount, Move bestMove, bool betaCutoff)
 {
+    assert(board.ColorToMove == bestMove.GetColorToMove());
     auto& threadState = State.Thread[threadId];
+    assert(threadState.ColorToMove == board.ColorToMove ^ (ply % 2));
     auto& plyState = threadState.Plies[ply];
 
     const bool isCapture = bestMove.GetTakesPiece() != Pieces::Empty;
@@ -469,6 +471,8 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     ThreadState& threadState = State.Thread[threadId];
     const bool rootNode = ply == 0;
     const bool zeroWindow = alpha == beta - 1;
+
+    assert(threadState.ColorToMove == board.ColorToMove ^ (ply % 2));
     
     // TIME CONTROL
     if (depth > 2 && (threadState.StopIteration || Stopper.ShouldStop(threadId, State)))
@@ -489,7 +493,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     }
 
     // TABLEBASES PROBE
-    if(datagen && Tablebases::CanProbe(board))
+    if(Tablebases::CanProbe(board))
     {
         if (rootNode)
         {
@@ -586,6 +590,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     }
 
     const Move principalVariationMove = hashEntryExists ? entry.MMove : Move(0);
+    assert(!hashEntryExists || entry.MMove.GetColorToMove() == board.ColorToMove);
 
     if (probeSuccess)
     {

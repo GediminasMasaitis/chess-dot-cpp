@@ -12,7 +12,6 @@
 void Run(int argc, char** argv)
 {
     EvaluationNnueBase::Init();
-    Tablebases::Init();
     EvaluationClassical2::Init();
     if(argc > 1)
     {
@@ -43,7 +42,6 @@ void Run(int argc, char** argv)
 void Test()
 {
     EvaluationNnueBase::Init();
-    Tablebases::Init();
     EvaluationClassical2::Init();
 
     //std::cout << sizeof(TranspositionTableEntry) << std::endl;

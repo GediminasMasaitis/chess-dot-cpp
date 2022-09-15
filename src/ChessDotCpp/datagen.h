@@ -5,6 +5,7 @@
 #include "common.h"
 #include "search.h"
 #include "movegen.h"
+#include "tablebases.h"
 
 #include <random>
 #include <thread>
@@ -276,7 +277,7 @@ public:
     static void RunThread(const ThreadId threadId, const IterationCallback& callback)
     {
         Search search = Search(OnCallback);
-        auto rng = std::mt19937(threadId * 10000047);
+        auto rng = std::mt19937(threadId * 10000052);
         auto data = std::vector<DataEntry>();
 
 
@@ -332,6 +333,8 @@ public:
 #if DATAGEN
     static void Run()
     {
+        Tablebases::Init("C:\\Chess\\Tablebases\\3-4-5piecesSyzygy\\3-4-5");
+
         auto threads = std::vector<std::thread>(ThreadCount);
         auto mutex = std::mutex();
         auto data = DataEntries();

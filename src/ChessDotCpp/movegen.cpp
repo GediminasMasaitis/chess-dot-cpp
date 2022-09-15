@@ -778,6 +778,11 @@ bool MoveValidator::IsPseudoLegal(const Board& board, const Move move)
 		return false;
 	}
 
+	//if(board.ColorToMove != move.GetColorToMove())
+	//{
+	//	return false;
+	//}
+
     const Position from = move.GetFrom();
 	const Position to = move.GetTo();
     const Piece piece = move.GetPiece();

@@ -118,9 +118,10 @@ public:
     Ply IterationsSincePvChange;
     Ply IterationInitialDepth;
     Ply SelectiveDepth;
-    
 
-    void NewSearch()
+    Color ColorToMove;
+
+    void NewSearch(const Board& board)
     {
         Stats.NewSearch();
 
@@ -169,6 +170,7 @@ public:
         
         SingularMove = Move(0);
         IterationsSincePvChange = 0;
+        ColorToMove = board.ColorToMove;
     }
 
     void NewGame()
@@ -227,13 +229,11 @@ public:
     using BreadcrumbArray = std::array<Breadcrumb, BreadcrumbCount>;
     
     TranspositionTable Table{};
-    Color ColorToMove;
     BreadcrumbArray Breadcrumbs{};
     SearchParameters Parameters{};
 
     GlobalData()
     {
-        ColorToMove = Colors::White;
     }
     
     void NewGame()
@@ -250,9 +250,8 @@ public:
 #endif
     }
 
-    void NewSearch(const Board& board)
+    void NewSearch()
     {
-        ColorToMove = board.ColorToMove;
     	if(!Parameters.SkipNewSearch)
         {
             for (auto& breadcrumb : Breadcrumbs)
@@ -303,12 +302,12 @@ public:
     void NewSearch(const Board& board, const SearchParameters& parameters)
     {
         Global.Parameters = parameters;
-        Global.NewSearch(board);
+        Global.NewSearch();
     	if(!parameters.SkipNewSearch)
     	{
             for (ThreadState& threadState : Thread)
             {
-                threadState.NewSearch();
+                threadState.NewSearch(board);
             }
     	}
     }

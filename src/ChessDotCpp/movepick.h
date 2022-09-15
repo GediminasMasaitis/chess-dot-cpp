@@ -212,6 +212,8 @@ public:
                     continue;
                 }
 
+                assert(_board->ColorToMove == move.GetColorToMove());
+
                 entry.move = move;
                 entry.see = 0;
 
