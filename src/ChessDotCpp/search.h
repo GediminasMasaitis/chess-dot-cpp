@@ -53,7 +53,7 @@ public:
     Score Contempt(const Board& board) const;
     bool IsRepetitionOr50Move(const Board& board) const;
     bool IsRepetitionOr50MoveAfterMove(const Board& board, const Move move) const;
-    Score Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply ply, Score alpha, Score beta);
+    Score Quiescence(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, const bool isPrincipalVariation);
     bool TablebaseRootSearch(Board& board);
     void UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply ply, MoveArray& attemptedMoves, MoveCount attemptedMoveCount, Move bestMove, bool betaCutoff);
     Score AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed);

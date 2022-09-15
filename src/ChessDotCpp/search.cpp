@@ -42,31 +42,29 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
     }
 
     entryExists = true;
-    
     if (entry.Depth < depth)
     {
         //State.Stats.HashInsufficientDepth++;
         return false;
     }
 
-    Score adjustedScore = entry.SScore;
+    score = entry.SScore;
     if (entry.SScore > Constants::MateThreshold)
     {
-        adjustedScore -= ply;
+        score -= ply;
     }
     else if (entry.SScore < -Constants::MateThreshold)
     {
-        adjustedScore += ply;
+        score += ply;
     }
 
     switch (entry.Flag)
     {
     case TranspositionTableFlags::Exact:
-        score = adjustedScore;
         return true;
 
     case TranspositionTableFlags::Alpha:
-        if (adjustedScore <= alpha)
+        if (score <= alpha)
         {
             score = alpha;
             return true;
@@ -74,7 +72,7 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
         return false;
 
     case TranspositionTableFlags::Beta:
-        if (adjustedScore >= beta)
+        if (score >= beta)
         {
             score = beta;
             return true;
@@ -175,7 +173,7 @@ bool Search::IsRepetitionOr50MoveAfterMove(const Board& board, const Move move) 
     return false;
 }
 
-Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply ply, Score alpha, Score beta)
+Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, const bool isPrincipalVariation)
 {
     ThreadState& threadState = State.Thread[threadId];
     
@@ -212,23 +210,14 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
     }
 
     const Move principalVariationMove = hashEntryExists ? entry.MMove : Move(0);
-    if (probeSuccess)
+    if (probeSuccess && !isPrincipalVariation)
     {
-        if (probedScore > Constants::MateThreshold)
-        {
-            probedScore -= ply;
-        }
-        else if (probedScore < -Constants::MateThreshold)
-        {
-            probedScore += ply;
-        }
-
         return probedScore;
     }
 
     EachColor<Bitboard> pins;
     PinDetector::GetPinnedToKings(board, pins);
-    const Score standPat = CallEval(board, pins);
+    Score standPat = CallEval(board, pins);
 
     if (standPat >= beta || ply >= Constants::MaxPly)
     {
@@ -299,7 +288,7 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, Ply p
         }
 
         board.DoMove(move);
-        const Score childScore = -Quiescence(threadId, board, depth - 1, ply + 1, -beta, -alpha);
+        const Score childScore = -Quiescence(threadId, board, depth - 1, ply + 1, -beta, -alpha, isPrincipalVariation);
         board.UndoMove();
         movesEvaluated++;
 
@@ -554,7 +543,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     // QUIESCENCE
     if(depth <= 0 || ply >= Constants::MaxSearchPly)
     {
-        const Score eval = Quiescence(threadId, board, depth, ply, alpha, beta);
+        const Score eval = Quiescence(threadId, board, depth, ply, alpha, beta, isPrincipalVariation);
         return eval;
     }
 
@@ -667,7 +656,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         && staticScore + (razorMargin * depth) < beta
     )
     {
-        const auto razorScore = Quiescence(threadId, board, 0, ply, alpha, beta);
+        const auto razorScore = Quiescence(threadId, board, 0, ply, alpha, beta, false);
         if (razorScore < beta)
         {
             return razorScore;
