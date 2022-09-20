@@ -251,6 +251,7 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, const
             break;
         }
         const Move move = moveEntry.move;
+        State.Global.Table.PrefetchForMove(board, move);
 
         const Score takesMaterial = EvaluationConstants::PieceValues[move.GetTakesPiece()];
         const Score opponentMaterial = board.PieceMaterial[board.ColorToMove ^ 1];
@@ -752,6 +753,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         }
 
         const Move move = moveEntry.move;
+        State.Global.Table.PrefetchForMove(board, move);
         
         //if(move.Value == threadState.SingularMove.Value)
         //{
@@ -845,7 +847,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //    }
         //}
         board.DoMove(move);
-        State.Global.Table.Prefetch(board.Key);
 
         // LATE MOVE REDUCTION
         Ply reduction = 0;

@@ -113,6 +113,13 @@ public:
 #endif
     }
 
+    void PrefetchForMove(const Board& board, const Move move) const
+    {
+        KeyAnd50Move keyAnd50MoveAfterMove;
+        board.GetKeyAfterMove(move, keyAnd50MoveAfterMove);
+        Prefetch(keyAnd50MoveAfterMove.Key);
+    }
+
     void Clear()
     {
         const size_t bytesToClear = sizeof(TranspositionTableEntry) * _size;
