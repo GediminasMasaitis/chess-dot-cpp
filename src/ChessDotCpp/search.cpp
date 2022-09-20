@@ -845,6 +845,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //    }
         //}
         board.DoMove(move);
+        State.Global.Table.Prefetch(board.Key);
 
         // LATE MOVE REDUCTION
         Ply reduction = 0;

@@ -3,6 +3,11 @@
 #include "board.h"
 #include <iostream>
 
+#define ENABLE_PREFETCH 1
+#if ENABLE_PREFETCH
+#include <xmmintrin.h>
+#endif
+
 class TranspositionTableFlags
 {
 public:
@@ -87,6 +92,25 @@ public:
         _size = newSize;
         _mask = _size - 1;
         _entries = TableEntries(new TranspositionTableEntry[newSize]);
+    }
+
+    void SetSizeFromOptions()
+    {
+        SetSize(Options::Hash * 1024 * 1024);
+    }
+
+    void Prefetch(const ZobristKey key) const
+    {
+#if ENABLE_PREFETCH
+        const size_t index = GetTableIndex(key);
+        const auto ptr = reinterpret_cast<char*>(&_entries[index]);
+
+#  if defined(__INTEL_COMPILER) || defined(_MSC_VER)
+        _mm_prefetch(ptr, _MM_HINT_T0);
+#  else
+        __builtin_prefetch(ptr);
+#  endif
+#endif
     }
 
     void Clear()

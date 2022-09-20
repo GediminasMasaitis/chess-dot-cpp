@@ -238,7 +238,7 @@ public:
     
     void NewGame()
     {
-        Table.SetSize(16 * 1024 * 1024);
+        Table.SetSizeFromOptions();
         Table.Clear();
 #if EVALTABLE
         Eval.EvalTable.SetSize(16 * 1024 * 1024);

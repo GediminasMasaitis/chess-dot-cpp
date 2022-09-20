@@ -244,6 +244,7 @@ void Uci::HandleSetoption(std::stringstream& reader)
 
 	if (name == "Hash") {
 		Options::Hash = static_cast<size_t>(std::stoull(value));
+		search.State.Global.Table.SetSizeFromOptions();
 	}
 	else if (name == "Threads") {
 		Options::Threads = static_cast<ThreadId>(std::stoull(value));
