@@ -623,7 +623,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     //}
     staticScore = CallEval(board, pins);
     board.StaticEvaluation = staticScore;
-    const bool improving = ply < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation;
+    const bool improving = !inCheck && (ply < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation);
 
     if(ply > 1)
     {
