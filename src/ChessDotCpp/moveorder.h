@@ -1,6 +1,7 @@
 #pragma once
 #include "board.h"
-#include "searchstate.h"
+
+class ThreadState;
 
 class MoveOrdering
 {

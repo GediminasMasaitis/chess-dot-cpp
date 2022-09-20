@@ -2,6 +2,7 @@
 #include "board.h"
 #include "options.h"
 #include "searchhash.h"
+#include "movepick.h"
 
 class SearchParameters
 {
@@ -79,11 +80,9 @@ public:
 class PlyData
 {
 public:
-    constexpr static Ply MaxContinuationCount = 6;
-    
     using KillerArray = std::array<Move, 2>;
     KillerArray Killers;
-    
+    MovePicker MMovePicker;
 
     void NewSearch()
     {

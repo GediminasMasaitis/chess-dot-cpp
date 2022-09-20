@@ -234,7 +234,8 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, const
 
     const Bitboard pinned = pins[board.ColorToMove];
 
-    MovePicker movePicker;
+    auto& plyState = threadState.Plies[ply];
+    auto& movePicker = plyState.MMovePicker;
     movePicker.Reset(threadState, ply, board, checkers, pinned, principalVariationMove);
 
     Score bestScore = -Constants::Inf;
@@ -695,8 +696,9 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     }
 
     const Bitboard pinned = pins[board.ColorToMove];
-    
-    MovePicker movePicker;
+
+    auto& plyState = threadState.Plies[ply];
+    auto& movePicker = plyState.MMovePicker;
     movePicker.Reset(threadState, ply, board, checkers, pinned, principalVariationMove);
         
     /*MoveArray moves;

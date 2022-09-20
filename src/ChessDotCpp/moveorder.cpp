@@ -1,5 +1,7 @@
 #include "moveorder.h"
 
+#include "searchstate.h"
+
 class MvvLvaClass
 {
 public:

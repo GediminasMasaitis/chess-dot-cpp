@@ -13,6 +13,7 @@
 #include <cstring>
 #include <atomic>
 #include <chrono>
+#include <iostream>
 #include <iomanip>
 #include <optional>
 
