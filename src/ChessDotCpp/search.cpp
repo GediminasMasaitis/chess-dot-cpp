@@ -22,7 +22,7 @@ static constexpr bool datagen = true;
 static constexpr bool datagen = false;
 #endif
 
-bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Ply ply, const Score alpha, const Score beta, TranspositionTableEntry& entry, Score& score, bool& entryExists)
+bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Ply ply, const Score alpha, const Score beta/*, const Move singularMove*/, TranspositionTableEntry& entry, Score& score, bool& entryExists)
 {
     score = 0;
     entryExists = false;
@@ -40,6 +40,11 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
         //State.Stats.HashCollision++;
         return false;
     }
+
+    //if(entry.MMove.Value == singularMove.Value)
+    //{
+    //    return false;
+    //}
 
     entryExists = true;
     if (entry.Depth < depth)
@@ -93,6 +98,12 @@ void Search::StoreTranspositionTable(const ThreadState& threadState, const Zobri
     {
         return;
     }
+
+    //const PlyData& plyState = threadState.Plies[ply];
+    //if(plyState.SingularMove.Value != 0)
+    //{
+    //    return;
+    //}
 
     Score adjustedScore = score;
     if(score > Constants::MateThreshold)
@@ -176,6 +187,7 @@ bool Search::IsRepetitionOr50MoveAfterMove(const Board& board, const Move move) 
 Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, const bool isPrincipalVariation)
 {
     ThreadState& threadState = State.Thread[threadId];
+    //PlyData& plyState = threadState.Plies[ply];
     
     ++threadState.Stats.Nodes;
     if(ply > threadState.SelectiveDepth)
@@ -186,8 +198,9 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, const
     TranspositionTableEntry entry;
     bool hashEntryExists = true;
     Score probedScore;
-    const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, threadState.SingularMove.Value);
-    bool probeSuccess = TryProbeTranspositionTable(key, 0, ply, alpha, beta, entry, probedScore, hashEntryExists);
+    //const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, plyState.SingularMove.Value);
+    const ZobristKey key = board.Key;
+    bool probeSuccess = TryProbeTranspositionTable(key, 0, ply, alpha, beta/*, plyState.SingularMove*/, entry, probedScore, hashEntryExists);
     //probeSuccess = false;
     //hashEntryExists = false;
     if (hashEntryExists && Options::Threads != 1)
@@ -234,7 +247,7 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, const
 
     const Bitboard pinned = pins[board.ColorToMove];
 
-    auto& plyState = threadState.Plies[ply];
+    PlyData& plyState = threadState.Plies[ply];
     auto& movePicker = plyState.MMovePicker;
     movePicker.Reset(threadState, ply, board, checkers, pinned, principalVariationMove);
 
@@ -460,6 +473,8 @@ void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply
 Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed)
 {
     ThreadState& threadState = State.Thread[threadId];
+    //PlyData& plyState = threadState.Plies[ply];
+
     const bool rootNode = ply == 0;
     const bool zeroWindow = alpha == beta - 1;
 
@@ -556,8 +571,9 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     TranspositionTableEntry entry;
     bool hashEntryExists = true;
     Score probedScore;
-    const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, threadState.SingularMove.Value);
-    bool probeSuccess = TryProbeTranspositionTable(key, depth, ply, alpha, beta, entry, probedScore, hashEntryExists);
+    //const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, plyState.SingularMove.Value);
+    const ZobristKey key = board.Key;
+    bool probeSuccess = TryProbeTranspositionTable(key, depth, ply, alpha, beta/*, plyState.SingularMove*/, entry, probedScore, hashEntryExists);
     //probeSuccess = false;
     //hashEntryExists = false;
 
@@ -581,7 +597,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     }
 
     const Move principalVariationMove = hashEntryExists ? entry.MMove : Move(0);
-    assert(!hashEntryExists || entry.MMove.GetColorToMove() == board.ColorToMove);
+    assert(!hashEntryExists || principalVariationMove.GetColorToMove() == board.ColorToMove);
 
     if (probeSuccess)
     {
@@ -632,72 +648,76 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         plyState.Killers[1] = Move(0);
     }
 
-    // STATIC EVALUATION PRUNING
     assert(depth > 0);
     if
     (
-        depth < 6
-        && !isPrincipalVariation
+        !rootNode
         && !inCheck
+        //&& plyState.SingularMove.Value == 0
     )
     {
-        constexpr std::array<Score, 6> margins = { 0, 64, 128, 256, 512, 768 };
-        const Score margin = margins[depth];
-        
-        if (staticScore - margin >= beta)
+        // STATIC EVALUATION PRUNING
+        if
+        (
+            depth < 6
+            && !isPrincipalVariation
+        )
         {
-            return beta;
-        }
-    }
+            constexpr std::array<Score, 6> margins = { 0, 64, 128, 256, 512, 768 };
+            const Score margin = margins[depth];
 
-    // RAZORING
-    constexpr Score razorMargin = 200;
-    if
-    (
-        depth < 4
-        && !isPrincipalVariation
-        && !inCheck
-        && staticScore + (razorMargin * depth) < beta
-    )
-    {
-        const auto razorScore = Quiescence(threadId, board, 0, ply, alpha, beta, false);
-        if (razorScore < beta)
-        {
-            return razorScore;
+            if (staticScore - margin >= beta)
+            {
+                return beta;
+            }
         }
 
-        if(depth == 1)
+        // RAZORING
+        constexpr Score razorMargin = 200;
+        if
+        (
+            depth < 4
+            && !isPrincipalVariation
+            && staticScore + (razorMargin * depth) < beta
+        )
         {
-            return beta;
-        }
-    }
+            const auto razorScore = Quiescence(threadId, board, 0, ply, alpha, beta, false);
+            if (razorScore < beta)
+            {
+                return razorScore;
+            }
 
-    // NULL MOVE PRUNING
-    if
-    (
-        nullMoveAllowed
-        && !rootNode
-        && !inCheck
-        && depth > 1
-        && staticScore >= beta
-        && board.BitBoard[board.ColorToMove] != (board.BitBoard[Pieces::Pawn | board.ColorToMove] | board.BitBoard[Pieces::King | board.ColorToMove])
-        //&& board.PieceMaterial[board.ColorToMove] > Constants::EndgameMaterial
-    )
-    {
-        const Ply nullDepthReduction = 4 + depth / 4 + static_cast<Ply>(std::min(3, (staticScore - beta) / 256));
-        const Move nullMove = Move(0, 0, Pieces::Empty);
-        board.DoMove(nullMove);
-        const Score nullMoveScore = -AlphaBeta(threadId, board, depth - nullDepthReduction, ply + 1, -beta, -beta + 1, false, false);
-        board.UndoMove();
-        if (nullMoveScore >= beta)
+            if (depth == 1)
+            {
+                return beta;
+            }
+        }
+
+        // NULL MOVE PRUNING
+        if
+        (
+            nullMoveAllowed
+            && depth > 1
+            && staticScore >= beta
+            && board.BitBoard[board.ColorToMove] != (board.BitBoard[Pieces::Pawn | board.ColorToMove] | board.BitBoard[Pieces::King | board.ColorToMove])
+            //&& board.PieceMaterial[board.ColorToMove] > Constants::EndgameMaterial
+        )
         {
-            return beta;
+            const Ply nullDepthReduction = 4 + depth / 4 + static_cast<Ply>(std::min(3, (staticScore - beta) / 256));
+            const Move nullMove = Move(0, 0, Pieces::Empty);
+            board.DoMove(nullMove);
+            const Score nullMoveScore = -AlphaBeta(threadId, board, depth - nullDepthReduction, ply + 1, -beta, -beta + 1, false, false);
+            board.UndoMove();
+            if (nullMoveScore >= beta)
+            {
+                return beta;
+            }
         }
     }
 
     const Bitboard pinned = pins[board.ColorToMove];
 
-    auto& plyState = threadState.Plies[ply];
+    PlyData& plyState = threadState.Plies[ply];
     auto& movePicker = plyState.MMovePicker;
     movePicker.Reset(threadState, ply, board, checkers, pinned, principalVariationMove);
         
@@ -757,7 +777,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         const Move move = moveEntry.move;
         State.Global.Table.PrefetchForMove(board, move);
         
-        //if(move.Value == threadState.SingularMove.Value)
+        //if(move.Value == plyState.SingularMove.Value)
         //{
         //    continue;
         //}
@@ -812,22 +832,24 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //if
         //(
         //    !rootNode
-        //    && depth >= 6
+        //    //&& !inCheck 
+        //    && depth > 7
         //    //&& nullMoveAllowed
-        //    && threadState.SingularMove.Value == 0
+        //    && plyState.SingularMove.Value == 0
         //    && move.Value == principalVariationMove.Value
-        //    && entry.Flag == TranspositionTableFlags::Beta
+        //    && entry.Flag != TranspositionTableFlags::Alpha
         //    && entry.Depth >= depth - 3
-        //    && std::abs(entry.SScore) < Constants::MateThreshold
+        //    && std::abs(probedScore) < Constants::MateThreshold
         //)
         //{
-        //    const Score singularBeta = entry.SScore - 10 * depth;
-        //    const Score singularAlpha = singularBeta - 1;
-        //    const Ply singularDepth = depth / 2;
+        //    const Score singularBeta = static_cast<Score>(probedScore - depth * 2);
+        //    const Score singularAlpha = static_cast<Score>(singularBeta - 1);
+        //    const Ply singularDepth = static_cast<Ply>(depth / 2);
         //    
-        //    threadState.SingularMove = move;
-        //    const Score singularScore = AlphaBeta(threadId, board, singularDepth, ply, singularAlpha, singularBeta, false, isCutNode, true);
-        //    threadState.SingularMove = Move(0);
+        //    plyState.SingularMove = move;
+        //    const MovePicker movePickerBackup = movePicker;
+        //    const Score singularScore = AlphaBeta(threadId, board, singularDepth, ply, singularAlpha, singularBeta, false, nullMoveAllowed);
+        //    plyState.SingularMove = Move(0);
 
         //    if(singularScore < singularBeta)
         //    {
@@ -837,16 +859,17 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //    {
         //        return singularBeta;
         //    }
-        //    else if(entry.SScore >= beta)
-        //    {
-        //        threadState.SingularMove = move;
-        //        const Score zeroWindowScore = AlphaBeta(threadId, board, singularDepth, ply, beta - 1, beta, false, isCutNode, true);
-        //        threadState.SingularMove = Move(0);
-        //    	if(zeroWindowScore >= beta)
-        //    	{
-        //            return beta;
-        //    	}
-        //    }
+        //    //else if(probedScore >= beta)
+        //    //{
+        //    //    plyState.SingularMove = move;
+        //    //    const Score zeroWindowScore = AlphaBeta(threadId, board, singularDepth, ply, beta - 1, beta, false, nullMoveAllowed);
+        //    //    plyState.SingularMove = Move(0);
+        //    //	if(zeroWindowScore >= beta)
+        //    //	{
+        //    //        return beta;
+        //    //	}
+        //    //}
+        //    movePicker = movePickerBackup;
         //}
         board.DoMove(move);
 
@@ -864,6 +887,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             //&& move.Value != countermove.Value
             && moveEntry.see <= 0
             && pawnPromoteTo == Pieces::Empty
+            && extension == 0
         )
         {
             reduction = SearchData.Reductions[depth][movesEvaluated];
@@ -983,6 +1007,10 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     // MATE / STALEMATE
     if(movesEvaluated == 0)
     {
+        //if(plyState.SingularMove.Value != 0)
+        //{
+        //    return alpha;
+        //}
         if(inCheck)
         {
             return -currentMateScore;

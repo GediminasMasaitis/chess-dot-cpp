@@ -82,10 +82,12 @@ class PlyData
 public:
     using KillerArray = std::array<Move, 2>;
     KillerArray Killers;
+    //Move SingularMove;
     MovePicker MMovePicker;
 
     void NewSearch()
     {
+        //SingularMove = Move(0);
     }
 
     void NewGame()
@@ -112,8 +114,7 @@ public:
 
     bool StopIteration;
     std::vector<Move> SavedPrincipalVariation{};
-    
-    Move SingularMove;
+
     Ply IterationsSincePvChange;
     Ply IterationInitialDepth;
     Ply SelectiveDepth;
@@ -166,8 +167,7 @@ public:
                 NodesPerMove[from][to] = 0;
             }
         }
-        
-        SingularMove = Move(0);
+
         IterationsSincePvChange = 0;
         ColorToMove = board.ColorToMove;
     }
