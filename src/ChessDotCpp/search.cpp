@@ -441,7 +441,6 @@ void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply
         {
             UpdateHistoryEntry(threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[bestMove.GetPiece()][bestMove.GetTo()], bonus);
         }
-        UpdateHistoryEntry(threadState.History[bestMove.GetColorToMove()][bestMove.GetFrom()][bestMove.GetTo()], bonus);
         if(betaCutoff)
         {
             if (bestMove.Value != plyState.Killers[0].Value)
