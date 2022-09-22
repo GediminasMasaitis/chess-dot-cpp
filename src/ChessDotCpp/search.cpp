@@ -421,8 +421,12 @@ void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply
     auto& plyState = threadState.Plies[ply];
 
     const bool isCapture = bestMove.GetTakesPiece() != Pieces::Empty;
-    const Move previousMove1 = board.HistoryDepth > 0 ? board.History[board.HistoryDepth - 1].Move : Move(0);
-    const Move previousMove2 = board.HistoryDepth > 1 ? board.History[board.HistoryDepth - 2].Move : Move(0);
+
+    const bool hasPreviousMove1 = board.HistoryDepth > 0;
+    const bool hasPreviousMove2 = board.HistoryDepth > 1;
+    const Move previousMove1 = hasPreviousMove1 ? board.History[board.HistoryDepth - 1].Move : Move(0);
+    const Move previousMove2 = hasPreviousMove2 ? board.History[board.HistoryDepth - 2].Move : Move(0);
+
     //const Score bonus = static_cast<Score>(depth * depth);
     const MoveScore bonus = depth * depth + depth - 1;
 
@@ -433,11 +437,11 @@ void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply
     else
     {
         UpdateHistoryEntry(threadState.History[bestMove.GetColorToMove()][bestMove.GetFrom()][bestMove.GetTo()], bonus);
-        if (previousMove1.Value != 0)
+        if (hasPreviousMove1)
         {
             UpdateHistoryEntry(threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[bestMove.GetPiece()][bestMove.GetTo()], bonus);
         }
-        if (previousMove2.Value != 0)
+        if (hasPreviousMove2)
         {
             UpdateHistoryEntry(threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[bestMove.GetPiece()][bestMove.GetTo()], bonus);
         }
@@ -465,6 +469,14 @@ void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply
         else
         {
             UpdateHistoryEntry(threadState.History[attemptedMove.GetColorToMove()][attemptedMove.GetFrom()][attemptedMove.GetTo()], -bonus);
+            if (hasPreviousMove1)
+            {
+                UpdateHistoryEntry(threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[attemptedMove.GetPiece()][attemptedMove.GetTo()], -bonus);
+            }
+            if (hasPreviousMove2)
+            {
+                UpdateHistoryEntry(threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[attemptedMove.GetPiece()][attemptedMove.GetTo()], -bonus);
+            }
         }
     }
 }
