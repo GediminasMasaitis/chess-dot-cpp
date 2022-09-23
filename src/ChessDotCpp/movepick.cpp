@@ -2,7 +2,6 @@
 
 #include "movegen.h"
 #include "see.h"
-#include "display.h"
 #include "searchstate.h"
 
 void MovePicker::Reset(ThreadState& state, Ply ply, Board& board, Bitboard checkers, Bitboard pinned, Move ttMove)

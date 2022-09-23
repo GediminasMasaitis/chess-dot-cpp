@@ -14,7 +14,6 @@
 #include <algorithm>
 
 #include "zobrist.h"
-#include "display.h"
 
 #if DATAGEN
 static constexpr bool datagen = true;
@@ -461,6 +460,11 @@ void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply
     for (MoveCount moveIndex = 0; moveIndex < attemptedMoveCount; moveIndex++)
     {
         const Move& attemptedMove = attemptedMoves[moveIndex];
+        if(attemptedMove.Value == bestMove.Value)
+        {
+            continue;
+        }
+
         const bool attemptedCapture = attemptedMove.GetTakesPiece() != Pieces::Empty;
         if (attemptedCapture)
         {
@@ -824,6 +828,17 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             && movesEvaluated > 0
         )
         {
+            // LATE MOVE PRUNING
+            constexpr auto lateMovePruning = std::array<Score, 5> { 0, 8, 15, 25, 40 };
+            if
+            (
+                depth < 5
+                && movesEvaluated > lateMovePruning[depth]
+            )
+            {
+                break;
+            }
+
             // LATE QUIET MOVE PRUNING
             constexpr auto lateQuietMovePruning = std::array<Score, 8> { 0, 3, 6, 10, 15, 20, 25, 30 };
             if
@@ -1019,10 +1034,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
                 }
             }
         }
-        //else
-        {
-            failedMoves[failedMoveCount++] = move;
-        }
+        failedMoves[failedMoveCount++] = move;
     }
 
     if (raisedAlpha)
