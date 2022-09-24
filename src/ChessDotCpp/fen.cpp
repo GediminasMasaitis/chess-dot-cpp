@@ -32,11 +32,7 @@ void SyncMaterial(BoardBase& board)
     {
         Color color = piece & Pieces::Color;
         bool isPawn = (piece & ~Pieces::Color) == Pieces::Pawn;
-        if (isPawn)
-        {
-            board.PawnMaterial[color] += board.PieceCounts[piece] * EvaluationConstants::PieceValues[piece];
-        }
-        else
+        if (!isPawn)
         {
             board.PieceMaterial[color] += board.PieceCounts[piece] * EvaluationConstants::PieceValues[piece];
         }

@@ -157,7 +157,7 @@ public:
 
 	EachPiece<Piece> PieceCounts;
 	EachColor<Position> KingPositions;
-	EachColor<Score> PawnMaterial;
+	//EachColor<Score> PawnMaterial;
 	EachColor<Score> PieceMaterial;
 	Score StaticEvaluation;
 

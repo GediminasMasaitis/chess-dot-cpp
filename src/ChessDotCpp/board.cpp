@@ -128,7 +128,6 @@ void Board::DoMove(const Move move)
         promotedPiece = move.GetPawnPromoteTo();
         PieceCounts[piece]--;
         PieceCounts[promotedPiece]++;
-        PawnMaterial[originalColorToMove] -= EvaluationConstants::PieceValues[Pieces::Pawn];
         PieceMaterial[originalColorToMove] += EvaluationConstants::PieceValues[promotedPiece];
     }
     else
@@ -162,11 +161,7 @@ void Board::DoMove(const Move move)
         }
         FiftyMoveRuleIndex = static_cast<HistoryPly>(HistoryDepth - 1);
         PieceCounts[takesPiece]--;
-        if (takesPawn)
-        {
-            PawnMaterial[ColorToMove] -= EvaluationConstants::PieceValues[takesPiece];
-        }
-        else
+        if (!takesPawn)
         {
             PieceMaterial[ColorToMove] -= EvaluationConstants::PieceValues[takesPiece];
         }
@@ -407,7 +402,6 @@ void Board::UndoMove()
         promotedPiece = move.GetPawnPromoteTo();
         PieceCounts[piece]++;
         PieceCounts[promotedPiece]--;
-        PawnMaterial[ColorToMove] += EvaluationConstants::PieceValues[Pieces::Pawn];
         PieceMaterial[ColorToMove] -= EvaluationConstants::PieceValues[promotedPiece];
     }
     else
@@ -444,11 +438,7 @@ void Board::UndoMove()
         }
         PieceCounts[takesPiece]++;
         const bool takesPawn = (takesPiece & ~Pieces::Color) == Pieces::Pawn;
-        if (takesPawn)
-        {
-            PawnMaterial[originalColorToMove] += EvaluationConstants::PieceValues[takesPiece];
-        }
-        else
+        if (!takesPawn)
         {
             PieceMaterial[originalColorToMove] += EvaluationConstants::PieceValues[takesPiece];
         }
@@ -557,7 +547,6 @@ void BoardBase::FlipColors()
 
     for(Piece i = 0; i < Colors::Count; i++)
     {
-        PawnMaterial[i] = 0;
         PieceMaterial[i] = 0;
     }
     
@@ -584,11 +573,7 @@ void BoardBase::FlipColors()
             KingPositions[color] = i;
         }
 
-        if(noColor == Pieces::Pawn)
-        {
-            PawnMaterial[color] += EvaluationConstants::PieceValues[flippedPiece];
-        }
-        else
+        if(noColor != Pieces::Pawn)
         {
             PieceMaterial[color] += EvaluationConstants::PieceValues[flippedPiece];
         }
