@@ -804,20 +804,18 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         const bool givesCheck = CheckDetector::DoesGiveCheck(board, move);
         const bool quiet = !capture && !promotion && !givesCheck;
 
-        //{
-        //    MoveScore moveScore = capture
-        //        ? threadState.CaptureHistory[move.GetPiece()][move.GetTo()][takesPiece]
-        //        : threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()]
-        //        + threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[move.GetPiece()][move.GetTo()]
-        //        + threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[move.GetPiece()][move.GetTo()];
+        MoveScore moveScore = capture
+            ? threadState.CaptureHistory[move.GetPiece()][move.GetTo()][takesPiece]
+            : threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()]
+            + threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[move.GetPiece()][move.GetTo()]
+            + threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[move.GetPiece()][move.GetTo()];
 
+        //{
         //    auto file = std::ofstream("C:/temp/history.txt", std::ios::app);
         //    file << std::to_string(moveScore) << "\n";
         //    file.flush();
         //    file.close();
         //}
-
-        //const Score seeScore = moveEntry.see;
 
         if
         (
@@ -837,6 +835,12 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             )
             {
                 break;
+            }
+
+            // HISTORY PRUNING
+            if (moveScore < depth * -8192)
+            {
+                continue;
             }
 
             // LATE QUIET MOVE PRUNING
@@ -951,12 +955,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
                 //{
                 //    reduction--;
                 //}
-
-                MoveScore moveScore = capture
-                    ? threadState.CaptureHistory[move.GetPiece()][move.GetTo()][takesPiece]
-                    : threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()]
-                    + threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[move.GetPiece()][move.GetTo()]
-                    + threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[move.GetPiece()][move.GetTo()];
 
                 if (moveScore > 0)
                 {
