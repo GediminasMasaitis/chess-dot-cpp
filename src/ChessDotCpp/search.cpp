@@ -1055,9 +1055,12 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         //}
         if(inCheck)
         {
-            return -currentMateScore;
+            bestScore = -currentMateScore;
         }
-        return Contempt(board);
+        else
+        {
+            bestScore = Contempt(board);
+        }
     }
 
     if (raisedAlpha)
@@ -1068,8 +1071,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     {
         StoreTranspositionTable(threadState, key, bestMove, depth, ply, bestScore, TranspositionTableFlags::Alpha);
     }
-    
-    return alpha;
+    return bestScore;
 }
 
 Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth, const Score previous)
