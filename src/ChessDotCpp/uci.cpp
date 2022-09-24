@@ -2,7 +2,7 @@
 
 
 #include "datagen.h"
-#include "display.h"
+#include "displaysearch.h"
 #include "texel.h"
 
 void Uci::OnCallback(SearchCallbackData& data) const
@@ -277,6 +277,15 @@ void Uci::HandleUciNewGame()
 	Fens::Parse(board, StartingFen);
 }
 
+void Uci::HandleDisplaySearch(std::stringstream& reader)
+{
+	SearchParameters parameters;
+	parameters.MinNodes = 1000000;
+	parameters.MaxNodes = 1000000;
+	ReadSearchParameters(reader, parameters);
+	DisplaySearch::DisplayBoard(board, parameters);
+}
+
 bool Uci::HandleInput(const std::string& line)
 {
 	std::stringstream reader(line);
@@ -324,7 +333,11 @@ bool Uci::HandleInput(const std::string& line)
 		}
 		else if (word == "d")
 		{
-			Display::DisplayBoard(board);
+			DisplayEval::DisplayBoard(board);
+		}
+		else if (word == "ds")
+		{
+			HandleDisplaySearch(reader);
 		}
 		else if (word == "quit")
 		{

@@ -612,7 +612,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     }
 
     const Move principalVariationMove = hashEntryExists ? entry.MMove : Move(0);
-    assert(!hashEntryExists || principalVariationMove.GetColorToMove() == board.ColorToMove);
+    assert(!hashEntryExists || principalVariationMove.Value == 0 || principalVariationMove.GetColorToMove() == board.ColorToMove);
 
     if (probeSuccess)
     {

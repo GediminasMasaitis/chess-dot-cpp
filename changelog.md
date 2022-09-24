@@ -8201,4 +8201,16 @@ Score of ChessDotCpp3.80 vs ChessDotCpp3.79: 1173 - 1069 - 2758  [0.510] 5000
 ...      ChessDotCpp3.80 playing Black: 179 - 917 - 1404  [0.352] 2500
 ...      White vs Black: 1911 - 331 - 2758  [0.658] 5000
 Elo difference: 7.2 +/- 6.4, LOS: 98.6 %, DrawRatio: 55.2 %
+
+Score of ChessDotCpp3.80 vs weiss2.0: 725 - 65 - 210  [0.830] 1000
+...      ChessDotCpp3.80 playing White: 376 - 29 - 95  [0.847] 500
+...      ChessDotCpp3.80 playing Black: 349 - 36 - 115  [0.813] 500
+...      White vs Black: 412 - 378 - 210  [0.517] 1000
+Elo difference: 275.5 +/- 22.8, LOS: 100.0 %, DrawRatio: 21.0 %
+
+Score of ChessDotCpp3.80 vs seer2.5: 550 - 772 - 1678  [0.463] 3000
+...      ChessDotCpp3.80 playing White: 272 - 369 - 859  [0.468] 1500
+...      ChessDotCpp3.80 playing Black: 278 - 403 - 819  [0.458] 1500
+...      White vs Black: 675 - 647 - 1678  [0.505] 3000
+Elo difference: -25.8 +/- 8.2, LOS: 0.0 %, DrawRatio: 55.9 %
 ```

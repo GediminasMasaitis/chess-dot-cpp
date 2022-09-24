@@ -4,32 +4,11 @@
 #include <iostream>
 #include <sstream>
 
-std::string PositionToText(const Position position)
-{
-	const Rank rank = position / 8;
-	const File file = position % 8;
-
-	char positions[3];
-	positions[0] = static_cast<char>(file + 97);
-	positions[1] = static_cast<char>(rank + 0x31);
-	positions[2] = '\0';
-	auto str = std::string(positions);
-	return str;
-}
-
-Position Move::TextToPosition(const std::string& text)
-{
-	const File file = std::tolower(text[0]) - 97;
-	const Rank rank = text[1] - 0x31;
-	const Position position = static_cast<Position>(rank * 8 + file);
-	return position;
-}
-
 MoveString Move::ToPositionString() const
 {
 	std::stringstream stream = std::stringstream();
-	stream << PositionToText(GetFrom());
-	stream << PositionToText(GetTo());
+	stream << Positions::PositionToText(GetFrom());
+	stream << Positions::PositionToText(GetTo());
 	//std::string text = PositionToText(GetFrom()) + PositionToText(GetTo());
 	if (GetPawnPromoteTo() != Pieces::Empty)
 	{

@@ -98,8 +98,6 @@ public:
 	{
 		return (Value >> 31) & 0x01;
 	}
-
-	[[nodiscard]] static Position TextToPosition(const std::string& text);
 	
 	[[nodiscard]] MoveString ToPositionString() const;
 	[[nodiscard]] std::string ToDebugString() const;

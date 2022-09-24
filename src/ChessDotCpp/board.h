@@ -167,6 +167,9 @@ public:
 	[[nodiscard]] Move FromPositionString(const MoveString& moveString) const;
 
 	void FlipColors();
+
+	void SetPiece(const Position pos, const Piece piece);
+	void UnsetPiece(const Position pos);
 };
 
 class KeyAnd50Move

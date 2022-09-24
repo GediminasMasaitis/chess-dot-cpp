@@ -4,31 +4,56 @@
 #include "fen.h"
 #include "evaluation.h"
 
+class DisplayPositionData
+{
+public:
+    Score EvalDiff;
+    Score SearchDiff;
+    bool GivesCheck;
+    bool Pinned;
+
+    DisplayPositionData()
+    {
+        EvalDiff = 0;
+        SearchDiff = 0;
+
+        GivesCheck = false;
+        Pinned = false;
+    }
+};
+
+using DisplayPositionDataArray = EachPosition<DisplayPositionData>;
+
+class DisplayData
+{
+public:
+    bool HasEvalData;
+    bool HasSearchData;
+    Score EvalScore;
+    Score SearchScore;
+    DisplayPositionDataArray Positions;
+
+    DisplayData()
+    {
+        HasEvalData = false;
+        HasSearchData = false;
+        EvalScore = 0;
+        SearchScore = 0;
+        Positions = DisplayPositionDataArray{};
+    }
+};
+
 class Display
 {
 public:
     using DisplayEvaluation = EvaluationNnue2;//EvaluationClassical2;
 
-    static void DisplayBoard(const BoardBase& board, const std::optional<Move> optMove = {}, const bool evalPieces = true)
+    static void DisplayBoard(const BoardBase& board, const std::optional<Move> optMove , const DisplayData& data)
     {
         std::stringstream ss;
 
-        EachColor<Bitboard> pins;
-        PinDetector::GetPinnedToKings(board, pins);
-        Score eval = CallEval(board, pins);
-        eval = board.WhiteToMove ? eval : -eval;
-
-        if (evalPieces)
+        if (data.HasEvalData)
         {
-            BoardBase clone = board;
-
-            auto checkers = CheckDetector::GetCheckers(clone);
-            clone.WhiteToMove = !clone.WhiteToMove;
-            clone.ColorToMove ^= 1;
-            checkers |= CheckDetector::GetCheckers(clone);
-            clone.WhiteToMove = !clone.WhiteToMove;
-            clone.ColorToMove ^= 1;
-
             const std::string border = "+-------+-------+-------+-------+-------+-------+-------+-------+\n";
             for (auto rank = 7; rank >= 0; rank--)
             {
@@ -57,24 +82,12 @@ public:
                 for (auto file = 0; file < 8; file++)
                 {
                     const Position pos = static_cast<Position>(rank * 8 + file);
+                    const DisplayPositionData& posData = data.Positions[pos];
                     const Piece piece = board.ArrayBoard[pos];
                     if (piece > Pieces::Empty && piece < Pieces::Count)
                     {
-                        const Bitboard posBitboard = GetBitboard(pos);
-                        const Color color = piece & Colors::Mask;
-                        clone.ArrayBoard[pos] = Pieces::Empty;
-                        clone.BitBoard[piece] &= ~posBitboard;
-                        clone.BitBoard[color] &= ~posBitboard;
-                        clone.AllPieces &= ~posBitboard;
-                        clone.PieceCounts[piece]--;
-                        clone.UnsetAccumulatorPiece(pos, piece);
-
-                        EachColor<Bitboard> noPiecePins;
-                        PinDetector::GetPinnedToKings(clone, noPiecePins);
-                        Score noPieceEval = CallEval(clone, noPiecePins);
-                        noPieceEval = board.WhiteToMove ? noPieceEval : -noPieceEval;
-                        const Score difference = static_cast<Score>(eval - noPieceEval);
-                        const std::string diffStr = std::to_string(difference);
+                        const Score diff = data.HasSearchData ? posData.SearchDiff : posData.EvalDiff;
+                        const std::string diffStr = std::to_string(diff);
                         const auto padLeft = static_cast<int32_t>((7 - diffStr.size()) / 2);
                         const auto padRight = static_cast<int32_t>(7 - diffStr.size() - padLeft);
 
@@ -88,13 +101,6 @@ public:
                         {
                             ss << " ";
                         }
-
-                        clone.ArrayBoard[pos] = piece;
-                        clone.BitBoard[piece] |= posBitboard;
-                        clone.BitBoard[color] |= posBitboard;
-                        clone.AllPieces |= posBitboard;
-                        clone.PieceCounts[piece]++;
-                        clone.SetAccumulatorPiece(pos, piece);
                     }
                     else
                     {
@@ -105,12 +111,10 @@ public:
                 for (auto file = 0; file < 8; file++)
                 {
                     const Position pos = static_cast<Position>(rank * 8 + file);
-                    const Bitboard posBitboard = GetBitboard(pos);
-                    const Piece piece = board.ArrayBoard[pos];
-                    const Color color = piece & Colors::Mask;
+                    const DisplayPositionData& posData = data.Positions[pos];
 
                     ss << "|";
-                    if (pins[color] & posBitboard)
+                    if (posData.Pinned)
                     {
                         ss << "PIN";
                     }
@@ -119,7 +123,7 @@ public:
                         ss << "   ";
                     }
                     ss << " ";
-                    if (checkers & posBitboard)
+                    if (posData.GivesCheck)
                     {
                         ss << "CHK";
                     }
@@ -160,7 +164,14 @@ public:
         ss << "Side: " << (board.WhiteToMove ? "White" : "Black") << "\n";
         ss << "FEN: " << fen << "\n";
         ss << "Key: " << board.Key << "\n";
-        ss << "Eval: " << eval << "\n";
+        if(data.HasEvalData)
+        {
+            ss << "Eval: " << data.EvalScore << "\n";
+        }
+        if(data.HasSearchData)
+        {
+            ss << "Search: " << data.SearchScore << "\n";
+        }
         //const PhaseScore phasedEval = DisplayEvaluation::EvaluatePhased(board, pins);
         //const PhaseScore flippedPhasedEval = phasedEval;//board.WhiteToMove ? static_cast<Score>(phasedEval) : -phasedEval;
         //ss << "Midgame: " << MgScore(flippedPhasedEval) << "\n";

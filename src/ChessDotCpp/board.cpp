@@ -497,8 +497,8 @@ Board::Board(): BoardBase(), History()
 
 Move BoardBase::FromPositionString(const MoveString& moveString) const
 {
-    const Position from = Move::TextToPosition(moveString.substr(0, 2));
-    const Position to = Move::TextToPosition(moveString.substr(2, 2));
+    const Position from = Positions::TextToPosition(moveString.substr(0, 2));
+    const Position to = Positions::TextToPosition(moveString.substr(2, 2));
     const Piece piece = ArrayBoard[from];
     Piece takesPiece = ArrayBoard[to];
     bool enPassant = false;
@@ -605,4 +605,31 @@ void BoardBase::FlipColors()
     PawnKey = ZobristKeys.CalculatePawnKey(*this);
     
     SyncExtraBitBoards();
+}
+
+void BoardBase::SetPiece(const Position pos, const Piece piece)
+{
+    const Bitboard posBitboard = GetBitboard(pos);
+    const Color color = piece & Colors::Mask;
+
+    ArrayBoard[pos] = piece;
+    BitBoard[piece] |= posBitboard;
+    BitBoard[color] |= posBitboard;
+    AllPieces |= posBitboard;
+    PieceCounts[piece]++;
+    SetAccumulatorPiece(pos, piece);
+}
+
+void BoardBase::UnsetPiece(const Position pos)
+{
+    const Piece piece = ArrayBoard[pos];
+    const Bitboard posBitboard = GetBitboard(pos);
+    const Color color = piece & Colors::Mask;
+
+    ArrayBoard[pos] = Pieces::Empty;
+    BitBoard[piece] &= ~posBitboard;
+    BitBoard[color] &= ~posBitboard;
+    AllPieces &= ~posBitboard;
+    PieceCounts[piece]--;
+    UnsetAccumulatorPiece(pos, piece);
 }
