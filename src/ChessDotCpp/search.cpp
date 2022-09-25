@@ -283,22 +283,9 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, const
         }
 
         // SEE PRUNING
-        if
-        (
-            !inCheck
-            && move.GetPawnPromoteTo() == Pieces::Empty
-        )
+        if(moveEntry.see < 0)
         {
-            //const Score seeScore = seeScores[moveIndex];
-            const Score seeScore = moveEntry.see;
-            if (seeScore < 0)
-            {
-                continue;
-            }
-            if (standPat + seeScore > beta + 256)
-            {
-                return beta;
-            }
+            continue;
         }
 
         board.DoMove(move);

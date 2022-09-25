@@ -618,3 +618,32 @@ void BoardBase::UnsetPiece(const Position pos)
     PieceCounts[piece]--;
     UnsetAccumulatorPiece(pos, piece);
 }
+
+bool BoardBase::IsDrawByMaterial() const
+{
+    PieceCounter counter = 0;
+    for (Piece piece = Pieces::Pawn; piece < Pieces::King; piece++)
+    {
+        const auto count = static_cast<PieceCounter>(PieceCounts[piece]);
+        counter |= count << (piece * 4);
+    }
+
+    switch (counter)
+    {
+    case 0x0000000000000000ULL: // KvK
+    case 0x0000000001000000ULL: // KNvK
+    case 0x0000000010000000ULL: // KvKN
+    case 0x0000000002000000ULL: // KNNvK
+    case 0x0000000020000000ULL: // KvKNN
+    case 0x0000000012000000ULL: // KNNvKN
+    case 0x0000000021000000ULL: // KNvKNN
+    case 0x0000000100000000ULL: // KBvK
+    case 0x0000001000000000ULL: // KvKB
+    case 0x0000001100000000ULL: // KBvKB
+    case 0x0000000110000000ULL: // KBvKN
+    case 0x0000001001000000ULL: // KNvKB
+        return true;
+    default:
+        return false;
+    }
+}

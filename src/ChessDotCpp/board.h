@@ -170,6 +170,8 @@ public:
 
 	void SetPiece(const Position pos, const Piece piece);
 	void UnsetPiece(const Position pos);
+
+	bool IsDrawByMaterial() const;
 };
 
 class KeyAnd50Move

@@ -28,6 +28,7 @@ using Stat = uint64_t;
 using TtFlag = uint8_t;
 using ThreadId = int8_t;
 using AbdadaMoveKey = uint64_t;
+using PieceCounter = uint64_t;
 
 // Evaluation
 using Phase = uint8_t;
