@@ -1023,16 +1023,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     }
 
     if (raisedAlpha)
-    {
-        UpdateHistory(threadId, board, depth, ply, failedMoves, failedMoveCount, bestMove, betaCutoff);
-        if(betaCutoff)
-        {
-            StoreTranspositionTable(threadState, key, bestMove, depth, ply, bestScore, TranspositionTableFlags::Beta);
-            return beta;
-        }
-    }
-    
-
     // MATE / STALEMATE
     if(movesEvaluated == 0)
     {
@@ -1048,10 +1038,25 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         {
             bestScore = Contempt(board);
         }
+
+        if(bestScore > alpha)
+        {
+            raisedAlpha = true;
+            if(bestScore > beta)
+            {
+                betaCutoff = true;
+            }
+        }
     }
 
     if (raisedAlpha)
     {
+        UpdateHistory(threadId, board, depth, ply, failedMoves, failedMoveCount, bestMove, betaCutoff);
+        if (betaCutoff)
+        {
+            StoreTranspositionTable(threadState, key, bestMove, depth, ply, bestScore, TranspositionTableFlags::Beta);
+            return beta;
+        }
         StoreTranspositionTable(threadState, key, bestMove, depth, ply, bestScore, TranspositionTableFlags::Exact);
     }
     else

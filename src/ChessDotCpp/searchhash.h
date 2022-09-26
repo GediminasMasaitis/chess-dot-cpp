@@ -182,6 +182,11 @@ public:
             return false;
         }
 
+        if(entry.MMove.Value == 0)
+        {
+            return false;
+        }
+
         const TtFlag ttFlag = entry.Flag;
         if (ttFlag != TranspositionTableFlags::Exact)
         {

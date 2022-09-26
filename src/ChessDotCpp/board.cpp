@@ -621,10 +621,17 @@ void BoardBase::UnsetPiece(const Position pos)
 
 bool BoardBase::IsDrawByMaterial() const
 {
+    constexpr EachPiece<Piece> limits = {0, 0, 0, 0, 0, 0, 2, 2, 1, 1, 0, 0, 0, 0, 1, 1};
+
     PieceCounter counter = 0;
     for (Piece piece = Pieces::Pawn; piece < Pieces::King; piece++)
     {
         const auto count = static_cast<PieceCounter>(PieceCounts[piece]);
+        if(count > limits[piece])
+        {
+            return false;
+        }
+
         counter |= count << (piece * 4);
     }
 
