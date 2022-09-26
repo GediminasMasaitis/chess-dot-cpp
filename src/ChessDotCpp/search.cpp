@@ -1022,7 +1022,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         failedMoves[failedMoveCount++] = move;
     }
 
-    if (raisedAlpha)
     // MATE / STALEMATE
     if(movesEvaluated == 0)
     {
