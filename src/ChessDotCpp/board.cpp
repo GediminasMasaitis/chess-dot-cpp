@@ -73,28 +73,18 @@ void Board::DoMove(const Move move)
     const Piece takesPiece = move.GetTakesPiece();
     const Piece pieceNoColor = piece & ~Colors::Mask;
 
-    assert(!AccumulatorInvalidations[Colors::White]);
-    assert(!AccumulatorInvalidations[Colors::Black]);
+    const bool originalKingSide = KingSides[originalColorToMove];
+    const bucket_t originalBucket = Buckets[originalColorToMove];
 
-    if(pieceNoColor == Pieces::King)
+    const bool isKingMove = pieceNoColor == Pieces::King;
+    if(isKingMove)
     {
-        const Color kingColor = piece & Colors::Mask;
         const auto kingFile = Files::Get(to);
         const bool kingQueenSide = kingFile < 4;
-        const bool oldKingQueenSide = KingSides[kingColor];
-        KingSides[kingColor] = kingQueenSide;
-        if(kingQueenSide != oldKingQueenSide)
-        {
-            AccumulatorInvalidations[kingColor] = true;
-        }
+        KingSides[originalColorToMove] = kingQueenSide;
 
-        const Bucket oldBucket = Buckets[kingColor];
-        const Bucket newBucket = EvaluationNnueBase::GetBucket(to, kingColor);
-        Buckets[kingColor] = newBucket;
-        if(oldBucket != newBucket)
-        {
-            AccumulatorInvalidations[kingColor] = true;
-        }
+        const bucket_t newBucket = EvaluationNnueBase::GetBucket(to, originalColorToMove);
+        Buckets[originalColorToMove] = newBucket;
     }
 
     /*for(auto color = Colors::White; color < Colors::Black; color++)
@@ -239,7 +229,10 @@ void Board::DoMove(const Move move)
     //SyncCastleTo1();
     SyncExtraBitBoards();
 
-    FinalizeAccumulator();
+    if (KingSides[originalColorToMove] != originalKingSide || Buckets[originalColorToMove] != originalBucket)
+    {
+        FinalizeAccumulator(originalColorToMove);
+    }
 }
 
 void Board::GetKeyAfterMove(const Move move, KeyAnd50Move& keyAnd50Move) const
@@ -376,8 +369,6 @@ void Board::UndoMove()
     const Piece takesPiece = move.GetTakesPiece();
     const Piece pieceNoColor = piece & ~Colors::Mask;
 
-    assert(!AccumulatorInvalidations[Colors::White]);
-    assert(!AccumulatorInvalidations[Colors::Black]);
     if (pieceNoColor == Pieces::King)
     {
         const Color kingColor = piece & Colors::Mask;

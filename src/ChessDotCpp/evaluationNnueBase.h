@@ -34,8 +34,9 @@ public:
     alignas(SimdNV::alignment) inline static hidden_weightses_t HiddenWeightses;
     alignas(SimdNV::alignment) inline static output_bias_t OutputBias;
 
-    using Bucket = uint8_t;
-    static constexpr EachPosition<Bucket> BucketMap = {
+    static constexpr uint8_t BucketCount = 8;
+    using bucket_t = uint8_t;
+    static constexpr EachPosition<bucket_t> BucketMap = {
         0,  1,  2,  3,  3,  2,  1,  0,
         4,  4,  5,  5,  5,  5,  4,  4,
         6,  6,  6,  6,  6,  6,  6,  6,
@@ -46,7 +47,7 @@ public:
         7,  7,  7,  7,  7,  7,  7,  7,
     };
 
-    static constexpr Bucket GetBucket(Position position, const Color color)
+    static constexpr bucket_t GetBucket(Position position, const Color color)
     {
         if (color == Colors::Black)
         {
@@ -77,7 +78,7 @@ public:
     };
 
     template<bool TSet>
-    static void ApplyPieceSingle(hidden_layer_t& hiddenLayer, const Position pos, const Piece piece, const bool kingQueenSide, const Bucket bucket)
+    static void ApplyPieceSingle(hidden_layer_t& hiddenLayer, const Position pos, const Piece piece, const bool kingQueenSide, const bucket_t bucket)
     {
         const auto pieceIndex = pieceIndices[piece];
         assert(pieceIndex >= 0);
@@ -102,7 +103,7 @@ public:
     }
 
     template<bool TSet>
-    static void ApplyPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide, const EachColor<Bucket>& buckets)
+    static void ApplyPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide, const EachColor<bucket_t>& buckets)
     {
         const Position flippedPos = pos ^ 56;
         const Piece flippedPiece = piece ^ 1;
@@ -110,12 +111,12 @@ public:
         ApplyPieceSingle<TSet>(hiddenLayers[Colors::Black], flippedPos, flippedPiece, kingsQueenSide[Colors::Black], buckets[Colors::Black]);
     }
 
-    static void SetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide, const EachColor<Bucket>& buckets)
+    static void SetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide, const EachColor<bucket_t>& buckets)
     {
         ApplyPiece<true>(hiddenLayers, pos, piece, kingsQueenSide, buckets);
     }
 
-    static void UnsetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide, const EachColor<Bucket>& buckets)
+    static void UnsetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide, const EachColor<bucket_t>& buckets)
     {
         ApplyPiece<false>(hiddenLayers, pos, piece, kingsQueenSide, buckets);
     }

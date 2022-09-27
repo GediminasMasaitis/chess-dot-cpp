@@ -82,14 +82,12 @@ void Fens::Parse(TBoard& board, Fen fen)
                 board.KingPositions[Colors::White] = fixedBoardPosition;
                 board.KingSides[Colors::White] = queenSide;
                 board.Buckets[Colors::White] = EvaluationNnueBase::GetBucket(fixedBoardPosition, Colors::White);
-                board.AccumulatorInvalidations[Colors::White] = true;
             }
             else if (piece == Pieces::BlackKing)
             {
                 board.KingPositions[Colors::Black] = fixedBoardPosition;
                 board.KingSides[Colors::Black] = queenSide;
                 board.Buckets[Colors::Black] = EvaluationNnueBase::GetBucket(fixedBoardPosition, Colors::Black);
-                board.AccumulatorInvalidations[Colors::Black] = true;
             }
             boardPosition++;
             continue;
@@ -191,7 +189,8 @@ void Fens::Parse(TBoard& board, Fen fen)
     board.Key = ZobristKeys.CalculateKey(board);
     board.PawnKey = ZobristKeys.CalculatePawnKey(board);
 
-    board.FinalizeAccumulator();
+    board.FinalizeAccumulator(Colors::White);
+    board.FinalizeAccumulator(Colors::Black);
 }
 
 char PieceToChar(Piece piece)

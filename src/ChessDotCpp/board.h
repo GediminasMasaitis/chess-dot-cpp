@@ -26,16 +26,16 @@ class BoardBase
 public:
 	bool enableAccumulatorStack = false;
 	EachColor<bool> KingSides;
-	EachColor<bool> AccumulatorInvalidations;
+	//EachColor<bool> AccumulatorInvalidations;
 #if USEACCUMULATOR
 	static constexpr bool useAccumulator = true;
 
 	using value_t = EvaluationNnueBase::NnueValue;
 	using accumulator_t = EvaluationNnueBase::hidden_layer_t;
 	using accumulators_t = EvaluationNnueBase::hidden_layers_t;
-	using Bucket = EvaluationNnueBase::Bucket;
+	using bucket_t = EvaluationNnueBase::bucket_t;
 
-	EachColor<Bucket> Buckets;
+	EachColor<bucket_t> Buckets;
 
     struct accumulator_wrapper_t
     {
@@ -83,34 +83,28 @@ public:
 		EvaluationNnueBase::UnsetPiece(accumulators, pos, piece, KingSides, Buckets);
 	}
 
-	void FinalizeAccumulator()
+	void FinalizeAccumulator(const Color color)
 	{
-		for (Color color = 0; color < Colors::Count; color++)
-		{
-			if(AccumulatorInvalidations[color])
-			{
-				auto& accumulators = accumulatorStack[accumulatorStack.size() - 1].accumulators;
-				auto& accumulator = accumulators[color];
-				const auto kingQueenSide = KingSides[color];
-				const auto bucket = Buckets[color];
-				EvaluationNnueBase::ResetSingle(accumulator);
-				for(Position pos = 0; pos < Positions::Count; pos++)
-				{
-					const Piece piece = ArrayBoard[pos];
-					if(piece != Pieces::Empty)
-					{
-						Position flippedPos = pos;
-						Piece flippedPiece = piece;
-						if(color == Colors::Black)
-						{
-							flippedPos ^= 56;
-							flippedPiece ^= 1;
-						}
+		const auto kingSide = KingSides[color];
+		const auto bucket = Buckets[color];
 
-						EvaluationNnueBase::ApplyPieceSingle<true>(accumulator, flippedPos, flippedPiece, kingQueenSide, bucket);
-					}
+		auto& accumulators = accumulatorStack[accumulatorStack.size() - 1].accumulators;
+		auto& accumulator = accumulators[color];
+		EvaluationNnueBase::ResetSingle(accumulator);
+		for(Position pos = 0; pos < Positions::Count; pos++)
+		{
+			const Piece piece = ArrayBoard[pos];
+			if(piece != Pieces::Empty)
+			{
+				Position flippedPos = pos;
+				Piece flippedPiece = piece;
+				if(color == Colors::Black)
+				{
+					flippedPos ^= 56;
+					flippedPiece ^= 1;
 				}
-				AccumulatorInvalidations[color] = false;
+
+				EvaluationNnueBase::ApplyPieceSingle<true>(accumulator, flippedPos, flippedPiece, kingSide, bucket);
 			}
 		}
 	}
