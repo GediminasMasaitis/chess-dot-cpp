@@ -2,6 +2,88 @@
 
 #include "zobrist.h"
 
+bool BoardBase::TryApplyAccumulatorCache(const Color color)
+{
+    const auto kingSide = KingSides[color];
+    const auto bucket = Buckets[color];
+    const auto& entry = accumulatorCache[color][kingSide][bucket];
+    if(!entry.Exists)
+    {
+        return false;
+    }
+
+    auto& accumulators = accumulatorStack[accumulatorStack.size() - 1].accumulators;
+    accumulators[color] = entry.Accumulator;
+    auto& accumulator = accumulators[color];
+
+    //cacheCount++;
+    for (Position pos = 0; pos < Positions::Count; pos++)
+    {
+        const Piece oldPiece = entry.ArrayBoard[pos];
+        const Piece newPiece = ArrayBoard[pos];
+        if (newPiece != oldPiece)
+        {
+            Position flippedPos = pos;
+            Piece flippedPiece = newPiece;
+            Piece flippedOldPiece = oldPiece;
+            if (color == Colors::Black)
+            {
+                flippedPos ^= 56;
+                flippedPiece ^= 1;
+                flippedOldPiece ^= 1;
+            }
+
+            if(oldPiece != Pieces::Empty)
+            {
+                EvaluationNnueBase::ApplyPieceSingle<false>(accumulator, flippedPos, flippedOldPiece, kingSide, bucket);
+                //cacheUnsets++;
+            }
+
+            if(newPiece != 0)
+            {
+                EvaluationNnueBase::ApplyPieceSingle<true>(accumulator, flippedPos, flippedPiece, kingSide, bucket);
+                //cacheSets++;
+            }
+        }
+    }
+    return true;
+}
+
+void BoardBase::ResetAccumulator(const Color color)
+{
+    const auto kingSide = KingSides[color];
+    const auto bucket = Buckets[color];
+
+    auto& accumulators = accumulatorStack[accumulatorStack.size() - 1].accumulators;
+    auto& accumulator = accumulators[color];
+    EvaluationNnueBase::ResetSingle(accumulator);
+    for (Position pos = 0; pos < Positions::Count; pos++)
+    {
+        const Piece piece = ArrayBoard[pos];
+        if (piece != Pieces::Empty)
+        {
+            Position flippedPos = pos;
+            Piece flippedPiece = piece;
+            if (color == Colors::Black)
+            {
+                flippedPos ^= 56;
+                flippedPiece ^= 1;
+            }
+
+            EvaluationNnueBase::ApplyPieceSingle<true>(accumulator, flippedPos, flippedPiece, kingSide, bucket);
+        }
+    }
+}
+
+void BoardBase::FinalizeAccumulator(const Color color)
+{
+    const auto success = TryApplyAccumulatorCache(color);
+    if(!success)
+    {
+        ResetAccumulator(color);
+    }
+}
+
 bool BoardBase::CanCastle(const CastlingPermission permission) const
 {
     return (CastlingPermissions & permission) != CastlingPermissions::None;
@@ -77,14 +159,22 @@ void Board::DoMove(const Move move)
     const bucket_t originalBucket = Buckets[originalColorToMove];
 
     const bool isKingMove = pieceNoColor == Pieces::King;
+    bool requiresAccumulatorReset = false;
     if(isKingMove)
     {
         const auto kingFile = Files::Get(to);
-        const bool kingQueenSide = kingFile < 4;
-        KingSides[originalColorToMove] = kingQueenSide;
+        const bool kingSide = kingFile < 4;
+        const bucket_t bucket = EvaluationNnueBase::GetBucket(to, originalColorToMove);
 
-        const bucket_t newBucket = EvaluationNnueBase::GetBucket(to, originalColorToMove);
-        Buckets[originalColorToMove] = newBucket;
+        requiresAccumulatorReset = kingSide != originalKingSide || bucket != originalBucket;
+        //if(requiresAccumulatorReset)
+        {
+            StoreAccumulatorCache(originalColorToMove, originalKingSide, originalBucket);
+            //StoreAccumulatorCache(ColorToMove, KingSides[ColorToMove], Buckets[ColorToMove]);
+        }
+
+        KingSides[originalColorToMove] = kingSide;
+        Buckets[originalColorToMove] = bucket;
     }
 
     /*for(auto color = Colors::White; color < Colors::Black; color++)
@@ -229,7 +319,7 @@ void Board::DoMove(const Move move)
     //SyncCastleTo1();
     SyncExtraBitBoards();
 
-    if (KingSides[originalColorToMove] != originalKingSide || Buckets[originalColorToMove] != originalBucket)
+    if (requiresAccumulatorReset)
     {
         FinalizeAccumulator(originalColorToMove);
     }

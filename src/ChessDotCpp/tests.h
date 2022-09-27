@@ -82,6 +82,23 @@ public:
         std::cout << score << std::endl;
     }
 
+    static void TestAccumulatorCache()
+    {
+        Fen fen = "4k3/8/8/8/8/8/5P2/4K3 w - - 0 1";
+        Board board{};
+        Fens::Parse(board, fen);
+        board.enableAccumulatorStack = true;
+        //auto a0 = board.accumulatorStack[board.accumulatorStack.size() - 1].accumulators[Colors::White][0] | board.accumulatorStack[board.accumulatorStack.size() - 1].accumulators[Colors::Black][0];
+        board.DoMove("e1f1");
+        //auto a1 = board.accumulatorStack[board.accumulatorStack.size() - 1].accumulators[Colors::White][0] | board.accumulatorStack[board.accumulatorStack.size() - 1].accumulators[Colors::Black][0];
+        board.DoMove("e8d8");
+        //auto a2 = board.accumulatorStack[board.accumulatorStack.size() - 1].accumulators[Colors::White][0] | board.accumulatorStack[board.accumulatorStack.size() - 1].accumulators[Colors::Black][0];
+        board.DoMove("f1e1");
+        //auto a3 = board.accumulatorStack[board.accumulatorStack.size() - 1].accumulators[Colors::White][0] | board.accumulatorStack[board.accumulatorStack.size() - 1].accumulators[Colors::Black][0];
+        board.DoMove("d8c7");
+        //auto a4 = board.accumulatorStack[board.accumulatorStack.size() - 1].accumulators[Colors::White][0] | board.accumulatorStack[board.accumulatorStack.size() - 1].accumulators[Colors::Black][0];
+    }
+
     static void TestFenSerialize()
     {
         Fen fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";

@@ -56,7 +56,8 @@ void Test()
     //Tests::TestUci();
     //Tests::TestEval();
     //Tests::TestTablebases();
-    Tests::TestUciFen();
+    //Tests::TestUciFen();
+    //Tests::TestAccumulatorCache();
     
     //Tests::TestSfen();
     //Tests::TestFenSerialize();

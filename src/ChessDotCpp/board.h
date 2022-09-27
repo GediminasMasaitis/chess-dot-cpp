@@ -45,6 +45,41 @@ public:
 	using accumulator_stack_t = std::vector<accumulator_wrapper_t>;
     accumulator_stack_t accumulatorStack;
 
+	struct accumulator_cache_entry_t
+	{
+		accumulator_t Accumulator;
+		EachPosition<Piece> ArrayBoard;
+		bool Exists;
+
+		accumulator_cache_entry_t(const accumulator_t& accumulator = {}, const EachPosition<Piece>& array_board = {})
+            : Accumulator(accumulator),
+              ArrayBoard(array_board),
+              Exists(false)
+        {
+        }
+    };
+
+	template<class T>
+	using EachKingSide = std::array<T, 2>;
+
+	template<class T>
+	using EachBucket = std::array<T, EvaluationNnueBase::BucketCount>;
+
+	using accumulator_cache_t = EachColor<EachKingSide<EachBucket<accumulator_cache_entry_t>>>;
+	accumulator_cache_t accumulatorCache;
+
+	//size_t cacheSets = 0;
+	//size_t cacheUnsets = 0;
+	//size_t cacheCount = 0;
+
+	void StoreAccumulatorCache(const Color color, const bool kingSide, const bucket_t bucket)
+	{
+		auto& entry = accumulatorCache[color][kingSide][bucket];
+		entry.Accumulator = accumulatorStack[accumulatorStack.size() - 1].accumulators[color];
+		entry.ArrayBoard = ArrayBoard;
+		entry.Exists = true;
+	}
+
 	void PushAccumulator()
 	{
 		if(!enableAccumulatorStack)
@@ -83,31 +118,9 @@ public:
 		EvaluationNnueBase::UnsetPiece(accumulators, pos, piece, KingSides, Buckets);
 	}
 
-	void FinalizeAccumulator(const Color color)
-	{
-		const auto kingSide = KingSides[color];
-		const auto bucket = Buckets[color];
-
-		auto& accumulators = accumulatorStack[accumulatorStack.size() - 1].accumulators;
-		auto& accumulator = accumulators[color];
-		EvaluationNnueBase::ResetSingle(accumulator);
-		for(Position pos = 0; pos < Positions::Count; pos++)
-		{
-			const Piece piece = ArrayBoard[pos];
-			if(piece != Pieces::Empty)
-			{
-				Position flippedPos = pos;
-				Piece flippedPiece = piece;
-				if(color == Colors::Black)
-				{
-					flippedPos ^= 56;
-					flippedPiece ^= 1;
-				}
-
-				EvaluationNnueBase::ApplyPieceSingle<true>(accumulator, flippedPos, flippedPiece, kingSide, bucket);
-			}
-		}
-	}
+	void ResetAccumulator(const Color color);
+    bool TryApplyAccumulatorCache(const Color color);
+    void FinalizeAccumulator(const Color color);
 
 #else
 	static constexpr bool useAccumulator = false;

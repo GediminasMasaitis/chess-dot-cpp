@@ -9,7 +9,7 @@ void Uci::OnCallback(SearchCallbackData& data) const
 {
 	const ThreadState& mainThreadState = data.State.Thread[0];
 	std::stringstream builder = std::stringstream();
-
+	//builder << std::to_string(data.Board.cacheSets) << " " << std::to_string(data.Board.cacheUnsets) << " " << std::to_string(data.Board.cacheSets + data.Board.cacheUnsets) << " " << std::to_string(data.Board.cacheCount) << " " << std::to_string((data.Board.cacheSets + data.Board.cacheUnsets) / static_cast<double>(data.Board.cacheCount)) << "\n";
 	builder << "info";
 	if(data.Aborted)
 	{
