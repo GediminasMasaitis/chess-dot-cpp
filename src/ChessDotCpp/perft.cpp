@@ -56,10 +56,8 @@ size_t InternalPerftClient::GetMovesAndNodes(Board& board, Ply depth, MoveStack&
 	return totalNodes;
 }
 
-size_t RunIteration(Fen fen, Ply depth)
+size_t RunIteration(Board& board, Ply depth)
 {
-	auto board = Board();
-	Fens::Parse(board, fen);
     auto moveStack = MoveStack();
 	MoveAndNodeArray movesAndNodes;
 	size_t moveAndNodeCount = 0;
@@ -81,12 +79,12 @@ size_t RunIteration(Fen fen, Ply depth)
 	return nodes;
 }
 
-size_t IterativeDeepen(Fen fen, Ply depth)
+size_t IterativeDeepen(Board& board, Ply depth)
 {
 	size_t count = 0;
 	for (Ply i = 1; i <= depth; i++)
 	{
-		count = RunIteration(fen, i);
+		count = RunIteration(board, i);
 		/*var result = RunComparison(fen, i);
 		if (!result.Correct)
 		{
@@ -97,14 +95,21 @@ size_t IterativeDeepen(Fen fen, Ply depth)
 	return count;
 }
 
+size_t PerftRunner::Run(Board& board, Ply depth)
+{
+	assert(depth > 0);
+	const Fen fen = Fens::Serialize(board);
+	std::cout << "Running perft to depth " << depth << " for position " << fen << std::endl;
+	return IterativeDeepen(board, depth);
+}
+
 size_t PerftRunner::Run(Fen fen, Ply depth)
 {
 	assert(depth > 0);
 
-	std::cout << "Running perft up to depth " << depth << " for position " << fen << std::endl;
-
-	
-	return IterativeDeepen(fen, depth);
+	Board board;
+	Fens::Parse(board, fen);
+	return Run(board, depth);
 }
 
 class PerftSuiteEntry

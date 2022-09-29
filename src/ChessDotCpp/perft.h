@@ -37,6 +37,7 @@ public:
 class PerftRunner
 {
 public:
+    static size_t Run(Board& board, Ply depth);
     static size_t Run(std::string fen, Ply depth);
 };
 

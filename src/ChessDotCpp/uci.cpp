@@ -3,6 +3,7 @@
 
 #include "datagen.h"
 #include "displaysearch.h"
+#include "perft.h"
 #include "texel.h"
 
 void Uci::OnCallback(SearchCallbackData& data) const
@@ -200,6 +201,16 @@ void Uci::HandleGo(std::stringstream& reader)
 	Out("bestmove " + results.BestMove.ToPositionString());
 }
 
+void Uci::HandlePerft(std::stringstream& reader)
+{
+	uint16_t depth;
+	if(!reader.eof())
+	{
+		reader >> depth;
+		PerftRunner::Run(board, static_cast<Ply>(depth));
+	}
+}
+
 std::string GetOptionStrValue(const std::string& input)
 {
     if(input == "<empty>")
@@ -227,8 +238,6 @@ void Uci::HandleUci()
 	PrintOptions();
 	Out("uciok");
 }
-
-
 
 void Uci::HandleSetoption(std::stringstream& reader)
 {
@@ -302,6 +311,10 @@ bool Uci::HandleInput(const std::string& line)
 		else if (word == "go")
 		{
 			HandleGo(reader);
+		}
+		else if (word == "perft")
+		{
+			HandlePerft(reader);
 		}
 		else if (word == "gi")
 		{

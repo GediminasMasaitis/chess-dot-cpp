@@ -58,7 +58,11 @@ public:
 
 	void PopAccumulator()
 	{
-		assert(enableAccumulatorStack);
+		if (!enableAccumulatorStack)
+		{
+			return;
+		}
+
         assert(!accumulatorStack.empty());
 
 		accumulatorStack.pop_back();
@@ -124,11 +128,11 @@ public:
 	{
 	}
 
-	void SetPiece(const Position pos, const Piece piece)
+	void SetAccumulatorPiece(const Position pos, const Piece piece)
 	{
 	}
 
-	void UnetPiece(const Position pos, const Piece piece)
+	void UnsetAccumulatorPiece(const Position pos, const Piece piece)
 	{
 	}
 #endif

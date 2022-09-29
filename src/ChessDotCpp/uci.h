@@ -30,6 +30,7 @@ public:
     void HandleFen(std::stringstream& reader);
     void HandlePosition(std::stringstream& reader);
     void HandleGo(std::stringstream& reader);
+    void HandlePerft(std::stringstream& reader);
     void PrintOptions();
     void HandleUci();
     void HandleIsReady();
