@@ -10,7 +10,8 @@ class EvaluationNnueBase
 public:
     using NnueCount = int16_t;
 
-    static constexpr NnueCount InputCount = 8 * 2 * 6 * 64;
+    static constexpr uint8_t BucketCount = 8;
+    static constexpr NnueCount InputCount = BucketCount * 2 * 6 * 64;
     static constexpr NnueCount HiddenCount = 512;
 
     using NnueValue = int16_t;
@@ -34,7 +35,6 @@ public:
     alignas(SimdNV::alignment) inline static hidden_weightses_t HiddenWeightses;
     alignas(SimdNV::alignment) inline static output_bias_t OutputBias;
 
-    static constexpr uint8_t BucketCount = 8;
     using bucket_t = uint8_t;
     static constexpr EachPosition<bucket_t> BucketMap = {
         0,  1,  2,  3,  3,  2,  1,  0,

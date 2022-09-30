@@ -227,8 +227,6 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, const
         return probedScore;
     }
 
-    EachColor<Bitboard> pins;
-    PinDetector::GetPinnedToKings(board, pins);
     Score standPat = CallEval(board, pins);
 
     if (standPat >= beta || ply >= Constants::MaxPly)
@@ -244,7 +242,7 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, const
     const Bitboard checkers = CheckDetector::GetCheckers(board);
     const bool inCheck = checkers != BitboardConstants::Empty;
 
-    const Bitboard pinned = pins[board.ColorToMove];
+    const Bitboard pinned = PinDetector::GetPinnedToKingForColorToMove(board);
 
     PlyData& plyState = threadState.Plies[ply];
     auto& movePicker = plyState.MMovePicker;
@@ -628,8 +626,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     }
     
     // STATIC EVALUATION
-    EachColor<Bitboard> pins;
-    PinDetector::GetPinnedToKings(board, pins);
     Score staticScore;
     //if (hashEntryExists)
     //{
@@ -717,7 +713,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         }
     }
 
-    const Bitboard pinned = pins[board.ColorToMove];
+    const Bitboard pinned = PinDetector::GetPinnedToKingForColorToMove(board);
 
     PlyData& plyState = threadState.Plies[ply];
     auto& movePicker = plyState.MMovePicker;

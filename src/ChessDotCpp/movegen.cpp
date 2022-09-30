@@ -54,6 +54,11 @@ void PinDetector::GetPinnedToKings(const BoardBase& board, EachColor<Bitboard>& 
 	pins[Colors::Black] = GetPinned(board, Colors::Black, board.KingPositions[Colors::Black]);
 }
 
+Bitboard PinDetector::GetPinnedToKingForColorToMove(const BoardBase& board)
+{
+	return GetPinned(board, board.ColorToMove, board.KingPositions[board.ColorToMove]);
+}
+
 template<Piece TColor>
 Bitboard GetPinnedForColor(const Board& board, Position pos)
 {
