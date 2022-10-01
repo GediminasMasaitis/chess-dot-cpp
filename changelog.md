@@ -8396,6 +8396,8 @@ Elo difference: -1.7 +/- 14.5, LOS: 40.7 %, DrawRatio: 54.7 %
 
 ### 3.84
 
+Optimize pin detection
+
 ```
 info depth 1 seldepth 1 multipv 1 score cp 26 nodes 25 nps 25000 time 1 pv e2e4
 info depth 2 seldepth 4 multipv 1 score cp 27 nodes 70 nps 70000 time 1 pv e2e4 g8f6
@@ -8427,4 +8429,12 @@ info depth 27 seldepth 37 multipv 1 score cp 22 nodes 28294345 nps 2131400 time 
 info depth 28 seldepth 41 multipv 1 score cp 25 nodes 37438122 nps 2130555 time 17572 pv e2e4 c7c5 g1f3 e7e6 f1e2 b8c6 c2c4 g8f6 b1c3 e6e5 e1g1 f8e7 d2d3 e8g8 a2a3 d7d6 a1b1 c6d4 b2b4 b7b6 h2h3 h7h6 g1h1 a7a6 c1e3 c8d7 d1d2 d7c6
 info depth 29 seldepth 41 multipv 1 score cp 19 nodes 61697102 nps 2124263 time 29044 pv e2e4 c7c5 g1f3 e7e6 b1c3 b8c6 d2d4 c5d4 f3d4 g8f6 c1f4 d7d6 d4b3 e6e5 f4g5 f8e7 g5f6 e7f6 f1c4 e8g8 e1g1 a8b8
 info depth 30 seldepth 44 multipv 1 score cp 22 nodes 101486734 nps 2112326 time 48045 pv e2e4 c7c5 g1f3 d7d6 b1c3 e7e5 h2h3 f8e7 f1c4 g8f6 e1g1 e8g8 d2d3 b8c6 a2a3 c6d4 c3d5 c8e6 d5e7 d8e7 f3d4 c5d4 c4e6 f7e6 c2c3 d4c3 b2c3 e7c7 d1b3 f8f7 f1e1
+```
+
+```
+Score of ChessDotCpp3.84 vs seer2.5: 182 - 259 - 559  [0.462] 1000
+...      ChessDotCpp3.84 playing White: 92 - 127 - 281  [0.465] 500
+...      ChessDotCpp3.84 playing Black: 90 - 132 - 278  [0.458] 500
+...      White vs Black: 224 - 217 - 559  [0.503] 1000
+Elo difference: -26.8 +/- 14.3, LOS: 0.0 %, DrawRatio: 55.9 %
 ```

@@ -1,7 +1,7 @@
 #include "tablebases.h"
 
 #include "movegen.h"
-#include "fathom/tbprobe.h"
+#include "external/fathom/src/tbprobe.h"
 
 #include <iostream>
 
