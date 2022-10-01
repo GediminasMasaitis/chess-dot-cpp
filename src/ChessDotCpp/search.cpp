@@ -227,6 +227,12 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, const
         return probedScore;
     }
 
+#if EVALPINS
+    EachColor<Bitboard> pins;
+    PinDetector::GetPinnedToKings(board, pins);
+    const Bitboard pinned = pins[board.ColorToMove];
+#endif
+
     Score standPat = CallEval(board, pins);
 
     if (standPat >= beta || ply >= Constants::MaxPly)
@@ -242,7 +248,9 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, const
     const Bitboard checkers = CheckDetector::GetCheckers(board);
     const bool inCheck = checkers != BitboardConstants::Empty;
 
+#if !EVALPINS
     const Bitboard pinned = PinDetector::GetPinnedToKingForColorToMove(board);
+#endif
 
     PlyData& plyState = threadState.Plies[ply];
     auto& movePicker = plyState.MMovePicker;
@@ -635,6 +643,11 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     //{
     //    staticScore = Evaluation::Evaluate(board, pins, State.Global.Eval);
     //}
+#if EVALPINS
+    EachColor<Bitboard> pins;
+    PinDetector::GetPinnedToKings(board, pins);
+    const Bitboard pinned = pins[board.ColorToMove];
+#endif
     staticScore = CallEval(board, pins);
     board.StaticEvaluation = staticScore;
     const bool improving = !inCheck && (ply < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation);
@@ -713,7 +726,9 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         }
     }
 
+#if !EVALPINS
     const Bitboard pinned = PinDetector::GetPinnedToKingForColorToMove(board);
+#endif
 
     PlyData& plyState = threadState.Plies[ply];
     auto& movePicker = plyState.MMovePicker;

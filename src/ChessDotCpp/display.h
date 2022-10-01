@@ -46,7 +46,7 @@ public:
 class Display
 {
 public:
-    using DisplayEvaluation = EvaluationNnue2;//EvaluationClassical2;
+    using DisplayEvaluation = Evaluation;
 
     static void DisplayBoard(const BoardBase& board, const std::optional<Move> optMove , const DisplayData& data)
     {

@@ -2,11 +2,11 @@
 
 #include "common.h"
 #include "move.h"
+#if NNUE
 #include "evaluationNnueBase.h"
+#endif
 
 #include <array>
-
-#define USEACCUMULATOR 1
 
 class UndoMove
 {
@@ -27,7 +27,7 @@ public:
 	bool enableAccumulatorStack = false;
 	EachColor<bool> KingSides;
 	//EachColor<bool> AccumulatorInvalidations;
-#if USEACCUMULATOR
+#if NNUE
 	static constexpr bool useAccumulator = true;
 
 	using value_t = EvaluationNnueBase::NnueValue;
@@ -133,6 +133,10 @@ public:
 	}
 
 	void UnsetAccumulatorPiece(const Position pos, const Piece piece)
+	{
+	}
+
+	void FinalizeAccumulator(const Color color)
 	{
 	}
 #endif

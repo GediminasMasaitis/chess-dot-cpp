@@ -17,6 +17,8 @@
 #include <iomanip>
 #include <optional>
 
+#define NNUE 1
+
 #define MAYBE_UNUSED(x) ((void)(x))
 
 #ifdef __GNUC__

@@ -6,7 +6,7 @@
 
 #include <immintrin.h>
 
-class EvaluationNnue2 : EvaluationNnueBase
+class EvaluationNnue2 : public EvaluationNnueBase
 {
 public:
     alignas(SimdFV::alignment) static inline SimdNV::simd_t zero = { 0 };

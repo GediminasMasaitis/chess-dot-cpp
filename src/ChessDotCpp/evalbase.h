@@ -7,6 +7,7 @@
 #define TUNE 0
 #define TAPERED 1
 
+
 #if TUNE
 #define TraceIncr(term) ++T.term[color]
 #define TraceAdd(term, count) T.term[color] += count

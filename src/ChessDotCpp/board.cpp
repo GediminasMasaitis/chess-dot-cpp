@@ -73,7 +73,7 @@ void Board::DoMove(const Move move)
     const Piece takesPiece = move.GetTakesPiece();
     const Piece pieceNoColor = piece & ~Colors::Mask;
 
-#if USEACCUMULATOR
+#if NNUE
     const bool originalKingSide = KingSides[originalColorToMove];
     const bucket_t originalBucket = Buckets[originalColorToMove];
 #endif
@@ -85,7 +85,7 @@ void Board::DoMove(const Move move)
         const bool kingQueenSide = kingFile < 4;
         KingSides[originalColorToMove] = kingQueenSide;
 
-#if USEACCUMULATOR
+#if NNUE
         const bucket_t newBucket = EvaluationNnueBase::GetBucket(to, originalColorToMove);
         Buckets[originalColorToMove] = newBucket;
 #endif
@@ -233,7 +233,7 @@ void Board::DoMove(const Move move)
     //SyncCastleTo1();
     SyncExtraBitBoards();
 
-#if USEACCUMULATOR
+#if NNUE
     if (KingSides[originalColorToMove] != originalKingSide || Buckets[originalColorToMove] != originalBucket)
     {
         FinalizeAccumulator(originalColorToMove);
@@ -381,7 +381,7 @@ void Board::UndoMove()
         const auto kingFile = Files::Get(from);
         const bool kingQueenSide = kingFile < 4;
         KingSides[kingColor] = kingQueenSide;
-#if USEACCUMULATOR
+#if NNUE
         Buckets[kingColor] = EvaluationNnueBase::GetBucket(from, kingColor);
 #endif
     }

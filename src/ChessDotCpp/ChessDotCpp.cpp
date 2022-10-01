@@ -11,8 +11,7 @@
 
 void Run(int argc, char** argv)
 {
-    EvaluationNnueBase::Init();
-    EvaluationClassical2::Init();
+    Evaluation::Init();
     if(argc > 1)
     {
         std::string param1 = argv[1];
@@ -41,8 +40,7 @@ void Run(int argc, char** argv)
 
 void Test()
 {
-    EvaluationNnueBase::Init();
-    EvaluationClassical2::Init();
+    Evaluation::Init();
 
     //std::cout << sizeof(TranspositionTableEntry) << std::endl;
 

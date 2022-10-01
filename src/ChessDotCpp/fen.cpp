@@ -81,13 +81,17 @@ void Fens::Parse(TBoard& board, Fen fen)
             {
                 board.KingPositions[Colors::White] = fixedBoardPosition;
                 board.KingSides[Colors::White] = queenSide;
+#if NNUE
                 board.Buckets[Colors::White] = EvaluationNnueBase::GetBucket(fixedBoardPosition, Colors::White);
+#endif
             }
             else if (piece == Pieces::BlackKing)
             {
                 board.KingPositions[Colors::Black] = fixedBoardPosition;
                 board.KingSides[Colors::Black] = queenSide;
+#if NNUE
                 board.Buckets[Colors::Black] = EvaluationNnueBase::GetBucket(fixedBoardPosition, Colors::Black);
+#endif
             }
             boardPosition++;
             continue;
