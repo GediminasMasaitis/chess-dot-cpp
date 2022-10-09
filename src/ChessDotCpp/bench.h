@@ -32,7 +32,7 @@ public:
 			commands.push("ucinewgame");
 			commands.push("position fen " + fen);
 			commands.push("isready");
-			commands.push("go wtime 60000 winc 600 btime 60000 binc 600");
+			commands.push("go ucithread wtime 60000 winc 600 btime 60000 binc 600");
 		}
 		commands.push("quit");
 		Game::RunCommands(commands);

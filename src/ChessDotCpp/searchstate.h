@@ -2,25 +2,9 @@
 #include "board.h"
 #include "options.h"
 #include "searchhash.h"
+#include "searchparameters.h"
+#include "stopper.h"
 #include "movepick.h"
-
-class SearchParameters
-{
-public:
-    bool Infinite = false;
-    Ply MaxDepth = Constants::MaxDepth;
-
-    size_t WhiteTime = 1000000;
-    size_t BlackTime = 1000000;
-
-    size_t WhiteTimeIncrement = 10000;
-    size_t BlackTimeIncrement = 10000;
-
-    size_t MinNodes = 0;
-    size_t MaxNodes = 0;
-
-    bool SkipNewSearch = false;
-};
 
 class SearchStats
 {
@@ -104,6 +88,7 @@ class ThreadState
 public:
     SearchStats Stats{};
     PlyDataArray Plies;
+    SearchStopper Stopper;
     
     EachColor<EachPosition<EachPosition<MoveScore>>> History;
     EachPiece<EachPosition<EachPiece<MoveScore>>> CaptureHistory;
@@ -112,7 +97,6 @@ public:
 
     EachPosition<EachPosition<Stat>> NodesPerMove;
 
-    bool StopIteration;
     std::vector<Move> SavedPrincipalVariation{};
 
     Ply IterationsSincePvChange;
@@ -121,9 +105,10 @@ public:
 
     Color ColorToMove;
 
-    void NewSearch(const Board& board)
+    void NewSearch(const Board& board, const SearchParameters& parameters)
     {
         Stats.NewSearch();
+        Stopper.Init(parameters, board);
 
         for(Ply i = 0; i < Constants::MaxPly; i++)
         {
@@ -306,7 +291,7 @@ public:
     	{
             for (ThreadState& threadState : Thread)
             {
-                threadState.NewSearch(board);
+                threadState.NewSearch(board, parameters);
             }
     	}
     }

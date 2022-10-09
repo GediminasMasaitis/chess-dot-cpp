@@ -93,7 +93,7 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
 
 void Search::StoreTranspositionTable(const ThreadState& threadState, const ZobristKey key, const Move move, const Ply depth, const Ply ply, const Score score, const TtFlag flag)
 {
-    if (threadState.StopIteration || Stopper.Stopped)
+    if (threadState.Stopper.Stopped)
     {
         return;
     }
@@ -489,7 +489,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     assert(threadState.ColorToMove == board.ColorToMove ^ (ply % 2));
     
     // TIME CONTROL
-    if (depth > 2 && (threadState.StopIteration || Stopper.ShouldStop(threadId, State)))
+    if (depth > 2 && threadState.Stopper.ShouldStop(threadState.Stats.Nodes))
     {
         //const Score score = Contempt(board);
         return beta;
@@ -782,7 +782,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
             break;
         }
 
-        if(Stopper.Stopped)
+        if(threadState.Stopper.Stopped)
         {
             return bestScore;
         }
@@ -1089,9 +1089,10 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
     Score widen = 20;
     Score alpha = previous - window;
     Score beta = previous + window;
+    auto& threadState = State.Thread[threadId];
     while (true)
     {
-        if(Stopper.Stopped)
+        if(threadState.Stopper.Stopped)
         {
             return previous;
         }
@@ -1124,9 +1125,9 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
     }
 }
 
-void Search::GetSearchResults(SearchResults& results, Ply depth, Score score)
+void Search::GetSearchResults(const ThreadState& threadState, Ply depth, Score score, SearchResults& results)
 {
-    results.BestMove = State.Thread[0].SavedPrincipalVariation[0];
+    results.BestMove = threadState.SavedPrincipalVariation[0];
     results.SearchedDepth = depth;
     results.SScore = score;
 }
@@ -1140,7 +1141,7 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
 
     threadState.SavedPrincipalVariation.clear();
     State.Global.Table.GetPrincipalVariation(board, threadState.SavedPrincipalVariation);
-    threadState.Stats.Elapsed = Stopper.GetElapsed();
+    threadState.Stats.Elapsed = threadState.Stopper.GetElapsed();
     SearchCallbackData callbackData(threadId, board, State, 1, score, false);
 
     if (threadId == 0 && Callback != nullptr)
@@ -1148,9 +1149,11 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
         Callback(callbackData);
     }
 
-    if (Stopper.ShouldStopDepthIncrease(threadId, State))
+    const auto initialBestMove = threadState.SavedPrincipalVariation[0];
+    const auto initialBestMoveNodes = threadState.NodesPerMove[initialBestMove.GetFrom()][initialBestMove.GetTo()];
+    if (threadState.Stopper.ShouldStopDepthIncrease(threadState.Stats.Nodes, initialBestMoveNodes))
     {
-        GetSearchResults(results, depth, score);
+        GetSearchResults(threadState, depth, score, results);
         return;
     }
     
@@ -1175,24 +1178,26 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
         State.Global.Table.GetPrincipalVariation(board, threadState.SavedPrincipalVariation);
         if (threadId == 0 && Callback != nullptr)
         {
-            threadState.Stats.Elapsed = Stopper.GetElapsed();
+            threadState.Stats.Elapsed = threadState.Stopper.GetElapsed();
             Callback(callbackData);
         }
 
-        if (Stopper.Stopped)
+        if (threadState.Stopper.Stopped)
         {
             callbackData.Aborted = true;
             //Callback(callbackData);
             break;
         }
 
-        if (Stopper.ShouldStopDepthIncrease(threadId, State))
+        const auto bestMove = threadState.SavedPrincipalVariation[0];
+        const auto bestMoveNodes = threadState.NodesPerMove[bestMove.GetFrom()][bestMove.GetTo()];
+        if (threadState.Stopper.ShouldStopDepthIncrease(threadState.Stats.Nodes, bestMoveNodes))
         {
             break;
         }
     }
     
-    GetSearchResults(results, depth, score);
+    GetSearchResults(threadState, depth, score, results);
 }
 
 void Search::IterativeDeepenLazySmp(Board& board, SearchResults& results)
@@ -1214,7 +1219,7 @@ void Search::IterativeDeepenLazySmp(Board& board, SearchResults& results)
 
     for (ThreadId helperId = 1; helperId < Options::Threads; helperId++)
     {
-        State.Thread[helperId].StopIteration = true;
+        State.Thread[helperId].Stopper.Stopped = true;
     }
 
     //if(Options::Threads > 1)
@@ -1238,7 +1243,7 @@ void Search::IterativeDeepenLazySmpOld(Board& board, SearchResults& results)
     mainThreadState.SavedPrincipalVariation.clear();
     State.Global.Table.GetPrincipalVariation(board, mainThreadState.SavedPrincipalVariation);
     
-    mainThreadState.Stats.Elapsed = Stopper.GetElapsed();
+    mainThreadState.Stats.Elapsed = mainThreadState.Stopper.GetElapsed();
     SearchCallbackData callbackData(0, board, State, 1, score, false);
     if (Callback != nullptr)
     {
@@ -1246,9 +1251,11 @@ void Search::IterativeDeepenLazySmpOld(Board& board, SearchResults& results)
     }
     //State.Global.Table.PrintOccupancy();
 
-    if (Stopper.ShouldStopDepthIncrease(0, State))
+    const auto initialBestMove = mainThreadState.SavedPrincipalVariation[0];
+    const auto initialBestMoveNodes = mainThreadState.NodesPerMove[initialBestMove.GetFrom()][initialBestMove.GetTo()];
+    if (mainThreadState.Stopper.ShouldStopDepthIncrease(mainThreadState.Stats.Nodes, initialBestMoveNodes))
     {
-        GetSearchResults(results, depth, score);
+        GetSearchResults(mainThreadState, depth, score, results);
         return;
     }
 
@@ -1272,7 +1279,7 @@ void Search::IterativeDeepenLazySmpOld(Board& board, SearchResults& results)
 
         for (ThreadId helperId = 1; helperId < Options::Threads; helperId++)
         {
-            State.Thread[helperId].StopIteration = true;
+            State.Thread[helperId].Stopper.Stopped = true;
         }
 
         for (ThreadId helperId = 1; helperId < Options::Threads; helperId++)
@@ -1291,8 +1298,10 @@ void Search::IterativeDeepenLazySmpOld(Board& board, SearchResults& results)
         {
             mainThreadState.IterationsSincePvChange++;
         }
-        mainThreadState.Stats.Elapsed = Stopper.GetElapsed();
-        if (Stopper.ShouldStopDepthIncrease(0, State))
+        mainThreadState.Stats.Elapsed = mainThreadState.Stopper.GetElapsed();
+        const auto bestMove = mainThreadState.SavedPrincipalVariation[0];
+        const auto bestMoveNodes = mainThreadState.NodesPerMove[bestMove.GetFrom()][bestMove.GetTo()];
+        if (mainThreadState.Stopper.ShouldStopDepthIncrease(mainThreadState.Stats.Nodes, bestMoveNodes))
         {
             break;
         }
@@ -1305,7 +1314,7 @@ void Search::IterativeDeepenLazySmpOld(Board& board, SearchResults& results)
         }
         //State.Global.Table.PrintOccupancy();
     }
-    GetSearchResults(results, depth, score);
+    GetSearchResults(mainThreadState, depth, score, results);
 }
 
 void Search::Run(Board& board, const SearchParameters& parameters, SearchResults& results)
@@ -1316,11 +1325,7 @@ void Search::Run(Board& board, const SearchParameters& parameters, SearchResults
     {
         State.NewGame();
     }
-    //std::cout << board.Key << std::endl;
-    Stopper.Init(parameters, board);
     State.NewSearch(board, parameters);
     IterativeDeepenLazySmp(board, results);
     board.enableAccumulatorStack = false;
-    //std::cout << State.Thread[0].Stats.Nodes << "\n";
-    //IterativeDeepen(0, board, results);
 }

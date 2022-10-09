@@ -5,7 +5,9 @@
 
 #include <iostream>
 #include <sstream>
- 
+#include <thread>
+#include <mutex>
+
 class Uci
 {
 public:
@@ -19,6 +21,9 @@ public:
 
     Board board;
     Search search;
+    std::thread SearchThread;
+    bool IsSearching;
+    std::mutex SearchMutex;
     
     Uci(InType& in, OutType& out) : In(in), Out(out), search([&](SearchCallbackData& data) { OnCallback(data); })
     {
@@ -30,6 +35,7 @@ public:
     void HandleFen(std::stringstream& reader);
     void HandlePosition(std::stringstream& reader);
     void HandleGo(std::stringstream& reader);
+    void HandleStop();
     void HandlePerft(std::stringstream& reader);
     void PrintOptions();
     void HandleUci();

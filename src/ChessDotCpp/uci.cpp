@@ -188,6 +188,10 @@ void ReadSearchParameters(std::stringstream& reader, SearchParameters& parameter
 		{
 			parameters.Infinite = true;
 		}
+		else if (word == "ucithread")
+		{
+			parameters.UciThread = true;
+		}
 	}
 }
 
@@ -196,9 +200,43 @@ void Uci::HandleGo(std::stringstream& reader)
 	SearchParameters parameters = SearchParameters();
 	ReadSearchParameters(reader, parameters);
 
-	SearchResults results;
-	search.Run(board, parameters, results);
-	Out("bestmove " + results.BestMove.ToPositionString());
+	if (parameters.UciThread)
+	{
+		SearchResults results;
+		search.Run(board, parameters, results);
+		Out("bestmove " + results.BestMove.ToPositionString());
+	}
+	else
+	{
+		auto lock = std::unique_lock<std::mutex>(SearchMutex);
+		if (IsSearching)
+		{
+			SearchThread.join();
+		}
+
+		IsSearching = true;
+		SearchThread = std::thread([this, parameters]()
+		{
+			SearchResults results;
+			search.Run(board, parameters, results);
+			Out("bestmove " + results.BestMove.ToPositionString());
+		});
+	}
+	
+}
+
+void Uci::HandleStop()
+{
+	auto lock = std::unique_lock<std::mutex>(SearchMutex);
+	if (!IsSearching)
+	{
+		return;
+	}
+
+
+	search.State.Thread[0].Stopper.Stopped = true;
+	IsSearching = false;
+	SearchThread.join();
 }
 
 void Uci::HandlePerft(std::stringstream& reader)
@@ -312,6 +350,10 @@ bool Uci::HandleInput(const std::string& line)
 		{
 			HandleGo(reader);
 		}
+		else if (word == "stop")
+		{
+			HandleStop();
+		}
 		else if (word == "perft")
 		{
 			HandlePerft(reader);
@@ -364,6 +406,7 @@ bool Uci::HandleInput(const std::string& line)
 void Uci::Init()
 {
 	Fens::Parse(board, StartingFen);
+	IsSearching = false;
 }
 
 void Uci::Run()

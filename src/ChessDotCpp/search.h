@@ -39,14 +39,13 @@ class Search
 {
 private:
     SearchCallback Callback;
-    void GetSearchResults(SearchResults& results, Ply depth, Score score);
+    void GetSearchResults(const ThreadState& threadState, Ply depth, Score score, SearchResults& results);
     void IterativeDeepen(const ThreadId threadId, Board& board, SearchResults& results);
     void IterativeDeepenLazySmp(Board& board, SearchResults& results);
     void IterativeDeepenLazySmpOld(Board& board, SearchResults& results);
 
 public:
     SearchState State{};
-    SearchStopper Stopper{};
 
     bool TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Ply ply, const Score alpha, const Score beta/*, const Move singularMove*/, TranspositionTableEntry& entry, Score& score, bool& entryExists);
     void StoreTranspositionTable(const ThreadState& threadState, const ZobristKey key, const Move move, const Ply depth, const Ply ply, const Score score, const TtFlag flag);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "searchstate.h"
+#include "searchparameters.h"
 
 #include <chrono>
 
@@ -49,7 +49,7 @@ public:
         return ms;
     }
     
-    [[nodiscard]] bool ShouldStop(ThreadId threadId, SearchState& state)
+    [[nodiscard]] bool ShouldStop(Stat nodes)
     {
         if(Stopped)
         {
@@ -57,13 +57,13 @@ public:
         }
         
         const auto elapsed = GetElapsed();
-        Stopped = (elapsed > _maxTime) || (Parameters.MaxNodes != 0 && state.Thread[threadId].Stats.Nodes >= Parameters.MaxNodes);
+        Stopped = (elapsed > _maxTime) || (Parameters.MaxNodes != 0 && nodes >= Parameters.MaxNodes);
         return Stopped;
     }
 
-    [[nodiscard]] bool ShouldStopDepthIncrease(ThreadId threadId, SearchState& state)
+    [[nodiscard]] bool ShouldStopDepthIncrease(const Stat nodes, const Stat bestMoveTotalNodes)
     {
-        if(Parameters.MinNodes != 0 && state.Thread[threadId].Stats.Nodes >= Parameters.MinNodes)
+        if(Parameters.MinNodes != 0 && nodes >= Parameters.MinNodes)
         {
             Stopped = true;
         }
@@ -78,13 +78,7 @@ public:
             return false;
     	}
 
-        const ThreadState& threadState = state.Thread[threadId];
-
-        const Move bestMove = threadState.SavedPrincipalVariation[0];
-        assert(bestMove.Value != 0);
-        const auto bestMoveTotalNodes = threadState.NodesPerMove[bestMove.GetFrom()][bestMove.GetTo()];
-        const auto totalNodes = threadState.Stats.Nodes > 0 ? threadState.Stats.Nodes : 1;
-        const auto bestMoveNodePercent = (bestMoveTotalNodes * 100) / threadState.Stats.Nodes;
+        const auto bestMoveNodePercent = (bestMoveTotalNodes * 100) / nodes;
         //std::cout << "best " << bestMove.ToPositionString() << " " << bestMoveNodePercent << "% " << bestMoveTotalNodes << " nodes\n";
 
         // REDUCE BY BESTMOVE CHANGES
