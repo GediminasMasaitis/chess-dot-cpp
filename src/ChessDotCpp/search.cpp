@@ -46,12 +46,6 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
     //}
 
     entryExists = true;
-    if (entry.Depth < depth)
-    {
-        //State.Stats.HashInsufficientDepth++;
-        return false;
-    }
-
     score = entry.SScore;
     if (entry.SScore > Constants::MateThreshold)
     {
@@ -60,6 +54,12 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
     else if (entry.SScore < -Constants::MateThreshold)
     {
         score += ply;
+    }
+
+    if (entry.Depth < depth)
+    {
+        //State.Stats.HashInsufficientDepth++;
+        return false;
     }
 
     switch (entry.Flag)
@@ -240,6 +240,20 @@ Score Search::Quiescence(const ThreadId threadId, Board& board, Ply depth, const
 #endif
 
     Score standPat = CallEval(board, pins);
+
+    if
+    (
+        hashEntryExists
+        //&& std::abs(probedScore) < Constants::MateThreshold
+        && (
+            (entry.Flag == TranspositionTableFlags::Exact)
+            || (entry.Flag == TranspositionTableFlags::Beta && standPat < probedScore)
+            || (entry.Flag == TranspositionTableFlags::Alpha && standPat > probedScore)
+        )
+    )
+    {
+        standPat = probedScore;
+    }
 
     if (standPat >= beta || ply >= Constants::MaxPly)
     {
@@ -658,6 +672,19 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     staticScore = CallEval(board, pins);
     board.StaticEvaluation = staticScore;
     const bool improving = !inCheck && (ply < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation);
+    if
+    (
+        hashEntryExists
+        //&& std::abs(probedScore) < Constants::MateThreshold
+        && (
+            (entry.Flag == TranspositionTableFlags::Exact)
+            || (entry.Flag == TranspositionTableFlags::Beta && staticScore < probedScore)
+            || (entry.Flag == TranspositionTableFlags::Alpha && staticScore > probedScore)
+        )
+    )
+    {
+        staticScore = probedScore;
+    }
 
     if(ply > 1)
     {
