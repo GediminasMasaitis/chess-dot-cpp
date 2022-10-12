@@ -112,7 +112,7 @@ void Search::StoreTranspositionTable(const ThreadState& threadState, const Zobri
     }
     else if(score < -Constants::MateThreshold)
     {
-        adjustedScore -= static_cast<Score>(score - ply);
+        adjustedScore = static_cast<Score>(score - ply);
     }
 
     State.Global.Table.Store(key, move, depth, adjustedScore, flag);
@@ -164,6 +164,11 @@ bool Search::IsRepetitionOr50Move(const Board& board) const
 
 bool Search::IsRepetitionOr50MoveAfterMove(const Board& board, const Move move) const
 {
+    if(move.Value == 0)
+    {
+        return false;
+    }
+
     KeyAnd50Move keyAnd50Move;
     board.GetKeyAfterMove(move, keyAnd50Move);
     if (board.HistoryDepth + 1 - keyAnd50Move.FiftyMoveRuleIndex > 100)

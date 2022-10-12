@@ -353,4 +353,5 @@ MigrationBackup/
 
 .vscode
 *.gcda
+*.o
 nncpuprobe
