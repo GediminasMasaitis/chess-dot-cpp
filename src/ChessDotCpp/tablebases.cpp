@@ -1,8 +1,14 @@
 #include "tablebases.h"
 
 #include "movegen.h"
-#include "external/fathom/src/tbprobe.h"
 
+#ifndef TABLEBASES
+#define TABLEBASES 1
+#endif
+
+#if TABLEBASES
+
+#include "external/fathom/src/tbprobe.h"
 #include <iostream>
 
 void Tablebases::Init(const std::string& path)
@@ -159,3 +165,25 @@ bool Tablebases::ProbeRoot(const Board& board, Move& tbMove)
     assert(tbMove.Value != 0);
     return true;
 }
+#else
+void Tablebases::Init(const std::string& path)
+{
+}
+
+bool Tablebases::CanProbe(const Board& board)
+{
+    return false;
+}
+
+GameOutcome Tablebases::Probe(const Board& board)
+{
+    Throw();
+    return GameOutcome::Loss;
+}
+
+bool Tablebases::ProbeRoot(const Board& board, Move& tbMove)
+{
+    Throw();
+    return false;
+}
+#endif

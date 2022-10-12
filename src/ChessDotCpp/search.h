@@ -9,14 +9,14 @@ class SearchCallbackData
 {
 public:
     ThreadId Id;
-    Board& Board;
+    Board& _Board;
     SearchState& State;
     Ply Depth;
     Score _Score;
     bool Aborted;
 
     SearchCallbackData(ThreadId threadId, ::Board& board, SearchState& state, Ply depth, Score score, bool aborted)
-        : Id(threadId), Board(board),
+        : Id(threadId), _Board(board),
           State(state),
           Depth(depth),
           _Score(score),

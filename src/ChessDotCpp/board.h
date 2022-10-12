@@ -8,11 +8,11 @@
 
 #include <array>
 
-class UndoMove
+class UndoData
 {
 public:
-	Move Move;
-	CastlingPermission CastlingPermission;
+	Move MMove;
+	CastlingPermission CCastlingPermission;
 	File EnPassantFileIndex;
 	Rank EnPassantRankIndex;
 	HistoryPly FiftyMoveRule;
@@ -128,15 +128,15 @@ public:
 	{
 	}
 
-	void SetAccumulatorPiece(const Position pos, const Piece piece)
+	void SetAccumulatorPiece([[maybe_unused]] const Position pos, [[maybe_unused]] const Piece piece)
 	{
 	}
 
-	void UnsetAccumulatorPiece(const Position pos, const Piece piece)
+	void UnsetAccumulatorPiece([[maybe_unused]] const Position pos, [[maybe_unused]] const Piece piece)
 	{
 	}
 
-	void FinalizeAccumulator(const Color color)
+	void FinalizeAccumulator([[maybe_unused]] const Color color)
 	{
 	}
 #endif
@@ -186,7 +186,7 @@ public:
 class Board : public BoardBase
 {
 public:
-	std::array<UndoMove, Constants::MaxHistory> History;
+	std::array<UndoData, Constants::MaxHistory> History;
 	HistoryPly HistoryDepth;
 	HistoryPly FiftyMoveRuleIndex;
 	

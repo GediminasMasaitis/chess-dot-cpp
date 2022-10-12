@@ -8656,9 +8656,9 @@ Score of ChessDotCpp3.86-4CPU vs ChessDotCpp3.86: 106 - 37 - 157  [0.615] 300
 ...      White vs Black: 121 - 22 - 157  [0.665] 300
 Elo difference: 81.4 +/- 27.0, LOS: 100.0 %, DrawRatio: 52.3 %
 
-Score of ChessDotCpp3.86-8CPU vs ChessDotCpp3.86: 43 - 8 - 49  [0.675] 100
-...      ChessDotCpp3.86-smp playing White: 37 - 0 - 13  [0.870] 50
-...      ChessDotCpp3.86-smp playing Black: 6 - 8 - 36  [0.480] 50
+Score of ChessDotCpp3.86-12CPU vs ChessDotCpp3.86: 43 - 8 - 49  [0.675] 100
+...      ChessDotCpp3.86-12CPU playing White: 37 - 0 - 13  [0.870] 50
+...      ChessDotCpp3.86-12CPU playing Black: 6 - 8 - 36  [0.480] 50
 ...      White vs Black: 45 - 6 - 49  [0.695] 100
 Elo difference: 127.0 +/- 48.7, LOS: 100.0 %, DrawRatio: 49.0 %
 ```

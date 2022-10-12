@@ -2,6 +2,7 @@
 
 #include "board.h"
 #include <iostream>
+#include <sstream>
 
 #define ENABLE_PREFETCH 1
 #if ENABLE_PREFETCH
@@ -128,6 +129,8 @@ public:
 
     void Store(const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag)
     {
+        assert((std::abs(score) > Constants::MateThreshold) || move.Value != 0);
+
         const size_t index = GetTableIndex(key);
 
         TranspositionTableEntry& existingEntry = _entries[index];
@@ -250,7 +253,7 @@ public:
             percentages[flag] = static_cast<double>(counts[flag] * 100) / static_cast<double>(samples);
         }
 
-        std::stringstream ss;
+        auto ss = std::stringstream();
         ss << "None: " << std::fixed << std::setprecision(3) << percentages[TranspositionTableFlags::None] << "%";
         ss << ", Alpha: " << std::fixed << std::setprecision(3) << percentages[TranspositionTableFlags::Alpha] << "%";
         ss << ", Beta: " << std::fixed << std::setprecision(3) << percentages[TranspositionTableFlags::Beta] << "%";

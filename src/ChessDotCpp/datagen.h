@@ -16,7 +16,7 @@
 class DataGenerator
 {
 public:
-    static constexpr ThreadId ThreadCount = 16 ;
+    static constexpr ThreadId ThreadCount = 1;
 
     enum class GameResult
     {
@@ -216,6 +216,7 @@ public:
         SearchParameters parameters = SearchParameters();
         parameters.Infinite = true;
         parameters.MinNodes = 5000;
+        parameters.UciThread = true;
         //parameters.MaxNodes = 10000;
         GameResult result;
         while (true)
@@ -277,7 +278,7 @@ public:
     static void RunThread(const ThreadId threadId, const IterationCallback& callback)
     {
         Search search = Search(OnCallback);
-        auto rng = std::mt19937(threadId * 10000065);
+        auto rng = std::mt19937(threadId * 10000073);
         auto data = std::vector<DataEntry>();
 
 
@@ -301,7 +302,7 @@ public:
         for (auto entryId = 0; entryId < size; entryId++)
         {
             const auto& entry = entries[entryId];
-            ss << entry.FFen << " 0 0 \[";
+            ss << entry.FFen << " 0 0 [";
             switch (entry.Result)
             {
             case GameResult::Win:

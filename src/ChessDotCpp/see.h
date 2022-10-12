@@ -17,6 +17,7 @@ class See
             Bitboard subset = attadef & board.BitBoard[piece];
             if (subset > 0)
             {
+                // TODO: Cast to int64 does not fit thw whole bitboard
                 const Bitboard singleBitboard = static_cast<Bitboard>(static_cast<int64_t>(subset) & -static_cast<int64_t>(subset));
                 return singleBitboard;
             }

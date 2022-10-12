@@ -32,10 +32,10 @@ void Board::DoMove(const Move move)
     assert(move.GetTakesPiece() != Pieces::WhiteKing);
     assert(move.GetTakesPiece() != Pieces::BlackKing);
 
-    History[HistoryDepth].Move = move;
+    History[HistoryDepth].MMove = move;
     History[HistoryDepth].Key = Key;
     History[HistoryDepth].PawnKey = PawnKey;
-    History[HistoryDepth].CastlingPermission = CastlingPermissions;
+    History[HistoryDepth].CCastlingPermission = CastlingPermissions;
     History[HistoryDepth].EnPassantFileIndex = EnPassantFileIndex;
     History[HistoryDepth].EnPassantRankIndex = EnPassantRankIndex;
     History[HistoryDepth].FiftyMoveRule = FiftyMoveRuleIndex;
@@ -345,13 +345,13 @@ void Board::GetKeyAfterMove(const Move move, KeyAnd50Move& keyAnd50Move) const
 void Board::UndoMove()
 {
     auto& history = History[HistoryDepth - 1];
-    auto move = history.Move;
+    auto move = history.MMove;
     HistoryDepth--;
 
     EnPassantFileIndex = history.EnPassantFileIndex;
     EnPassantRankIndex = history.EnPassantRankIndex;
     EnPassantFile = EnPassantFileIndex >= 0 ? BitboardConstants::Files[history.EnPassantFileIndex] : 0;
-    CastlingPermissions = history.CastlingPermission;
+    CastlingPermissions = history.CCastlingPermission;
     Key = history.Key;
     PawnKey = history.PawnKey;
     FiftyMoveRuleIndex = history.FiftyMoveRule;

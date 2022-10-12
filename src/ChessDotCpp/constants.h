@@ -690,7 +690,7 @@ public:
 
     SearchDataClass()
     {
-        for(Ply depth = 0; depth < Constants::MaxDepth; depth++)
+        for(Ply depth = 1; depth < Constants::MaxDepth; depth++)
         {
             for(MoveCount movesEvaluated = 1; movesEvaluated < Constants::MaxMoves; movesEvaluated++)
             {

@@ -93,6 +93,8 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
 
 void Search::StoreTranspositionTable(const ThreadState& threadState, const ZobristKey key, const Move move, const Ply depth, const Ply ply, const Score score, const TtFlag flag)
 {
+    assert((std::abs(score) > Constants::MateThreshold) || move.Value != 0);
+
     if (threadState.Stopper.Stopped)
     {
         return;
@@ -100,7 +102,6 @@ void Search::StoreTranspositionTable(const ThreadState& threadState, const Zobri
 
     //const PlyData& plyState = threadState.Plies[ply];
     //if(plyState.SingularMove.Value != 0)
-    //{
     //    return;
     //}
 
@@ -416,8 +417,8 @@ void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply
 
     const bool hasPreviousMove1 = board.HistoryDepth > 0;
     const bool hasPreviousMove2 = board.HistoryDepth > 1;
-    const Move previousMove1 = hasPreviousMove1 ? board.History[board.HistoryDepth - 1].Move : Move(0);
-    const Move previousMove2 = hasPreviousMove2 ? board.History[board.HistoryDepth - 2].Move : Move(0);
+    const Move previousMove1 = hasPreviousMove1 ? board.History[board.HistoryDepth - 1].MMove : Move(0);
+    const Move previousMove2 = hasPreviousMove2 ? board.History[board.HistoryDepth - 2].MMove : Move(0);
 
     //const Score bonus = static_cast<Score>(depth * depth);
     const MoveScore bonus = depth * depth + depth - 1;
@@ -585,7 +586,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     //probeSuccess = false;
     //hashEntryExists = false;
 
-    if(hashEntryExists && Options::Threads != 1)
+    if(hashEntryExists && (datagen || Options::Threads != 1))
     {
         const bool isPseudoLegal = MoveValidator::IsPseudoLegal(board, entry.MMove);
         if(!isPseudoLegal)
@@ -606,6 +607,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
     const Move principalVariationMove = hashEntryExists ? entry.MMove : Move(0);
     assert(!hashEntryExists || principalVariationMove.Value == 0 || principalVariationMove.GetColorToMove() == board.ColorToMove);
+    assert(!hashEntryExists || std::abs(entry.SScore) > Constants::MateThreshold || principalVariationMove.Value != 0);
 
     if (probeSuccess)
     {
@@ -738,8 +740,8 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     MoveCount moveCount = 0;
     ScoreArray seeScores;
     MoveScoreArray staticMoveScores;*/
-    Move previousMove1 = !rootNode ? board.History[board.HistoryDepth - 1].Move : Move(0);
-    Move previousMove2 = board.HistoryDepth > 1 ? board.History[board.HistoryDepth - 2].Move : Move(0);
+    Move previousMove1 = !rootNode ? board.History[board.HistoryDepth - 1].MMove : Move(0);
+    Move previousMove2 = board.HistoryDepth > 1 ? board.History[board.HistoryDepth - 2].MMove : Move(0);
     //const Move countermove = threadState.Countermoves[previousMove1.GetPiece()][previousMove1.GetTo()];
 
     //TablebaseResult parentResult = TablebaseResult::Unknown;
