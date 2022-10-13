@@ -148,7 +148,7 @@ public:
 
     static void Init()
     {
-        auto file = std::ifstream("C:/Chess/Networks/42/nn-epoch500.nnue", std::ios::binary);
+        auto file = std::ifstream("C:/Chess/Networks/48/nn-epoch500.nnue", std::ios::binary);
 
         for (size_t inputIndex = 0; inputIndex < InputCount; inputIndex++)
         {
