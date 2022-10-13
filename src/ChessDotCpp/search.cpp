@@ -93,7 +93,7 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
 
 void Search::StoreTranspositionTable(const ThreadState& threadState, const ZobristKey key, const Move move, const Ply depth, const Ply ply, const Score score, const TtFlag flag)
 {
-    assert((std::abs(score) > Constants::MateThreshold) || move.Value != 0);
+    //assert((std::abs(score) > Constants::MateThreshold) || move.Value != 0);
 
     if (threadState.Stopper.Stopped)
     {
@@ -427,6 +427,11 @@ void UpdateHistoryEntry(MoveScore& score, const MoveScore value)
 
 void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply ply, MoveArray& attemptedMoves, MoveCount attemptedMoveCount, Move bestMove, bool betaCutoff)
 {
+    if(bestMove.Value == 0)
+    {
+        return;
+    }
+
     assert(board.ColorToMove == bestMove.GetColorToMove());
     auto& threadState = State.Thread[threadId];
     assert(threadState.ColorToMove == board.ColorToMove ^ (ply % 2));
@@ -626,7 +631,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
     const Move principalVariationMove = hashEntryExists ? entry.MMove : Move(0);
     assert(!hashEntryExists || principalVariationMove.Value == 0 || principalVariationMove.GetColorToMove() == board.ColorToMove);
-    assert(!hashEntryExists || std::abs(entry.SScore) > Constants::MateThreshold || principalVariationMove.Value != 0);
+    //assert(!hashEntryExists || std::abs(entry.SScore) > Constants::MateThreshold || principalVariationMove.Value != 0);
 
     if (probeSuccess)
     {

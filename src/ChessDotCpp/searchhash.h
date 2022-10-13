@@ -129,7 +129,7 @@ public:
 
     void Store(const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag)
     {
-        assert((std::abs(score) > Constants::MateThreshold) || move.Value != 0);
+        //assert((std::abs(score) > Constants::MateThreshold) || move.Value != 0);
 
         const size_t index = GetTableIndex(key);
 

@@ -16,7 +16,7 @@
 class DataGenerator
 {
 public:
-    static constexpr ThreadId ThreadCount = 1;
+    static constexpr ThreadId ThreadCount = 16;
 
     enum class GameResult
     {
@@ -216,8 +216,9 @@ public:
         SearchParameters parameters = SearchParameters();
         parameters.Infinite = true;
         parameters.MinNodes = 5000;
-        parameters.UciThread = true;
+        //parameters.MaxNodes = 5000;
         //parameters.MaxNodes = 10000;
+        //parameters.UciThread = true;
         GameResult result;
         while (true)
         //for (auto i = 0; i < 30; i++)

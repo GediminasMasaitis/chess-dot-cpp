@@ -31,6 +31,9 @@ template<class T>
 using EachDepth = std::array<T, Constants::MaxDepth>;
 
 template<class T>
+using EachSearchPly = std::array<T, Constants::MaxSearchPly>;
+
+template<class T>
 using EachMove = std::array<T, Constants::MaxMoves>;
 
 class CastlingPermissions
@@ -684,13 +687,13 @@ static constexpr BetweenBitboardsClass BetweenBitboards = BetweenBitboardsClass(
 class SearchDataClass
 {
 public:
-    using ReductionsTableType = EachDepth<EachMove<Ply>>;
+    using ReductionsTableType = EachSearchPly<EachMove<Ply>>;
 
     ReductionsTableType Reductions{};
 
     SearchDataClass()
     {
-        for(Ply depth = 1; depth < Constants::MaxDepth; depth++)
+        for(Ply depth = 1; depth < Constants::MaxSearchPly; depth++)
         {
             for(MoveCount movesEvaluated = 1; movesEvaluated < Constants::MaxMoves; movesEvaluated++)
             {

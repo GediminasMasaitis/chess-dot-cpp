@@ -115,35 +115,35 @@ public:
             Plies[i].NewSearch();
         }
 
-        for (Color color = 0; color < Colors::Count; color++)
-        {
-            for (Position from = 0; from < Positions::Count; from++)
-            {
-                for (Position to = 0; to < Positions::Count; to++)
-                {
-                    History[color][from][to] /= 8;
-                }
-            }
-        }
+        //for (Color color = 0; color < Colors::Count; color++)
+        //{
+        //    for (Position from = 0; from < Positions::Count; from++)
+        //    {
+        //        for (Position to = 0; to < Positions::Count; to++)
+        //        {
+        //            History[color][from][to] /= 8;
+        //        }
+        //    }
+        //}
 
-        for (Piece piece = 0; piece < Pieces::Count; piece++)
-        {
-            for (Position to = 0; to < Positions::Count; to++)
-            {
-                for (Piece takesPiece = 0; takesPiece < Pieces::Count; takesPiece++)
-                {
-                    CaptureHistory[piece][to][takesPiece] /= 8;
-                }
-            }
-        }
+        //for (Piece piece = 0; piece < Pieces::Count; piece++)
+        //{
+        //    for (Position to = 0; to < Positions::Count; to++)
+        //    {
+        //        for (Piece takesPiece = 0; takesPiece < Pieces::Count; takesPiece++)
+        //        {
+        //            CaptureHistory[piece][to][takesPiece] /= 8;
+        //        }
+        //    }
+        //}
 
-        for (Piece piece = 0; piece < Pieces::Count; piece++)
-        {
-            for (Position to = 0; to < Positions::Count; to++)
-            {
-                AllContinuations[piece][to].NewSearch();
-            }
-        }
+        //for (Piece piece = 0; piece < Pieces::Count; piece++)
+        //{
+        //    for (Position to = 0; to < Positions::Count; to++)
+        //    {
+        //        AllContinuations[piece][to].NewSearch();
+        //    }
+        //}
 
         for (Position from = 0; from < Positions::Count; from++)
         {
