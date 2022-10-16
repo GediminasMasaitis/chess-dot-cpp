@@ -86,6 +86,7 @@ using PlyDataArray = std::array<PlyData, Constants::MaxPly>;
 class ThreadState
 {
 public:
+    SearchParameters Parameters;
     SearchStats Stats{};
     PlyDataArray Plies;
     SearchStopper Stopper;
@@ -107,6 +108,7 @@ public:
 
     void NewSearch(const Board& board, const SearchParameters& parameters)
     {
+        Parameters = parameters;
         Stats.NewSearch();
         Stopper.Init(parameters, board);
 

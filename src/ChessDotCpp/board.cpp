@@ -484,11 +484,31 @@ Board::Board(): BoardBase(), History()
     FiftyMoveRuleIndex = 0;
 }
 
-Move BoardBase::FromPositionString(const MoveString& moveString) const
+bool BoardBase::FromPositionString(const MoveString& moveString, Move& move) const
 {
+    if(moveString.length() !=4 && moveString.length() != 5)
+    {
+        return false;
+    }
+
     const Position from = Positions::TextToPosition(moveString.substr(0, 2));
+    if(from >= 64)
+    {
+        return false;
+    }
+
     const Position to = Positions::TextToPosition(moveString.substr(2, 2));
+    if(to >= 64)
+    {
+        return false;
+    }
+
     const Piece piece = ArrayBoard[from];
+    if(piece != Pieces::WhitePawn && piece != Pieces::BlackPawn && moveString.length() != 4)
+    {
+        return false;
+    }
+
     Piece takesPiece = ArrayBoard[to];
     bool enPassant = false;
     Piece pawnPromotesTo = Pieces::Empty;
@@ -524,20 +544,26 @@ Move BoardBase::FromPositionString(const MoveString& moveString) const
         case 'R':
             pawnPromotesTo = static_cast<Piece>(Pieces::Rook + ColorToMove);
             break;
-        default: Throw("Unknown promotion");
+        default:
+            return false;
         }
     }
 
     const bool castle = (piece == Pieces::WhiteKing || piece == Pieces::BlackKing) && std::abs(from - to) == 2;
     
-    const Move move = Move(from, to, piece, takesPiece, enPassant, castle, pawnPromotesTo);
-    return move;
+    move = Move(from, to, piece, takesPiece, enPassant, castle, pawnPromotesTo);
+    return true;
 }
 
-void Board::DoMove(const MoveString& moveString)
+bool Board::DoMove(const MoveString& moveString)
 {
-    const Move move = FromPositionString(moveString);
-    DoMove(move);
+    Move move;
+    const bool success = FromPositionString(moveString, move);
+    if(success)
+    {
+        DoMove(move);
+    }
+    return success;
 }
 
 void BoardBase::FlipColors()

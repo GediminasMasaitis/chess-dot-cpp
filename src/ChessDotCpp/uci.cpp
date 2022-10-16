@@ -148,7 +148,25 @@ void Uci::HandlePosition(std::stringstream& reader)
 	}
 }
 
-void ReadSearchParameters(std::stringstream& reader, SearchParameters& parameters)
+void Uci::ReadMoves(std::stringstream& reader, MoveArray& moves, MoveCount& moveCount)
+{
+	auto boardBackup = board;
+	while (!reader.eof())
+	{
+		MoveString moveStr;
+		reader >> moveStr;
+
+		Move move;
+		board.FromPositionString(moveStr, move);
+		board.DoMove(move);
+
+		moves[moveCount] = move;
+		moveCount++;
+	}
+	board = boardBackup;
+}
+
+void Uci::ReadSearchParameters(std::stringstream& reader, SearchParameters& parameters)
 {
 	while (!reader.eof())
 	{
@@ -187,6 +205,10 @@ void ReadSearchParameters(std::stringstream& reader, SearchParameters& parameter
 		else if (word == "infinite")
 		{
 			parameters.Infinite = true;
+		}
+		else if(word == "searchmoves")
+		{
+			ReadMoves(reader, parameters.SearchMoves, parameters.SearchMoveCount);
 		}
 		else if (word == "ucithread")
 		{
@@ -333,6 +355,22 @@ void Uci::HandleDisplaySearch(std::stringstream& reader)
 	DisplaySearch::DisplayBoard(board, parameters);
 }
 
+void Uci::HandleDisplayMoves(std::stringstream& reader)
+{
+	MoveArray moves;
+	MoveCount moveCount = 0;
+	ReadMoves(reader, moves, moveCount);
+	DisplayEval::DisplayBoard(board);
+	const Board boardBackup = board;
+	for(auto moveIndex = 0; moveIndex < moveCount; moveIndex++)
+	{
+		const Move move = moves[moveIndex];
+		board.DoMove(move);
+		DisplayEval::DisplayBoard(board, move);
+	}
+	board = boardBackup;
+}
+
 bool Uci::HandleInput(const std::string& line)
 {
 	std::stringstream reader(line);
@@ -393,6 +431,10 @@ bool Uci::HandleInput(const std::string& line)
 		else if (word == "ds")
 		{
 			HandleDisplaySearch(reader);
+		}
+		else if(word == "dm")
+		{
+			HandleDisplayMoves(reader);
 		}
 		else if (word == "quit")
 		{

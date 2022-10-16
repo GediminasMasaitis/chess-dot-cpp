@@ -828,6 +828,25 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
         const Move move = moveEntry.move;
         State.Global.Table.PrefetchForMove(board, move);
+
+        if(rootNode && threadState.Parameters.SearchMoveCount != 0)
+        {
+            bool skipMove = true;
+            for(MoveCount searchMoveIndex = 0; searchMoveIndex < threadState.Parameters.SearchMoveCount; searchMoveIndex++)
+            {
+                const Move searchMove = threadState.Parameters.SearchMoves[searchMoveIndex];
+                if(move.Value == searchMove.Value)
+                {
+                    skipMove = false;
+                    break;
+                }
+            }
+
+            if(skipMove)
+            {
+                continue;
+            }
+        }
         
         //if(move.Value == plyState.SingularMove.Value)
         //{

@@ -96,7 +96,8 @@ public:
         Board board{};
         Fens::Parse(board, fen);
 
-        const Move move = board.FromPositionString("f3e4");
+        Move move;
+        board.FromPositionString("f3e4", move);
         const Score see = See::GetSee(board, move);
         std::cout << see << std::endl;
     }

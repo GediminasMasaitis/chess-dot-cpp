@@ -8968,4 +8968,25 @@ info depth 30 seldepth 46 multipv 1 score cp 17 nodes 324134002 nps 2070204 time
 ```
 Score of ChessDotCpp3.90 vs ChessDotCpp3.89:
 Elo aroubd 12 +- 3, 21k games. Lost the test.
+
+Score of ChessDotCpp3.90 vs weiss2.0: 761 - 49 - 190  [0.856] 1000
+...      ChessDotCpp3.90 playing White: 397 - 22 - 80  [0.876] 499
+...      ChessDotCpp3.90 playing Black: 364 - 27 - 110  [0.836] 501
+...      White vs Black: 424 - 386 - 190  [0.519] 1000
+Elo difference: 309.6 +/- 24.1, LOS: 100.0 %, DrawRatio: 19.0 %
+
+Score of ChessDotCpp3.90 vs seer2.5: 233 - 218 - 549  [0.507] 1000
+...      ChessDotCpp3.90 playing White: 112 - 100 - 288  [0.512] 500
+...      ChessDotCpp3.90 playing Black: 121 - 118 - 261  [0.503] 500
+...      White vs Black: 230 - 221 - 549  [0.504] 1000
+Elo difference: 5.2 +/- 14.4, LOS: 76.0 %, DrawRatio: 54.9 %
+
+Score of ChessDotCpp3.90 vs stockfish11: 305 - 295 - 400  [0.505] 1000
+...      ChessDotCpp3.90 playing White: 164 - 144 - 193  [0.520] 501
+...      ChessDotCpp3.90 playing Black: 141 - 151 - 207  [0.490] 499
+...      White vs Black: 315 - 285 - 400  [0.515] 1000
+Elo difference: 3.5 +/- 16.7, LOS: 65.8 %, DrawRatio: 40.0 %
 ```
+
+### 3.91 
+Support searchmoves

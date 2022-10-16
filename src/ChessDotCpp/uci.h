@@ -34,6 +34,8 @@ public:
     void HandleStartpos(std::stringstream& reader);
     void HandleFen(std::stringstream& reader);
     void HandlePosition(std::stringstream& reader);
+    void ReadMoves(std::stringstream& reader, MoveArray& moves, MoveCount& moveCount);
+    void ReadSearchParameters(std::stringstream& reader, SearchParameters& parameters);
     void HandleGo(std::stringstream& reader);
     void HandleStop();
     void HandlePerft(std::stringstream& reader);
@@ -42,6 +44,7 @@ public:
     void HandleIsReady();
     void HandleUciNewGame();
     void HandleDisplaySearch(std::stringstream& reader);
+    void HandleDisplayMoves(std::stringstream& reader);
     void HandleSetoption(std::stringstream& reader);
     bool HandleInput(const std::string& line);
     void Init();

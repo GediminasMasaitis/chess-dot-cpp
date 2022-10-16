@@ -16,5 +16,8 @@ public:
     size_t MinNodes = 0;
     size_t MaxNodes = 0;
 
+    MoveArray SearchMoves;
+    MoveCount SearchMoveCount = 0;
+
     bool SkipNewSearch = false;
 };
