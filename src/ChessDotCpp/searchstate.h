@@ -61,6 +61,18 @@ public:
     }
 };
 
+class PrincipalVariationData
+{
+public:
+    Ply Length;
+    EachSearchPly<Move> Moves;
+
+    void NewIteration()
+    {
+        Length = 0;
+    }
+};
+
 class PlyData
 {
 public:
@@ -68,10 +80,17 @@ public:
     KillerArray Killers;
     //Move SingularMove;
     MovePicker MMovePicker;
+    PrincipalVariationData PrincipalVariation;
 
     void NewSearch()
     {
+        //PrincipalVariation.NewIteration();
         //SingularMove = Move(0);
+    }
+
+    void NewIteration()
+    {
+        PrincipalVariation.NewIteration();
     }
 
     void NewGame()
@@ -98,7 +117,8 @@ public:
 
     EachPosition<EachPosition<Stat>> NodesPerMove;
 
-    std::vector<Move> SavedPrincipalVariation{};
+    PrincipalVariationData SavedPrincipalVariation;
+    //std::vector<Move> SavedPrincipalVariation{};
 
     Ply IterationsSincePvChange;
     Ply IterationInitialDepth;
@@ -157,6 +177,14 @@ public:
 
         IterationsSincePvChange = 0;
         ColorToMove = board.ColorToMove;
+    }
+
+    void NewIteration()
+    {
+        for (Ply i = 0; i < Constants::MaxPly; i++)
+        {
+            Plies[i].NewIteration();
+        }
     }
 
     void NewGame()

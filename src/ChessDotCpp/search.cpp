@@ -506,7 +506,11 @@ void Search::UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply
 Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed)
 {
     ThreadState& threadState = State.Thread[threadId];
-    //PlyData& plyState = threadState.Plies[ply];
+    PlyData& plyState = threadState.Plies[ply];
+    if (isPrincipalVariation)
+    {
+        plyState.PrincipalVariation.Length = 0;
+    }
 
     const bool rootNode = ply == 0;
     const bool zeroWindow = alpha == beta - 1;
@@ -635,7 +639,7 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
     if (probeSuccess)
     {
-        bool returnTtValue = !isPrincipalVariation || (!datagen && probedScore >= alpha && probedScore <= beta);
+        bool returnTtValue = !isPrincipalVariation /*|| (!datagen && probedScore >= alpha && probedScore <= beta)*/;
         if(returnTtValue)
         {
             const bool isDraw = IsRepetitionOr50MoveAfterMove(board, principalVariationMove);
@@ -769,7 +773,6 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
     const Bitboard pinned = PinDetector::GetPinnedToKingForColorToMove(board);
 #endif
 
-    PlyData& plyState = threadState.Plies[ply];
     auto& movePicker = plyState.MMovePicker;
     movePicker.Reset(threadState, ply, board, checkers, pinned, principalVariationMove);
         
@@ -1086,6 +1089,27 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
                     betaCutoff = true;
                     break;
                 }
+
+                if (isPrincipalVariation)
+                {
+                    PrincipalVariationData& thisPlyPv = plyState.PrincipalVariation;
+                    thisPlyPv.Moves[0] = bestMove;
+                    if (ply < Constants::MaxSearchPly - 1)
+                    {
+                        PlyData& nextPlyState = threadState.Plies[ply + 1];
+                        PrincipalVariationData& nextPlyPv = nextPlyState.PrincipalVariation;
+                        thisPlyPv.Length = static_cast<Ply>(1 + nextPlyPv.Length);
+                        for (Ply nextPlyIndex = 0; nextPlyIndex < nextPlyPv.Length; nextPlyIndex++)
+                        {
+                            thisPlyPv.Moves[nextPlyIndex + 1] = nextPlyPv.Moves[nextPlyIndex];
+                        }
+                        //nextPlyPv.Length = 0;
+                    }
+                    else
+                    {
+                        thisPlyPv.Length = 1;
+                    }
+                }
             }
         }
         failedMoves[failedMoveCount++] = move;
@@ -1136,8 +1160,10 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
 
 Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth, const Score previous)
 {
+    auto& threadState = State.Thread[threadId];
     if(depth < 5)
     {
+        threadState.NewIteration();
         const Score fullSearchScore = AlphaBeta(threadId, board, depth, 0, -Constants::Inf, Constants::Inf, true, true);
         return fullSearchScore;
     }
@@ -1147,7 +1173,7 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
     Score widen = 20;
     Score alpha = previous - window;
     Score beta = previous + window;
-    auto& threadState = State.Thread[threadId];
+    
     while (true)
     {
         if(threadState.Stopper.Stopped)
@@ -1164,6 +1190,7 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
             beta = Constants::Inf;
         }
 
+        threadState.NewIteration();
         const Score score = AlphaBeta(threadId, board, depth, 0, alpha, beta, true, true);
         widen *= 2;
 
@@ -1185,9 +1212,14 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
 
 void Search::GetSearchResults(const ThreadState& threadState, Ply depth, Score score, SearchResults& results)
 {
-    results.BestMove = threadState.SavedPrincipalVariation[0];
+    results.BestMove = threadState.SavedPrincipalVariation.Moves[0];
     results.SearchedDepth = depth;
     results.SScore = score;
+}
+
+void SavePrincipalVariation(ThreadState& threadState)
+{
+    threadState.SavedPrincipalVariation = threadState.Plies[0].PrincipalVariation;
 }
 
 void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResults& results)
@@ -1195,10 +1227,10 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
     ThreadState& threadState = State.Thread[threadId];
     Ply depth = 1;
     threadState.IterationInitialDepth = depth;
+    threadState.NewIteration();
     Score score = AlphaBeta(threadId, board, depth, 0, -Constants::Inf, Constants::Inf, true, true);
 
-    threadState.SavedPrincipalVariation.clear();
-    State.Global.Table.GetPrincipalVariation(board, threadState.SavedPrincipalVariation);
+    SavePrincipalVariation(threadState);
     threadState.Stats.Elapsed = threadState.Stopper.GetElapsed();
     SearchCallbackData callbackData(threadId, board, State, 1, score, false);
 
@@ -1207,7 +1239,7 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
         Callback(callbackData);
     }
 
-    const auto initialBestMove = threadState.SavedPrincipalVariation[0];
+    const auto initialBestMove = threadState.SavedPrincipalVariation.Moves[0];
     const auto initialBestMoveNodes = threadState.NodesPerMove[initialBestMove.GetFrom()][initialBestMove.GetTo()];
     if (threadState.Stopper.ShouldStopDepthIncrease(threadState.Stats.Nodes, initialBestMoveNodes))
     {
@@ -1222,7 +1254,8 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
         score = Aspiration(threadId, board, depth, score);
         callbackData.Depth = depth;
         callbackData._Score = score;
-        const bool pvMoveChanged = State.Global.Table.IsRootMoveChanged(board, threadState.SavedPrincipalVariation);
+        //const bool pvMoveChanged = State.Global.Table.IsRootMoveChanged(board, threadState.SavedPrincipalVariation);
+        const bool pvMoveChanged = threadState.SavedPrincipalVariation.Moves[0].Value != threadState.Plies[0].PrincipalVariation.Moves[0].Value;
         if(pvMoveChanged)
         {
             threadState.IterationsSincePvChange = 0;
@@ -1232,14 +1265,7 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
             threadState.IterationsSincePvChange++;
         }
         
-        threadState.SavedPrincipalVariation.clear();
-        State.Global.Table.GetPrincipalVariation(board, threadState.SavedPrincipalVariation);
-        if (threadId == 0 && Callback != nullptr)
-        {
-            threadState.Stats.Elapsed = threadState.Stopper.GetElapsed();
-            Callback(callbackData);
-        }
-
+        //State.Global.Table.GetPrincipalVariation(board, threadState.SavedPrincipalVariation);
         if (threadState.Stopper.Stopped)
         {
             callbackData.Aborted = true;
@@ -1247,7 +1273,14 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
             break;
         }
 
-        const auto bestMove = threadState.SavedPrincipalVariation[0];
+        SavePrincipalVariation(threadState);
+        if (threadId == 0 && Callback != nullptr)
+        {
+            threadState.Stats.Elapsed = threadState.Stopper.GetElapsed();
+            Callback(callbackData);
+        }
+
+        const auto bestMove = threadState.SavedPrincipalVariation.Moves[0];
         const auto bestMoveNodes = threadState.NodesPerMove[bestMove.GetFrom()][bestMove.GetTo()];
         if (threadState.Stopper.ShouldStopDepthIncrease(threadState.Stats.Nodes, bestMoveNodes))
         {
@@ -1289,90 +1322,6 @@ void Search::IterativeDeepenLazySmp(Board& board, SearchResults& results)
     {
         threads[helperId - 1].join();
     }
-}
-
-void Search::IterativeDeepenLazySmpOld(Board& board, SearchResults& results)
-{
-    ThreadState& mainThreadState = State.Thread[0];
-    Ply depth = 1;
-    mainThreadState.IterationInitialDepth = depth;
-    Score score = AlphaBeta(0, board, 1, 0, -Constants::Inf, Constants::Inf, true, true);
-
-    mainThreadState.SavedPrincipalVariation.clear();
-    State.Global.Table.GetPrincipalVariation(board, mainThreadState.SavedPrincipalVariation);
-    
-    mainThreadState.Stats.Elapsed = mainThreadState.Stopper.GetElapsed();
-    SearchCallbackData callbackData(0, board, State, 1, score, false);
-    if (Callback != nullptr)
-    {
-        Callback(callbackData);
-    }
-    //State.Global.Table.PrintOccupancy();
-
-    const auto initialBestMove = mainThreadState.SavedPrincipalVariation[0];
-    const auto initialBestMoveNodes = mainThreadState.NodesPerMove[initialBestMove.GetFrom()][initialBestMove.GetTo()];
-    if (mainThreadState.Stopper.ShouldStopDepthIncrease(mainThreadState.Stats.Nodes, initialBestMoveNodes))
-    {
-        GetSearchResults(mainThreadState, depth, score, results);
-        return;
-    }
-
-    for (depth = depth + 1; depth < State.Global.Parameters.MaxDepth; depth++)
-    {
-        State.Thread[0].IterationInitialDepth = depth;
-        auto threads = std::vector<std::thread>();
-        for(ThreadId helperId = 1; helperId < Options::Threads; helperId++)
-        {
-            State.Thread[helperId] = State.Thread[0];
-            threads.emplace_back([this, helperId, board, depth, score]()
-            {
-                Board clone = board;
-                const Ply helperDepth = depth + helperId / 2;
-                State.Thread[helperId].IterationInitialDepth = helperDepth;
-                Aspiration(helperId, clone, helperDepth, score);
-            });
-        }
-        
-        score = Aspiration(0, board, depth, score);
-
-        for (ThreadId helperId = 1; helperId < Options::Threads; helperId++)
-        {
-            State.Thread[helperId].Stopper.Stopped = true;
-        }
-
-        for (ThreadId helperId = 1; helperId < Options::Threads; helperId++)
-        {
-            threads[helperId-1].join();
-        }
-        
-        callbackData.Depth = depth;
-        callbackData._Score = score;
-        const bool pvMoveChanged = State.Global.Table.IsRootMoveChanged(board, mainThreadState.SavedPrincipalVariation);
-        if (pvMoveChanged)
-        {
-            mainThreadState.IterationsSincePvChange = 0;
-        }
-        else
-        {
-            mainThreadState.IterationsSincePvChange++;
-        }
-        mainThreadState.Stats.Elapsed = mainThreadState.Stopper.GetElapsed();
-        const auto bestMove = mainThreadState.SavedPrincipalVariation[0];
-        const auto bestMoveNodes = mainThreadState.NodesPerMove[bestMove.GetFrom()][bestMove.GetTo()];
-        if (mainThreadState.Stopper.ShouldStopDepthIncrease(mainThreadState.Stats.Nodes, bestMoveNodes))
-        {
-            break;
-        }
-
-        mainThreadState.SavedPrincipalVariation.clear();
-        State.Global.Table.GetPrincipalVariation(board, mainThreadState.SavedPrincipalVariation);
-        if (Callback != nullptr)
-        {
-            Callback(callbackData);
-        }
-        //State.Global.Table.PrintOccupancy();
-    }
-    GetSearchResults(mainThreadState, depth, score, results);
 }
 
 void Search::Run(Board& board, const SearchParameters& parameters, SearchResults& results)

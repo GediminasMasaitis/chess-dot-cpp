@@ -34,7 +34,7 @@ public:
     void HandleStartpos(std::stringstream& reader);
     void HandleFen(std::stringstream& reader);
     void HandlePosition(std::stringstream& reader);
-    void ReadMoves(std::stringstream& reader, MoveArray& moves, MoveCount& moveCount);
+    void ReadMoves(std::stringstream& reader, MoveArray& moves, MoveCount& moveCount, bool doMoves, bool undoMoves);
     void ReadSearchParameters(std::stringstream& reader, SearchParameters& parameters);
     void HandleGo(std::stringstream& reader);
     void HandleStop();

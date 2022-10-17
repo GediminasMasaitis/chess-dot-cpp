@@ -10,9 +10,9 @@ class DisplaySearch
         std::stringstream builder = std::stringstream();
         builder << score << ",";
         const auto& principalVariation = search.State.Thread[0].SavedPrincipalVariation;
-        for (size_t ply = 0; ply < principalVariation.size(); ply++)
+        for (size_t ply = 0; ply < principalVariation.Length; ply++)
         {
-            const auto& entry = principalVariation[ply];
+            const auto& entry = principalVariation.Moves[ply];
             builder << " " << entry.ToPositionString();
         }
         builder << "\n";

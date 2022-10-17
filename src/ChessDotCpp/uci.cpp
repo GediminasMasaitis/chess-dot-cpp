@@ -56,23 +56,12 @@ void Uci::OnCallback(SearchCallbackData& data) const
 	builder << " time " << elapsed;
 
 	builder << " pv";
-	std::vector<Move>& principalVariation = data.State.Thread[data.Id].SavedPrincipalVariation;
-	for (size_t ply = 0; ply < principalVariation.size(); ply++)
+	const auto& principalVariation = data.State.Thread[data.Id].SavedPrincipalVariation;
+	for(MoveCount ply = 0; ply < principalVariation.Length; ply++)
 	{
-		const auto& entry = principalVariation[ply];
+		const auto& entry = principalVariation.Moves[ply];
 		builder << " " << entry.ToPositionString();
 	}
-
-    //MoveArray moves;
-    //MoveCount moveCount = 0;
-    //MoveGenerator::GetAllPossibleMoves(board, moves, moveCount);
-    //for(MoveCount moveIndex = 0; moveIndex < moveCount; moveIndex++)
-    //{
-    //    const auto move = moves[moveIndex];
-    //    const auto moveTotalNodes = mainThreadState.NodesPerMove[move.GetFrom()][move.GetTo()];
-    //    const auto moveNodePercent = (moveTotalNodes * 100) / mainThreadState.Stats.Nodes;
-    //    builder << move.ToPositionString() << " " << moveNodePercent << "% " << moveTotalNodes << " nodes\n";
-    //}
 
 	Out(builder.str());
 }
@@ -148,9 +137,9 @@ void Uci::HandlePosition(std::stringstream& reader)
 	}
 }
 
-void Uci::ReadMoves(std::stringstream& reader, MoveArray& moves, MoveCount& moveCount)
+void Uci::ReadMoves(std::stringstream& reader, MoveArray& moves, MoveCount& moveCount, bool doMoves, bool undoMoves)
 {
-	auto boardBackup = board;
+    const auto boardBackup = board;
 	while (!reader.eof())
 	{
 		MoveString moveStr;
@@ -158,12 +147,18 @@ void Uci::ReadMoves(std::stringstream& reader, MoveArray& moves, MoveCount& move
 
 		Move move;
 		board.FromPositionString(moveStr, move);
-		board.DoMove(move);
+		if(doMoves)
+		{
+			board.DoMove(move);
+		}
 
 		moves[moveCount] = move;
 		moveCount++;
 	}
-	board = boardBackup;
+	if(undoMoves)
+	{
+		board = boardBackup;
+	}
 }
 
 void Uci::ReadSearchParameters(std::stringstream& reader, SearchParameters& parameters)
@@ -208,7 +203,7 @@ void Uci::ReadSearchParameters(std::stringstream& reader, SearchParameters& para
 		}
 		else if(word == "searchmoves")
 		{
-			ReadMoves(reader, parameters.SearchMoves, parameters.SearchMoveCount);
+			ReadMoves(reader, parameters.SearchMoves, parameters.SearchMoveCount, false, false);
 		}
 		else if (word == "ucithread")
 		{
@@ -359,7 +354,7 @@ void Uci::HandleDisplayMoves(std::stringstream& reader)
 {
 	MoveArray moves;
 	MoveCount moveCount = 0;
-	ReadMoves(reader, moves, moveCount);
+	ReadMoves(reader, moves, moveCount, true, true);
 	DisplayEval::DisplayBoard(board);
 	const Board boardBackup = board;
 	for(auto moveIndex = 0; moveIndex < moveCount; moveIndex++)
