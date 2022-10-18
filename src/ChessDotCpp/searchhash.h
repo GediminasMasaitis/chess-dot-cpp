@@ -133,30 +133,12 @@ public:
 
         const size_t index = GetTableIndex(key);
 
-        TranspositionTableEntry& existingEntry = _entries[index];
-
-        const bool existingExact = existingEntry.Flag == TranspositionTableFlags::Exact;
-        const bool newExact = flag == TranspositionTableFlags::Exact;
-        
-        if (existingExact && !newExact)
-        {
-            return;
-        }
-
-        if(!existingExact && newExact)
+        const TranspositionTableEntry& existingEntry = _entries[index];
+        if(existingEntry.Key != key || flag == TranspositionTableFlags::Exact || depth > existingEntry.Depth - 5)
         {
             const TranspositionTableEntry entry = TranspositionTableEntry(key, move, depth, score, flag);
             _entries[index] = entry;
-            return;
         }
-
-        if (existingEntry.Key == key && existingEntry.Depth > depth * 2)
-        {
-            return;
-        }
-
-        const TranspositionTableEntry entry = TranspositionTableEntry(key, move, depth, score, flag);
-        _entries[index] = entry;
     }
 
     bool TryProbe(const ZobristKey key, TranspositionTableEntry* entry, ZobristKey* entryKey)
