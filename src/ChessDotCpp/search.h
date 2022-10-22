@@ -13,13 +13,15 @@ public:
     SearchState& State;
     Ply Depth;
     Score _Score;
+    MoveCount MultiPv;
     bool Aborted;
 
-    SearchCallbackData(ThreadId threadId, ::Board& board, SearchState& state, Ply depth, Score score, bool aborted)
+    SearchCallbackData(ThreadId threadId, ::Board& board, SearchState& state, Ply depth, Score score, MoveCount multiPv, bool aborted)
         : Id(threadId), _Board(board),
           State(state),
           Depth(depth),
           _Score(score),
+          MultiPv(multiPv),
           Aborted(aborted)
     {
     }
@@ -57,6 +59,7 @@ public:
     void UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply ply, MoveArray& attemptedMoves, MoveCount attemptedMoveCount, Move bestMove, bool betaCutoff);
     Score AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed);
     Score Aspiration(const ThreadId threadId, Board& board, const Ply depth, const Score previous);
+    Score MultiPv(const ThreadId threadId, Board& board, const Ply depth, const Score previous);
     //void RunSingleThread(Board& board);
     //void RunMultiThread(Board& board);
     

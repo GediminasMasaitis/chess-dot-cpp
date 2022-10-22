@@ -129,11 +129,9 @@ public:
 
     void Store(const ZobristKey key, const Move move, const Ply depth, const Score score, const TtFlag flag)
     {
-        //assert((std::abs(score) > Constants::MateThreshold) || move.Value != 0);
-
         const size_t index = GetTableIndex(key);
-
         const TranspositionTableEntry& existingEntry = _entries[index];
+
         if(existingEntry.Key != key || flag == TranspositionTableFlags::Exact || depth > existingEntry.Depth - 5)
         {
             const TranspositionTableEntry entry = TranspositionTableEntry(key, move, depth, score, flag);

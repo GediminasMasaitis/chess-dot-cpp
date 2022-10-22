@@ -12,21 +12,21 @@ void Uci::OnCallback(SearchCallbackData& data) const
 	std::stringstream builder = std::stringstream();
 
 	builder << "info";
-	if(data.Aborted)
+	if (data.Aborted)
 	{
 		//builder << " aborted";
 	}
 	builder << " depth " << std::to_string(data.Depth);
 	builder << " seldepth " << std::to_string(data.State.Thread[0].SelectiveDepth);
 
-	builder << " multipv 1";
-	if(data._Score > Constants::MateThreshold)
+	builder << " multipv " << static_cast<uint32_t>(data.MultiPv + 1);
+	if (data._Score > Constants::MateThreshold)
 	{
 		const Score mateInPlies = static_cast<Score>(Constants::Mate - data._Score);
 		const Score mateInMoves = static_cast<Score>((mateInPlies + 1) / 2);
 		builder << " score mate " << std::to_string(mateInMoves);
 	}
-	else if(data._Score < -Constants::MateThreshold)
+	else if (data._Score < -Constants::MateThreshold)
 	{
 		const Score mateInPlies = static_cast<Score>(Constants::Mate + data._Score);
 		const Score mateInMoves = static_cast<Score>((mateInPlies + 1) / 2);
@@ -36,7 +36,7 @@ void Uci::OnCallback(SearchCallbackData& data) const
 	{
 		builder << " score cp " << std::to_string(data._Score);
 	}
-	
+
 	builder << " nodes " << std::to_string(mainThreadState.Stats.Nodes);
 	auto elapsed = mainThreadState.Stats.Elapsed;
 	if (elapsed == 0)
@@ -45,7 +45,7 @@ void Uci::OnCallback(SearchCallbackData& data) const
 	}
 
 	Stat nodes = 0;
-	for(auto i = 0; i < Options::Threads; i++)
+	for (auto i = 0; i < Options::Threads; i++)
 	{
 		nodes += data.State.Thread[i].Stats.Nodes;
 	}
@@ -56,8 +56,8 @@ void Uci::OnCallback(SearchCallbackData& data) const
 	builder << " time " << elapsed;
 
 	builder << " pv";
-	const auto& principalVariation = data.State.Thread[data.Id].SavedPrincipalVariation;
-	for(MoveCount ply = 0; ply < principalVariation.Length; ply++)
+	const auto& principalVariation = data.State.Thread[data.Id].SavedPrincipalVariations[data.MultiPv];
+	for (MoveCount ply = 0; ply < principalVariation.Length; ply++)
 	{
 		const auto& entry = principalVariation.Moves[ply];
 		builder << " " << entry.ToPositionString();
@@ -205,6 +205,16 @@ void Uci::ReadSearchParameters(std::stringstream& reader, SearchParameters& para
 		{
 			ReadMoves(reader, parameters.SearchMoves, parameters.SearchMoveCount, false, false);
 		}
+		else if (word == "multipv")
+		{
+			uint64_t multiPv;
+			reader >> multiPv;
+			if(multiPv > 218)
+			{
+				multiPv = 218;
+			}
+			parameters.MultiPv = static_cast<Ply>(multiPv);
+		}
 		else if (word == "ucithread")
 		{
 			parameters.UciThread = true;
@@ -215,6 +225,7 @@ void Uci::ReadSearchParameters(std::stringstream& reader, SearchParameters& para
 void Uci::HandleGo(std::stringstream& reader)
 {
 	SearchParameters parameters = SearchParameters();
+	parameters.MultiPv = Options::MultiPv;
 	ReadSearchParameters(reader, parameters);
 
 	if (parameters.UciThread)
@@ -279,6 +290,7 @@ void Uci::PrintOptions()
 {
 	Out("option name Hash type spin default " + std::to_string(Options::Defaults::Hash) + " min 1 max 1024");
 	Out("option name Threads type spin default " + std::to_string(Options::Defaults::Threads) + " min 1 max 64");
+	Out("option name MultiPV type spin default " + std::to_string(Options::Defaults::MultiPv) + " min 1 max 218");
 	Out("option name SyzygyPath type string default <empty> min 1 max 64");
 	Out("option name TUNE1 type spin default 0 min -2147483647 max 2147483647");
 	Out("option name TUNE2 type spin default 0 min -2147483647 max 2147483647");
@@ -306,26 +318,41 @@ void Uci::HandleSetoption(std::stringstream& reader)
 		return;
 	}
 
-	if (name == "Hash") {
+	if (name == "Hash")
+	{
 		Options::Hash = static_cast<size_t>(std::stoull(value));
 		search.State.Global.Table.SetSizeFromOptions();
 	}
-	else if (name == "Threads") {
+	else if (name == "Threads")
+	{
 		Options::Threads = static_cast<ThreadId>(std::stoull(value));
 		//search.State.NewGame();
 		search.State.Initialized = false;
 	}
-	else if (name == "SyzygyPath") {
+	else if(name == "MultiPV")
+	{
+		auto multiPv = std::stoull(value);
+		if(multiPv > 218)
+		{
+			multiPv = 218;
+		}
+		Options::MultiPv = static_cast<MoveCount>(multiPv);
+	}
+	else if (name == "SyzygyPath")
+	{
 		Options::SyzygyPath = GetOptionStrValue(value);
 		Tablebases::Init(Options::SyzygyPath);
 	}
-	else if (name == "TUNE1") {
+	else if (name == "TUNE1")
+	{
 		Options::Tune1 = static_cast<int32_t>(std::stoi(value));
 	}
-	else if (name == "TUNE2") {
+	else if (name == "TUNE2")
+	{
 		Options::Tune2 = static_cast<int32_t>(std::stoi(value));
 	}
-	else if (name == "TUNE3") {
+	else if (name == "TUNE3")
+	{
 		Options::Tune3 = static_cast<int32_t>(std::stoi(value));
 	}
 }

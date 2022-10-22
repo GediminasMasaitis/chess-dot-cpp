@@ -28,6 +28,7 @@ public:
 		static constexpr ThreadId Threads = 1;
 
 		static constexpr std::string_view SyzygyPath = "";
+		static constexpr MoveCount MultiPv = 1;
 
 		static constexpr int32_t Tune1 = 100;
 		static constexpr int32_t Tune2 = 0;
@@ -38,6 +39,7 @@ public:
 
 	static inline size_t Hash = Defaults::Hash;
 	static inline ThreadId Threads = Defaults::Threads;
+	static inline MoveCount MultiPv = Defaults::MultiPv;
 
 	static inline std::string SyzygyPath = std::string(Defaults::SyzygyPath);
 

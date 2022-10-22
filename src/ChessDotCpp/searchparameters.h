@@ -18,6 +18,7 @@ public:
 
     MoveArray SearchMoves;
     MoveCount SearchMoveCount = 0;
+    MoveCount MultiPv = 1;
 
     bool SkipNewSearch = false;
 };

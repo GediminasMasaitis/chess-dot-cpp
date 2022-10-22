@@ -66,11 +66,6 @@ class PrincipalVariationData
 public:
     Ply Length;
     EachSearchPly<Move> Moves;
-
-    void NewIteration()
-    {
-        Length = 0;
-    }
 };
 
 class PlyData
@@ -86,11 +81,6 @@ public:
     {
         //PrincipalVariation.NewIteration();
         //SingularMove = Move(0);
-    }
-
-    void NewIteration()
-    {
-        PrincipalVariation.NewIteration();
     }
 
     void NewGame()
@@ -117,11 +107,14 @@ public:
 
     EachPosition<EachPosition<Stat>> NodesPerMove;
 
-    PrincipalVariationData SavedPrincipalVariation;
+    EachMove<PrincipalVariationData> SavedPrincipalVariations;
+    EachMove<Score> SavedScores;
+
+    MoveArray SearchMoves;
+    MoveCount SearchMoveCount;
+    MoveCount SearchedMultiPv;
     //std::vector<Move> SavedPrincipalVariation{};
 
-    Ply IterationsSincePvChange;
-    Ply IterationInitialDepth;
     Ply SelectiveDepth;
 
     Color ColorToMove;
@@ -137,36 +130,6 @@ public:
             Plies[i].NewSearch();
         }
 
-        //for (Color color = 0; color < Colors::Count; color++)
-        //{
-        //    for (Position from = 0; from < Positions::Count; from++)
-        //    {
-        //        for (Position to = 0; to < Positions::Count; to++)
-        //        {
-        //            History[color][from][to] /= 8;
-        //        }
-        //    }
-        //}
-
-        //for (Piece piece = 0; piece < Pieces::Count; piece++)
-        //{
-        //    for (Position to = 0; to < Positions::Count; to++)
-        //    {
-        //        for (Piece takesPiece = 0; takesPiece < Pieces::Count; takesPiece++)
-        //        {
-        //            CaptureHistory[piece][to][takesPiece] /= 8;
-        //        }
-        //    }
-        //}
-
-        //for (Piece piece = 0; piece < Pieces::Count; piece++)
-        //{
-        //    for (Position to = 0; to < Positions::Count; to++)
-        //    {
-        //        AllContinuations[piece][to].NewSearch();
-        //    }
-        //}
-
         for (Position from = 0; from < Positions::Count; from++)
         {
             for (Position to = 0; to < Positions::Count; to++)
@@ -175,16 +138,7 @@ public:
             }
         }
 
-        IterationsSincePvChange = 0;
         ColorToMove = board.ColorToMove;
-    }
-
-    void NewIteration()
-    {
-        for (Ply i = 0; i < Constants::MaxPly; i++)
-        {
-            Plies[i].NewIteration();
-        }
     }
 
     void NewGame()

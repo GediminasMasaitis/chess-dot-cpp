@@ -827,12 +827,12 @@ Score Search::AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const 
         const Move move = moveEntry.move;
         State.Global.Table.PrefetchForMove(board, move);
 
-        if(rootNode && threadState.Parameters.SearchMoveCount != 0)
+        if(rootNode && threadState.SearchMoveCount != 0)
         {
             bool skipMove = true;
-            for(MoveCount searchMoveIndex = 0; searchMoveIndex < threadState.Parameters.SearchMoveCount; searchMoveIndex++)
+            for(MoveCount searchMoveIndex = 0; searchMoveIndex < threadState.SearchMoveCount; searchMoveIndex++)
             {
-                const Move searchMove = threadState.Parameters.SearchMoves[searchMoveIndex];
+                const Move searchMove = threadState.SearchMoves[searchMoveIndex];
                 if(move.Value == searchMove.Value)
                 {
                     skipMove = false;
@@ -1158,7 +1158,6 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
     auto& threadState = State.Thread[threadId];
     if(depth < 5)
     {
-        threadState.NewIteration();
         const Score fullSearchScore = AlphaBeta(threadId, board, depth, 0, -Constants::Inf, Constants::Inf, true, true);
         return fullSearchScore;
     }
@@ -1185,7 +1184,6 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
             beta = Constants::Inf;
         }
 
-        threadState.NewIteration();
         const Score score = AlphaBeta(threadId, board, depth, 0, alpha, beta, true, true);
         widen *= 2;
 
@@ -1205,85 +1203,105 @@ Score Search::Aspiration(const ThreadId threadId, Board& board, const Ply depth,
     }
 }
 
-void Search::GetSearchResults(const ThreadState& threadState, Ply depth, Score score, SearchResults& results)
+Score Search::MultiPv(const ThreadId threadId, Board& board, const Ply depth, const Score previous)
 {
-    results.BestMove = threadState.SavedPrincipalVariation.Moves[0];
-    results.SearchedDepth = depth;
-    results.SScore = score;
-}
-
-void SavePrincipalVariation(ThreadState& threadState)
-{
-    threadState.SavedPrincipalVariation = threadState.Plies[0].PrincipalVariation;
-}
-
-void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResults& results)
-{
+    assert((depth == 1 && previous == -Constants::Inf) || (depth > 1 && previous != -Constants::Inf));
     ThreadState& threadState = State.Thread[threadId];
-    Ply depth = 1;
-    threadState.IterationInitialDepth = depth;
-    threadState.NewIteration();
-    Score score = AlphaBeta(threadId, board, depth, 0, -Constants::Inf, Constants::Inf, true, true);
-
-    SavePrincipalVariation(threadState);
-    threadState.Stats.Elapsed = threadState.Stopper.GetElapsed();
-    SearchCallbackData callbackData(threadId, board, State, 1, score, false);
-
-    if (threadId == 0 && Callback != nullptr)
-    {
-        Callback(callbackData);
-    }
-
-    const auto initialBestMove = threadState.SavedPrincipalVariation.Moves[0];
-    const auto initialBestMoveNodes = threadState.NodesPerMove[initialBestMove.GetFrom()][initialBestMove.GetTo()];
-    if (threadState.Stopper.ShouldStopDepthIncrease(threadState.Stats.Nodes, initialBestMoveNodes))
-    {
-        GetSearchResults(threadState, depth, score, results);
-        return;
-    }
+    const SearchParameters& parameters = threadState.Parameters;
+    threadState.SearchMoves = parameters.SearchMoves;
+    threadState.SearchMoveCount = parameters.SearchMoveCount;
+    threadState.SearchedMultiPv = 0;
     
-    for (depth = depth + 1; depth < State.Global.Parameters.MaxDepth; depth++)
+    if(parameters.MultiPv > 1 && threadState.SearchMoveCount == 0)
     {
-        threadState.IterationInitialDepth = depth;
+        const Bitboard checkers = CheckDetector::GetCheckers(board);
+        const Bitboard pinned = PinDetector::GetPinnedToKingForColorToMove(board);
+        MoveGenerator::GetAllPotentialMoves(board, checkers, pinned, threadState.SearchMoves, threadState.SearchMoveCount);
+    }
+
+    for(MoveCount moveIndex = 0; moveIndex < parameters.MultiPv; moveIndex++)
+    {
         threadState.SelectiveDepth = 0;
-        score = Aspiration(threadId, board, depth, score);
-        callbackData.Depth = depth;
-        callbackData._Score = score;
-        //const bool pvMoveChanged = State.Global.Table.IsRootMoveChanged(board, threadState.SavedPrincipalVariation);
-        const bool pvMoveChanged = threadState.SavedPrincipalVariation.Moves[0].Value != threadState.Plies[0].PrincipalVariation.Moves[0].Value;
-        if(pvMoveChanged)
+        Score score;
+        if(moveIndex == 0)
         {
-            threadState.IterationsSincePvChange = 0;
+            score = Aspiration(threadId, board, depth, previous);
         }
         else
         {
-            threadState.IterationsSincePvChange++;
+            score = AlphaBeta(threadId, board, depth, 0, -Constants::Inf, Constants::Inf, true, true);
         }
-        
-        //State.Global.Table.GetPrincipalVariation(board, threadState.SavedPrincipalVariation);
-        if (threadState.Stopper.Stopped)
+
+        if (depth > 0 && threadState.Stopper.Stopped)
         {
-            callbackData.Aborted = true;
-            //Callback(callbackData);
             break;
         }
 
-        SavePrincipalVariation(threadState);
+        threadState.SavedPrincipalVariations[moveIndex] = threadState.Plies[0].PrincipalVariation;
+        threadState.SavedScores[moveIndex] = score;
+        threadState.SearchedMultiPv = moveIndex + 1;
+
+        SearchCallbackData callbackData(threadId, board, State, depth, score, moveIndex, threadState.Stopper.Stopped);
         if (threadId == 0 && Callback != nullptr)
         {
             threadState.Stats.Elapsed = threadState.Stopper.GetElapsed();
             Callback(callbackData);
         }
 
-        const auto bestMove = threadState.SavedPrincipalVariation.Moves[0];
+        if(threadState.SearchMoveCount > 0)
+        {
+            const Move bestMove = threadState.SavedPrincipalVariations[moveIndex].Moves[0];
+            MoveCount bestMoveIndex = 255;
+            for(MoveCount searchMoveIndex = 0; searchMoveIndex < threadState.SearchMoveCount; searchMoveIndex++)
+            {
+                const Move searchMove = threadState.SearchMoves[searchMoveIndex];
+                if(searchMove.Value == bestMove.Value)
+                {
+                    bestMoveIndex = searchMoveIndex;
+                    break;
+                }
+            }
+            assert(bestMoveIndex != 255);
+            threadState.SearchMoves[bestMoveIndex] = threadState.SearchMoves[threadState.SearchMoveCount - 1];
+            threadState.SearchMoveCount--;
+        }
+
+        if(threadState.SearchMoveCount == 0)
+        {
+            break;
+        }
+    }
+
+    return threadState.SavedScores[0];
+}
+
+void Search::GetSearchResults(const ThreadState& threadState, Ply depth, Score score, SearchResults& results)
+{
+    results.BestMove = threadState.SavedPrincipalVariations[0].Moves[0];
+    results.SearchedDepth = depth;
+    results.SScore = score;
+}
+
+void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResults& results)
+{
+    ThreadState& threadState = State.Thread[threadId];
+
+    Score previousScore = -Constants::Inf;
+    Ply depth;
+    for (depth = 1; depth < State.Global.Parameters.MaxDepth; depth++)
+    {
+        const Score score = MultiPv(threadId, board, depth, previousScore);
+        
+        const auto bestMove = threadState.SavedPrincipalVariations[0].Moves[0];
         const auto bestMoveNodes = threadState.NodesPerMove[bestMove.GetFrom()][bestMove.GetTo()];
         if (threadState.Stopper.ShouldStopDepthIncrease(threadState.Stats.Nodes, bestMoveNodes))
         {
             break;
         }
+
+        previousScore = score;
     }
-    
-    GetSearchResults(threadState, depth, score, results);
+    GetSearchResults(threadState, depth, threadState.SavedScores[0], results);
 }
 
 void Search::IterativeDeepenLazySmp(Board& board, SearchResults& results)
