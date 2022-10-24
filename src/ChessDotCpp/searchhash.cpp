@@ -1,4 +1,5 @@
 #include "searchhash.h"
+#include "options.h"
 
 #include <iostream>
 #include <sstream>
