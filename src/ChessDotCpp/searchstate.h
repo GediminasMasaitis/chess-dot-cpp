@@ -95,6 +95,7 @@ using PlyDataArray = std::array<PlyData, Constants::MaxPly>;
 class ThreadState
 {
 public:
+    ThreadId Id;
     SearchParameters Parameters;
     SearchStats Stats{};
     PlyDataArray Plies;
@@ -260,8 +261,11 @@ public:
         //}
         
         Global.NewGame();
-        for(ThreadState& threadState : Thread)
+        //for(ThreadState& threadState : Thread)
+        for(ThreadId id = 0; id < Options::Threads; id++)
         {
+            ThreadState& threadState = Thread[id];
+            threadState.Id = id;
             threadState.NewGame();
         }
         Initialized = true;

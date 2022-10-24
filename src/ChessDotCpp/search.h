@@ -8,7 +8,7 @@
 class SearchCallbackData
 {
 public:
-    ThreadId Id;
+    ThreadState& _ThreadState;
     Board& _Board;
     SearchState& State;
     Ply Depth;
@@ -16,8 +16,8 @@ public:
     MoveCount MultiPv;
     bool Aborted;
 
-    SearchCallbackData(ThreadId threadId, ::Board& board, SearchState& state, Ply depth, Score score, MoveCount multiPv, bool aborted)
-        : Id(threadId), _Board(board),
+    SearchCallbackData(ThreadState& threadState, ::Board& board, SearchState& state, Ply depth, Score score, MoveCount multiPv, bool aborted)
+        : _ThreadState(threadState), _Board(board),
           State(state),
           Depth(depth),
           _Score(score),
@@ -54,12 +54,12 @@ public:
     Score Contempt(const Board& board) const;
     bool IsRepetitionOr50Move(const Board& board) const;
     bool IsRepetitionOr50MoveAfterMove(const Board& board, const Move move) const;
-    Score Quiescence(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, const bool isPrincipalVariation);
+    Score Quiescence(ThreadState& threadState, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, const bool isPrincipalVariation);
     bool TablebaseRootSearch(Board& board);
-    void UpdateHistory(const ThreadId threadId, Board& board, Ply depth, Ply ply, MoveArray& attemptedMoves, MoveCount attemptedMoveCount, Move bestMove, bool betaCutoff);
-    Score AlphaBeta(const ThreadId threadId, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed);
-    Score Aspiration(const ThreadId threadId, Board& board, const Ply depth, const Score previous);
-    Score MultiPv(const ThreadId threadId, Board& board, const Ply depth, const Score previous);
+    void UpdateHistory(ThreadState& threadState, Board& board, Ply depth, Ply ply, MoveArray& attemptedMoves, MoveCount attemptedMoveCount, Move bestMove, bool betaCutoff);
+    Score AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed);
+    Score Aspiration(ThreadState& threadState, Board& board, const Ply depth, const Score previous);
+    Score MultiPv(ThreadState& threadState, Board& board, const Ply depth, const Score previous);
     //void RunSingleThread(Board& board);
     //void RunMultiThread(Board& board);
     

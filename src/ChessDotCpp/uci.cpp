@@ -56,7 +56,7 @@ void Uci::OnCallback(SearchCallbackData& data) const
 	builder << " time " << elapsed;
 
 	builder << " pv";
-	const auto& principalVariation = data.State.Thread[data.Id].SavedPrincipalVariations[data.MultiPv];
+	const auto& principalVariation = mainThreadState.SavedPrincipalVariations[data.MultiPv];
 	for (MoveCount ply = 0; ply < principalVariation.Length; ply++)
 	{
 		const auto& entry = principalVariation.Moves[ply];
@@ -292,6 +292,7 @@ void Uci::PrintOptions()
 	Out("option name Threads type spin default " + std::to_string(Options::Defaults::Threads) + " min 1 max 64");
 	Out("option name MultiPV type spin default " + std::to_string(Options::Defaults::MultiPv) + " min 1 max 218");
 	Out("option name SyzygyPath type string default <empty> min 1 max 64");
+	Out("option name SyzygyPath type string default <empty> min 1 max 64");
 	Out("option name TUNE1 type spin default 0 min -2147483647 max 2147483647");
 	Out("option name TUNE2 type spin default 0 min -2147483647 max 2147483647");
 	Out("option name TUNE3 type spin default 0 min -2147483647 max 2147483647");
@@ -338,6 +339,13 @@ void Uci::HandleSetoption(std::stringstream& reader)
 		}
 		Options::MultiPv = static_cast<MoveCount>(multiPv);
 	}
+#if NNUE
+	else if (name == "NnuePath")
+	{
+		Options::NnuePath = GetOptionStrValue(value);
+		EvaluationNnueBase::Init();
+	}
+#endif
 	else if (name == "SyzygyPath")
 	{
 		Options::SyzygyPath = GetOptionStrValue(value);

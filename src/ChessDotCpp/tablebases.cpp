@@ -3,7 +3,7 @@
 #include "movegen.h"
 
 #ifndef TABLEBASES
-#define TABLEBASES 1
+#define TABLEBASES 0
 #endif
 
 #if TABLEBASES
@@ -168,22 +168,27 @@ bool Tablebases::ProbeRoot(const Board& board, Move& tbMove)
 #else
 void Tablebases::Init(const std::string& path)
 {
+    (void)path;
 }
 
 bool Tablebases::CanProbe(const Board& board)
 {
+    (void)board;
     return false;
 }
 
 GameOutcome Tablebases::Probe(const Board& board)
 {
     Throw();
+    (void)board;
     return GameOutcome::Loss;
 }
 
 bool Tablebases::ProbeRoot(const Board& board, Move& tbMove)
 {
     Throw();
+    (void)board;
+    (void)tbMove;
     return false;
 }
 #endif

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.h"
+#include "options.h"
 #include "simd.h"
 
 #include <fstream>
@@ -148,7 +149,13 @@ public:
 
     static void Init()
     {
-        auto file = std::ifstream("C:/Chess/Networks/48/nn-epoch500.nnue", std::ios::binary);
+        const auto& path = Options::NnuePath;
+        auto file = std::ifstream(path, std::ios::binary);
+        if(!file.good())
+        {
+            std::cout << "Error opening NNUE file \"" << path << "\"" << std::endl;
+            return;
+        }
 
         for (size_t inputIndex = 0; inputIndex < InputCount; inputIndex++)
         {
