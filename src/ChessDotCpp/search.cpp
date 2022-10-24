@@ -687,9 +687,9 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
 
     if(ply > 1)
     {
-        PlyData& plyState = threadState.Plies[ply - 2];
-        plyState.Killers[0] = Move(0);
-        plyState.Killers[1] = Move(0);
+        PlyData& oldPlyState = threadState.Plies[ply - 2];
+        oldPlyState.Killers[0] = Move(0);
+        oldPlyState.Killers[1] = Move(0);
     }
 
     assert(depth > 0);
