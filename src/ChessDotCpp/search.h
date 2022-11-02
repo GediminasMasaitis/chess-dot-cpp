@@ -41,7 +41,7 @@ class Search
 {
 private:
     SearchCallback Callback;
-    void GetSearchResults(const ThreadState& threadState, Ply depth, Score score, SearchResults& results);
+    void GetSearchResults(const ThreadState& threadState, const Board& board, Ply depth, Score score, SearchResults& results);
     void IterativeDeepen(const ThreadId threadId, Board& board, SearchResults& results);
     void IterativeDeepenLazySmp(Board& board, SearchResults& results);
     void IterativeDeepenLazySmpOld(Board& board, SearchResults& results);

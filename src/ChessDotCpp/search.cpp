@@ -1082,6 +1082,11 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
 
                 if (isPrincipalVariation)
                 {
+                    if(rootNode)
+                    {
+                        StoreTranspositionTable(threadState, key, bestMove, depth, ply, bestScore, TranspositionTableFlags::Exact);
+                    }
+
                     PrincipalVariationData& thisPlyPv = plyState.PrincipalVariation;
                     thisPlyPv.Moves[0] = bestMove;
                     if (ply < Constants::MaxSearchPly - 1)
@@ -1268,9 +1273,19 @@ Score Search::MultiPv(ThreadState& threadState, Board& board, const Ply depth, c
     return threadState.SavedScores[0];
 }
 
-void Search::GetSearchResults(const ThreadState& threadState, Ply depth, Score score, SearchResults& results)
+void Search::GetSearchResults(const ThreadState& threadState, const Board& board, Ply depth, Score score, SearchResults& results)
 {
-    results.BestMove = threadState.SavedPrincipalVariations[0].Moves[0];
+    Move ttMove = Move(0);
+    const bool success = State.Global.Table.TryGetPvMove(board, ttMove);
+    if(threadState.Parameters.MultiPv <= 1 && success) // Should fix
+    {
+        results.BestMove = ttMove;
+    }
+    else
+    {
+        results.BestMove = threadState.SavedPrincipalVariations[0].Moves[0];
+    }
+    
     results.SearchedDepth = depth;
     results.SScore = score;
 }
@@ -1294,7 +1309,7 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
 
         previousScore = score;
     }
-    GetSearchResults(threadState, depth, threadState.SavedScores[0], results);
+    GetSearchResults(threadState, board, depth, threadState.SavedScores[0], results);
 }
 
 void Search::IterativeDeepenLazySmp(Board& board, SearchResults& results)
