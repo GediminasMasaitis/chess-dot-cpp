@@ -16,6 +16,7 @@
 class DataGenerator
 {
 public:
+    static constexpr uint32_t Seed = 10000092;
     static constexpr ThreadId ThreadCount = 16;
 
     enum class GameResult
@@ -279,7 +280,7 @@ public:
     static void RunThread(const ThreadId threadId, const IterationCallback& callback)
     {
         Search search = Search(OnCallback);
-        auto rng = std::mt19937(threadId * 10000073);
+        auto rng = std::mt19937(threadId * Seed);
         auto data = std::vector<DataEntry>();
 
 
@@ -335,6 +336,7 @@ public:
 #if DATAGEN
     static void Run()
     {
+        std::cout << "Datagen seed " << Seed << std::endl;
         Tablebases::Init("C:\\Chess\\Tablebases\\3-4-5piecesSyzygy\\3-4-5");
 
         auto threads = std::vector<std::thread>(ThreadCount);

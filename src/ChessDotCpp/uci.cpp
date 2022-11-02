@@ -291,8 +291,8 @@ void Uci::PrintOptions()
 	Out("option name Hash type spin default " + std::to_string(Options::Defaults::Hash) + " min 1 max 1024");
 	Out("option name Threads type spin default " + std::to_string(Options::Defaults::Threads) + " min 1 max 64");
 	Out("option name MultiPV type spin default " + std::to_string(Options::Defaults::MultiPv) + " min 1 max 218");
-	Out("option name SyzygyPath type string default <empty> min 1 max 64");
-	Out("option name SyzygyPath type string default <empty> min 1 max 64");
+	Out("option name NnuePath type string default <empty>");
+	Out("option name SyzygyPath type string default <empty>");
 	Out("option name TUNE1 type spin default 0 min -2147483647 max 2147483647");
 	Out("option name TUNE2 type spin default 0 min -2147483647 max 2147483647");
 	Out("option name TUNE3 type spin default 0 min -2147483647 max 2147483647");

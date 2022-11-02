@@ -1281,7 +1281,7 @@ void Search::IterativeDeepen(const ThreadId threadId, Board& board, SearchResult
 
     Score previousScore = -Constants::Inf;
     Ply depth;
-    for (depth = 1; depth < State.Global.Parameters.MaxDepth; depth++)
+    for (depth = 1; depth <= State.Global.Parameters.MaxDepth; depth++)
     {
         const Score score = MultiPv(threadState, board, depth, previousScore);
         

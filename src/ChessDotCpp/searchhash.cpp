@@ -126,7 +126,7 @@ bool TranspositionTable::TryGetPvMove(const Board& board, Move& move)
 void TranspositionTable::GetPrincipalVariation(const Board& board, std::vector<Move>& principalVariation)
 {
     Board clone = board;
-    for (Ply i = 0; i < Constants::MaxDepth; i++)
+    for (Ply i = 0; i <= Constants::MaxDepth; i++)
     {
         Move move = Move(0);
         const bool success = TryGetPvMove(clone, move);
