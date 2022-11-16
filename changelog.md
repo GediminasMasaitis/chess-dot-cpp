@@ -9485,6 +9485,12 @@ Score of ChessDotCpp3.98 vs ChessDotCpp3.97: 704 - 670 - 1626  [0.506] 3000
 ...      White vs Black: 1219 - 155 - 1626  [0.677] 3000
 Elo difference: 3.9 +/- 8.4, LOS: 82.0 %, DrawRatio: 54.2 %
 
+Score of ChessDotCpp3.98 vs texel: 939 - 10 - 51  [0.965] 1000
+...      ChessDotCpp3.98 playing White: 468 - 3 - 29  [0.965] 500
+...      ChessDotCpp3.98 playing Black: 471 - 7 - 22  [0.964] 500
+...      White vs Black: 475 - 474 - 51  [0.500] 1000
+Elo difference: 573.6 +/- 47.0, LOS: 100.0 %, DrawRatio: 5.1 %
+
 Score of ChessDotCpp3.98 vs weiss2.0: 784 - 55 - 161  [0.865] 1000
 ...      ChessDotCpp3.98 playing White: 397 - 24 - 79  [0.873] 500
 ...      ChessDotCpp3.98 playing Black: 387 - 31 - 82  [0.856] 500
@@ -9496,4 +9502,34 @@ Score of ChessDotCpp3.98 vs seer2.5: 232 - 203 - 565  [0.514] 1000
 ...      ChessDotCpp3.98 playing Black: 103 - 110 - 287  [0.493] 500
 ...      White vs Black: 239 - 196 - 565  [0.521] 1000
 Elo difference: 10.1 +/- 14.2, LOS: 91.8 %, DrawRatio: 56.5 %
+
+Score of ChessDotCpp3.98 vs stockfish15: 6 - 802 - 192  [0.102] 1000
+...      ChessDotCpp3.98 playing White: 3 - 382 - 114  [0.120] 499
+...      ChessDotCpp3.98 playing Black: 3 - 420 - 78  [0.084] 501
+...      White vs Black: 423 - 385 - 192  [0.519] 1000
+Elo difference: -377.9 +/- 24.6, LOS: 0.0 %, DrawRatio: 19.2 %
+
+Score of ChessDotCpp3.98 vs ChessDotCpp3.98-classical: 952 - 6 - 42  [0.973] 1000
+...      ChessDotCpp3.98 playing White: 479 - 4 - 17  [0.975] 500
+...      ChessDotCpp3.98 playing Black: 473 - 2 - 25  [0.971] 500
+...      White vs Black: 481 - 477 - 42  [0.502] 1000
+Elo difference: 622.7 +/- 52.8, LOS: 100.0 %, DrawRatio: 4.2 %
+
+Score of ChessDotCpp3.98-classical vs glaurung2.2: 366 - 51 - 83  [0.815] 500
+...      ChessDotCpp3.98-classical playing White: 176 - 27 - 46  [0.799] 249
+...      ChessDotCpp3.98-classical playing Black: 190 - 24 - 37  [0.831] 251
+...      White vs Black: 200 - 217 - 83  [0.483] 500
+Elo difference: 257.6 +/- 33.6, LOS: 100.0 %, DrawRatio: 16.6 %
+
+Score of ChessDotCpp3.98-classical vs texel: 236 - 457 - 307  [0.390] 1000
+...      ChessDotCpp3.98-classical playing White: 117 - 236 - 147  [0.381] 500
+...      ChessDotCpp3.98-classical playing Black: 119 - 221 - 160  [0.398] 500
+...      White vs Black: 338 - 355 - 307  [0.491] 1000
+Elo difference: -78.1 +/- 18.2, LOS: 0.0 %, DrawRatio: 30.7 %
+
+Score of ChessDotCpp3.98-classical vs weiss2.0: 48 - 737 - 215  [0.155] 1000
+...      ChessDotCpp3.98-classical playing White: 25 - 356 - 120  [0.170] 501
+...      ChessDotCpp3.98-classical playing Black: 23 - 381 - 95  [0.141] 499
+...      White vs Black: 406 - 379 - 215  [0.513] 1000
+Elo difference: -293.9 +/- 22.9, LOS: 0.0 %, DrawRatio: 21.5 %
 ```
