@@ -16,7 +16,7 @@
 class DataGenerator
 {
 public:
-    static constexpr uint32_t Seed = 10000092;
+    static constexpr uint32_t Seed = 10000097;
     static constexpr ThreadId ThreadCount = 16;
 
     enum class GameResult

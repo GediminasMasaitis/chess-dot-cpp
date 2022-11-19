@@ -887,7 +887,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
             }
 
             // HISTORY PRUNING
-            if (moveScore < depth * -8192)
+            if (moveScore < (depth + improving) * -8192)
             {
                 continue;
             }
