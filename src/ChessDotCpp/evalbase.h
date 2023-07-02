@@ -4,21 +4,7 @@
 #include "board.h"
 
 #define DATAGEN 0
-#define TUNE 0
 #define TAPERED 1
-
-
-#if TUNE
-#define TraceIncr(term) ++T.term[color]
-#define TraceAdd(term, count) T.term[color] += count
-#define TraceEval(e) T.eval = e
-#define TracePhase(e) T.phase = e
-#else
-#define TraceIncr(term)
-#define TraceAdd(term, count)
-#define TraceEval(e)
-#define TracePhase(e)
-#endif
 
 class PhaseStages
 {

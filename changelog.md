@@ -8967,7 +8967,7 @@ info depth 30 seldepth 46 multipv 1 score cp 17 nodes 324134002 nps 2070204 time
 
 ```
 Score of ChessDotCpp3.90 vs ChessDotCpp3.89:
-Elo aroubd 12 +- 3, 21k games. Lost the test.
+Elo around 12 +- 3, 21k games. Lost the exact test due to terminal crash.
 
 Score of ChessDotCpp3.90 vs weiss2.0: 761 - 49 - 190  [0.856] 1000
 ...      ChessDotCpp3.90 playing White: 397 - 22 - 80  [0.876] 499

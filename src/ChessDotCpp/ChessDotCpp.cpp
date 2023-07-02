@@ -22,12 +22,6 @@ void Run(int argc, char** argv)
             return;
         }
 
-        if (param1 == "tune")
-        {
-            Texel::Run();
-            return;
-        }
-
         if (param1 == "datagen")
         {
             DataGenerator::Run();

@@ -8,44 +8,6 @@
 class EvaluationClassical2
 {
 public:
-#if TUNE
-    static constexpr bool tune = true;
-#else
-    static constexpr bool tune = false;
-#endif
-
-    class EvaluationClassical2Trace
-    {
-    public:
-        using TraceScores = EachColor<PhaseScore>;
-
-        PhaseScore eval;
-        Phase phase;
-
-        std::array<TraceScores, 6> material;
-        std::array<EachPosition<TraceScores>, 6> psts;
-        EachPosition<TraceScores> passedPawnPst;
-        std::array<std::array<TraceScores, 28>, 6> mobilityBonus;
-        std::array<std::array<TraceScores, 6>, 6> attackAttackedBonus;
-        std::array<std::array<TraceScores, 6>, 6> attackUnattackedBonus;
-        std::array<TraceScores, 64> kingSafetyTable;
-        //std::array<TraceScores, 6> kingAreaAttackBonus;
-        std::array<TraceScores, 6> pinnedBonus;
-        std::array<TraceScores, 6> protectedByPawnBonus;
-        std::array<TraceScores, 6> behindPawnBonus;
-        std::array<TraceScores, 6> outpostBonus;
-        std::array<TraceScores, 9> bishopSameColorSquareOwnPawnBonus;
-        std::array<TraceScores, 9> bishopSameColorSquareOpponentPawnBonus;
-        TraceScores doubledPawnBonus;
-        TraceScores doubledPassedPawnBonus;
-        TraceScores blockedPassedPawnBonus;
-        TraceScores protectedPawnBonus;
-        TraceScores weakPawnBonus;
-        TraceScores bishopPairBonus;
-        TraceScores rookOpenFileBonus;
-        TraceScores rookSemiOpenFileBonus;
-    };
-
     class EvaluationClassical2Data
     {
     public:
@@ -56,7 +18,6 @@ public:
         //EachColor<uint8_t> KingAttackCount;
     };
 
-    using Trace = EvaluationClassical2Trace;
     using Data = EvaluationClassical2Data;
 
     static constexpr int ParameterCount = 6 + 6 * 64 + 64 + 6 * 28 + 2 * 6 * 6 + 64 + 4 * 6 + 2 * 9 + 8;
@@ -286,7 +247,6 @@ public:
 
     static constexpr Score Tempo = 15;
 
-    static inline Trace T;
     static inline EachPiece<EachPosition<PhaseScore>> MaterialAndPst;
 
     using PieceIndex = uint8_t;
@@ -390,7 +350,6 @@ public:
         const Bitboard protectedPawns = ownPawnControl & board.BitBoard[piece];
         const uint8_t protectedPawnCount = PopCount(protectedPawns);
         score += protectedPawnCount * protectedPawnBonus;
-        TraceAdd(protectedPawnBonus, protectedPawnCount);
 
         Bitboard pawns = board.BitBoard[piece];
         while (pawns != 0)
@@ -399,15 +358,12 @@ public:
 
             // MATERIAL AND PST
             score += MaterialAndPst[piece][pos];
-            TraceIncr(material[pieceIndex]);
-            TraceIncr(psts[pieceIndex][GetRelativeInverse(color, pos)]);
 
             // DOUBLED PAWNS
             const Bitboard inFront = InFront.ColumnInFront[color][pos];
             const Bitboard ownPawnsInFront = inFront & board.BitBoard[piece];
             const uint8_t ownPawnInFrontCount = PopCount(ownPawnsInFront);
             score += ownPawnInFrontCount * doubledPawnBonus;
-            TraceAdd(doubledPawnBonus, ownPawnInFrontCount);
             
             // WEAK PAWNS
             const Bitboard behind = InFront.ColumnSortOfBehind[color][pos];
@@ -416,7 +372,6 @@ public:
             if (isWeak)
             {
                 score += weakPawnBonus;
-                TraceIncr(weakPawnBonus);
             }
 
             // PASSED PAWNS
@@ -426,11 +381,9 @@ public:
             if (isPassed)
             {
                 score += passedPawnPst[GetRelativeInverse(color, pos)];
-                TraceIncr(passedPawnPst[GetRelativeInverse(color, pos)]);
 
                 // DOUBLED PASSED PAWNS
                 score += ownPawnInFrontCount * doubledPassedPawnBonus;
-                TraceAdd(doubledPassedPawnBonus, ownPawnInFrontCount);
 
                 // BLOCKED PASSED PAWNS
                 const Bitboard opponentInFront = inFront & board.BitBoard[opponent];
@@ -438,7 +391,6 @@ public:
                 if(isBlocked)
                 {
                     score += blockedPassedPawnBonus;
-                    TraceIncr(blockedPassedPawnBonus);
                 }
             }
 
@@ -466,15 +418,12 @@ public:
 
             // MATERIAL AND PST
             score += MaterialAndPst[piece][pos];
-            TraceIncr(material[pieceIndex]);
-            TraceIncr(psts[pieceIndex][GetRelativeInverse(color, pos)]);
 
             // MOBILITY
             const Bitboard attacks = data.AttacksFrom[pos];
             const Bitboard mobility = attacks & ~data.PieceAttacks[Pieces::Pawn | opponent];
             const uint8_t mobilityCount = PopCount(mobility);
             score += mobilityBonus[pieceIndex][mobilityCount];
-            TraceIncr(mobilityBonus[pieceIndex][mobilityCount]);
 
             // KING SAFETY - COUNTING
             const Position opponentKingPos = board.KingPositions[opponent];
@@ -490,7 +439,6 @@ public:
             if(isPinned)
             {
                 score += pinnedBonus[pieceIndex];
-                TraceIncr(pinnedBonus[pieceIndex]);
             }
 
             // PROTECTED BY PAWN
@@ -499,7 +447,6 @@ public:
             if(isProtected)
             {
                 score += protectedByPawnBonus[pieceIndex];
-                TraceIncr(protectedByPawnBonus[pieceIndex]);
             }
 
             // BEHIND PAWN
@@ -509,7 +456,6 @@ public:
             if (isPawnInFront)
             {
                 score += behindPawnBonus[pieceIndex];
-                TraceIncr(behindPawnBonus[pieceIndex]);
             }
 
             // OUTPOST
@@ -520,7 +466,6 @@ public:
             if (isOutpost)
             {
                 score += outpostBonus[pieceIndex];
-                TraceIncr(outpostBonus[pieceIndex]);
             }
 
             // BISHOP EVAL
@@ -533,13 +478,11 @@ public:
                 const Bitboard sameColorOwnPawns = ownPawns & sameColor;
                 const uint8_t sameColorOwnPawnCount = PopCount(sameColorOwnPawns);
                 score += bishopSameColorSquareOwnPawnBonus[sameColorOwnPawnCount];
-                TraceIncr(bishopSameColorSquareOwnPawnBonus[sameColorOwnPawnCount]);
 
                 // BISHOP SAME COLOR SQUARE OPPONENT PAWNS
                 const Bitboard sameColorOpponentPawns = board.BitBoard[Pieces::Pawn | opponent] & sameColor;
                 const uint8_t sameColorOpponentPawnCount = PopCount(sameColorOpponentPawns);
                 score += bishopSameColorSquareOpponentPawnBonus[sameColorOpponentPawnCount];
-                TraceIncr(bishopSameColorSquareOpponentPawnBonus[sameColorOpponentPawnCount]);
             }
 
             // ROOK EVAL
@@ -555,13 +498,11 @@ public:
                     {
                         // ROOK ON OPEN FILE
                         score += rookOpenFileBonus;
-                        TraceIncr(rookOpenFileBonus);
                     }
                     else
                     {
                         // ROOK ON SEMI OPEN FILE
                         score += rookSemiOpenFileBonus;
-                        TraceIncr(rookSemiOpenFileBonus);
                     }
                 }
             }
@@ -580,13 +521,11 @@ public:
                 {
                     // ATTACKING A PIECE WHICH IS ATTACKING BACK
                     score += attackAttackedBonus[pieceIndex][attackedPieceIndex];
-                    TraceIncr(attackAttackedBonus[pieceIndex][attackedPieceIndex]);
                 }
                 else
                 {
                     // ATTACKING A PIECE WHICH IS NOT ATTACKING BACK
                     score += attackUnattackedBonus[pieceIndex][attackedPieceIndex];
-                    TraceIncr(attackUnattackedBonus[pieceIndex][attackedPieceIndex]);
                 }
 
                 attackedOpponent &= attackedOpponent - 1;
@@ -612,7 +551,6 @@ public:
 
         // PST
         score += MaterialAndPst[piece][pos];
-        TraceIncr(psts[pieceIndex][GetRelativeInverse(color, pos)]);
 
         // KING SAFETY - APPLYING
         uint8_t tableIndex = data.KingAttackWeight[color];
@@ -621,7 +559,6 @@ public:
             tableIndex = static_cast<uint8_t>(kingSafetyTable.size() - 1);
         }
         score += kingSafetyTable[tableIndex];
-        TraceIncr(kingSafetyTable[tableIndex]);
 
         // ATTACKS
         const Bitboard attacks = data.AttacksFrom[pos];
@@ -641,13 +578,11 @@ public:
                 {
                     // ATTACKING A PIECE WHICH IS ATTACKING BACK
                     score += attackAttackedBonus[pieceIndex][attackedPieceIndex];
-                    TraceIncr(attackAttackedBonus[pieceIndex][attackedPieceIndex]);
                 }
                 else
                 {
                     // ATTACKING A PIECE WHICH IS NOT ATTACKING BACK
                     score += attackUnattackedBonus[pieceIndex][attackedPieceIndex];
-                    TraceIncr(attackUnattackedBonus[pieceIndex][attackedPieceIndex]);
                 }
             }
 
@@ -674,7 +609,6 @@ public:
         if (board.PieceCounts[Pieces::Bishop | color] == 2)
         {
             score += bishopPairBonus;
-            TraceIncr(bishopPairBonus);
         }
 
         return score;
@@ -697,11 +631,6 @@ public:
     {
         const Score unscaledEndgame = EgScore(score);
 
-        if constexpr (tune)
-        {
-            return unscaledEndgame;
-        }
-
         // ENDGAME SCALING - PAWN COUNT
         const Color strongerColor = score > 0 ? Colors::White : Colors::Black;
         const uint8_t strongerColorPawnCount = PopCount(board.BitBoard[Pieces::Pawn | strongerColor]);
@@ -716,9 +645,7 @@ public:
     {
         const PhaseScore score = EvaluatePhased(board, pins);
 
-        TraceEval(score);
         const Phase phase = GetPhase(board);
-        TracePhase(phase);
         const Score midgame = MgScore(score);
         const Score endgame = GetScaledEndgame(board, score);
 
@@ -726,7 +653,7 @@ public:
         const Score flipped = board.WhiteToMove ? interpolated : static_cast<Score>(-interpolated);
 
         // TEMPO
-        const Score final = tune ? flipped : static_cast<Score>(flipped + 15);
+        const Score final = static_cast<Score>(flipped + 15);
 
         return final;
     }

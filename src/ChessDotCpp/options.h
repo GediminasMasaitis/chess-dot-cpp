@@ -33,7 +33,7 @@ public:
 		static constexpr std::string_view SyzygyPath = "";
 		static constexpr MoveCount MultiPv = 1;
 
-		static constexpr int32_t Tune1 = 100;
+		static constexpr int32_t Tune1 = 0;
 		static constexpr int32_t Tune2 = 0;
 		static constexpr int32_t Tune3 = 0;
 
