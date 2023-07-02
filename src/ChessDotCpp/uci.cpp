@@ -168,6 +168,10 @@ void Uci::ReadSearchParameters(std::stringstream& reader, SearchParameters& para
 		std::string word;
 		reader >> word;
 
+		if(word == "movetime")
+		{
+			reader >> parameters.MoveTime;
+		}
 		if (word == "wtime")
 		{
 			reader >> parameters.WhiteTime;

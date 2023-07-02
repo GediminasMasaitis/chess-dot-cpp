@@ -7,9 +7,9 @@ public:
     bool UciThread = false;
     Ply MaxDepth = Constants::MaxDepth;
 
+    size_t MoveTime = 0;
     size_t WhiteTime = 1000000;
     size_t BlackTime = 1000000;
-
     size_t WhiteTimeIncrement = 10000;
     size_t BlackTimeIncrement = 10000;
 

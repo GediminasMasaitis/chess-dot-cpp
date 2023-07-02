@@ -31,10 +31,18 @@ public:
             const bool whiteToMove = board.WhiteToMove;
             const size_t time = whiteToMove ? parameters.WhiteTime : parameters.BlackTime;
             const size_t increment = whiteToMove ? parameters.WhiteTimeIncrement : parameters.BlackTimeIncrement;
-            constexpr HistoryPly movesRemaining = 16;
-            const size_t estimatedTime = time + increment * movesRemaining;
-            _minTime = std::min(time / 2, estimatedTime / movesRemaining);
-            _maxTime = std::min(time * 4 / 5, _minTime * 4);
+            if (parameters.MoveTime == 0)
+            {
+                constexpr HistoryPly movesRemaining = 12;
+                const size_t estimatedTime = time + increment * movesRemaining;
+                _minTime = std::min(time / 2, estimatedTime / movesRemaining);
+                _maxTime = std::min(time * 4 / 5, _minTime * 4);
+            }
+            else
+            {
+                _minTime = parameters.MoveTime;
+                _maxTime = parameters.MoveTime;
+            }
             
         }
         
