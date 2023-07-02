@@ -1,10 +1,8 @@
 #include "uci.h"
 
-
 #include "datagen.h"
 #include "displaysearch.h"
 #include "perft.h"
-#include "texel.h"
 
 void Uci::OnCallback(SearchCallbackData& data) const
 {
@@ -449,10 +447,6 @@ bool Uci::HandleInput(const std::string& line)
 		else if (word == "isready")
 		{
 			HandleIsReady();
-		}
-		else if (word == "tune")
-		{
-			Texel::Run();
 		}
 		else if (word == "datagen")
 		{

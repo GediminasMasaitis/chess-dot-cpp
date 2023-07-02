@@ -5,7 +5,6 @@
 #include "uci.h"
 #include "evaluation.h"
 #include "tablebases.h"
-#include "texel.h"
 #include "datagen.h"
 #include "evaluationClassical2.h"
 
