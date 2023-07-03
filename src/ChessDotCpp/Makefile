@@ -1,4 +1,11 @@
-BIN=chessdotcpp.exe
+NAME := chessdotcpp
+ifeq ($(OS), Windows_NT)
+	SUFFIX := .exe
+else
+	SUFFIX :=
+endif
+BIN := $(NAME)$(SUFFIX)
+
 ifndef CXX
 	CXX=g++
 endif
@@ -9,7 +16,8 @@ SRCS = ChessDotCpp.cpp attacks.cpp search.cpp board.cpp fen.cpp perft.cpp movege
 OBJS = ChessDotCpp.o attacks.o search.o board.o fen.o perft.o movegen.o magics.o move.o moveorder.o uci.o tablebases.o evaluationClassical2.o movepick.o searchhash.o   #external/fathom/src/tbprobe.o
 
 ifeq ($(OS),Windows_NT)
-	RM = del /F
+	#RM = del /F
+	RM = rm -f
 else
 	RM = rm -f
 endif
@@ -24,6 +32,7 @@ all: build
 
 build: $(OBJS)
 	$(CXX) -o $(BIN) $^ $(LFLAGS)
+	$(MAKE) clean-objs
 
 pgo:
 ifeq ($(CXX),g++)

@@ -10,7 +10,6 @@
 #include "tablebases.h"
 #include "zobrist.h"
 #include "evaluation.h"
-#include "external/fathom/src/tbprobe.h"
 
 class Tests
 {
