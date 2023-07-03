@@ -17,7 +17,7 @@ void Run(int argc, char** argv)
         std::string param1 = argv[1];
         if(param1 == "bench")
         {
-            Bench::Run(1);
+            Bench::Run();
             return;
         }
 

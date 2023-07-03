@@ -1,5 +1,6 @@
 #include "uci.h"
 
+#include "bench.h"
 #include "datagen.h"
 #include "displaysearch.h"
 #include "perft.h"
@@ -428,10 +429,6 @@ bool Uci::HandleInput(const std::string& line)
 		{
 			HandlePerft(reader);
 		}
-		else if (word == "gi")
-		{
-			HandleInput("go infinite");
-		}
 		else if (word == "uci")
 		{
 			HandleUci();
@@ -447,6 +444,16 @@ bool Uci::HandleInput(const std::string& line)
 		else if (word == "isready")
 		{
 			HandleIsReady();
+		}
+
+		// Extensions
+		else if (word == "gi")
+		{
+			HandleInput("go infinite");
+		}
+		else if(word == "bench")
+		{
+			Bench::Run();
 		}
 		else if (word == "datagen")
 		{

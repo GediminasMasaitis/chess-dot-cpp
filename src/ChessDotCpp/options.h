@@ -28,7 +28,7 @@ public:
 		static constexpr ThreadId Threads = 1;
 
 #if NNUE
-		static constexpr std::string_view NnuePath = "C:/Chess/Networks/50/nn-epoch500.nnue";
+		static constexpr std::string_view NnuePath = "./networks/main.nnue";
 #endif
 		static constexpr std::string_view SyzygyPath = "";
 		static constexpr MoveCount MultiPv = 1;
