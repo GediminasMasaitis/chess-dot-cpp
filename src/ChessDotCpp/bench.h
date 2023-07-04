@@ -17,7 +17,7 @@ public:
 			{"r1n2rk1/1pq2pp1/4bn1p/N1bpp3/4P3/3QBP2/PPP1B1PP/2KR3R w - - 0 1", 16},  // Phase 23
 			{"r1bq1rk1/pp2p1bp/2p3p1/1P3p2/2QPn3/6P1/PB1NPPBP/R4RK1 b - - 0 1", 16},  // Phase 22
 			{"r3r1k1/ppqn1p2/4bppp/8/2PB4/1P1B2b1/P1Q2PPP/R3R1K1 w - - 0 1", 14},     // Phase 21
-			{"r4rk1/pp3ppp/2nppq2/8/2BPb3/4P3/PP1N1PPP/R2Q1RK1 b - - 0 1", 16},       // Phase 20
+			{"r4rk1/pp3ppp/2nppq2/8/2BPb3/4P3/PP1N1PPP/R2Q1RK1 b - - 0 1", 14},       // Phase 20
 			{"r2q2k1/1p1r4/p4b2/2Bn2p1/4Q3/6PP/PP3P2/R2R2K1 w - - 0 1", 13},          // Phase 19
 			{"2bq1rk1/1pn2ppp/3p4/p2Np3/4P1P1/PN2BP2/1PP3QP/2K1b2R w - - 0 1", 17},   // Phase 18
 			{"2rr3k/1p3pp1/1Q2b2p/pP2p3/P1B1P3/3P2R1/5P1P/2q3NK w - - 0 1", 18},      // Phase 17
@@ -35,7 +35,7 @@ public:
 			{"8/5b2/pr4p1/4k2p/8/P1K3P1/7P/5R2 w - - 0 1", 17},                       // Phase 5
 			{"8/7R/8/4p1k1/1r6/3K4/8/8 b - - 0 1", 15},                               // Phase 4
 			{"8/8/5kp1/5p1p/4pP1P/6P1/4K3/2R3b1 b - - 0 1", 24},                      // Phase 3
-			{"8/8/3bB3/7p/8/pK4kP/8/8 w - - 0 1", 26},                                // Phase 2
+			{"8/8/3bB3/7p/8/pK4kP/8/8 w - - 0 1", 23},                                // Phase 2
 			{"8/5k2/P6P/5b2/P7/3p4/3K4/8 b - - 0 1", 20},                             // Phase 1
 			{"8/8/p1Pk2pp/3p1p2/p4P2/6P1/5K1P/8 w - - 0 1", 16}                       // Phase 0
 		} };
@@ -108,7 +108,7 @@ public:
 
 		const auto start = std::chrono::high_resolution_clock::now();
 		//for(auto& pair : bench_positions)
-		for(auto index = 0; index < bench_positions.size(); index++)
+		for(int32_t index = 0; index < static_cast<int32_t>(bench_positions.size()); index++)
 		{
 			auto& pair = bench_positions[index];
 			Board board;

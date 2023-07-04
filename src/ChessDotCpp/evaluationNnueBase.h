@@ -112,81 +112,9 @@ public:
         ApplyPieceSingle<TSet>(hiddenLayers[Colors::Black], flippedPos, flippedPiece, kingsQueenSide[Colors::Black], buckets[Colors::Black]);
     }
 
-    static void SetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide, const EachColor<bucket_t>& buckets)
-    {
-        ApplyPiece<true>(hiddenLayers, pos, piece, kingsQueenSide, buckets);
-    }
-
-    static void UnsetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide, const EachColor<bucket_t>& buckets)
-    {
-        ApplyPiece<false>(hiddenLayers, pos, piece, kingsQueenSide, buckets);
-    }
-
-    static void ResetSingle(hidden_layer_t& hiddenLayer)
-    {
-        std::copy(std::begin(HiddenBiases), std::end(HiddenBiases), std::begin(hiddenLayer));
-    }
-
-    static void Reset(hidden_layers_t& hiddenLayers)
-    {
-        for (Color color = 0; color < Colors::Count; color++)
-        {
-            auto& hiddenLayer = hiddenLayers[color];
-            ResetSingle(hiddenLayer);
-        }
-    }
-
-    template<class T>
-    static T Read(std::istream& stream)
-    {
-        constexpr size_t size = sizeof(T);
-        char buffer[size];
-        stream.read(buffer, size);
-        const T* resultPtr = reinterpret_cast<T*>(buffer);
-        const auto result = *resultPtr;
-        return result;
-    }
-
-    static void Init()
-    {
-        const auto& path = Options::NnuePath;
-        auto file = std::ifstream(path, std::ios::binary);
-        if(!file.good())
-        {
-            std::cout << "Error opening NNUE file \"" << path << "\"" << std::endl;
-            return;
-        }
-
-        for (size_t inputIndex = 0; inputIndex < InputCount; inputIndex++)
-        {
-            for (auto hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
-            {
-                assert(!file.eof());
-                const NnueValue weight = Read<int16_t>(file);
-                InputWeights[inputIndex][hiddenIndex] = weight;
-            }
-        }
-
-        for (size_t hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
-        {
-            assert(!file.eof());
-            const NnueValue bias = Read<int16_t>(file);
-            HiddenBiases[hiddenIndex] = bias;
-        }
-
-        for (auto hiddenNum = 0; hiddenNum < 2; hiddenNum++)
-        {
-            for (auto hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
-            {
-                assert(!file.eof());
-                const NnueValue weight = Read<int16_t>(file);
-                HiddenWeightses[hiddenNum][hiddenIndex] = weight;
-            }
-        }
-
-        assert(!file.eof());
-        OutputBias = Read<int32_t>(file);
-
-        assert(static_cast<size_t>(file.tellg()) == sizeof(NnueValue) * (InputCount * HiddenCount + HiddenCount + HiddenCount * 2) + sizeof(FinalValue));
-    }
+    static void SetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide, const EachColor<bucket_t>& buckets);
+    static void UnsetPiece(hidden_layers_t& hiddenLayers, const Position pos, const Piece piece, const EachColor<bool>& kingsQueenSide, const EachColor<bucket_t>& buckets);
+    static void ResetSingle(hidden_layer_t& hiddenLayer);
+    static void Reset(hidden_layers_t& hiddenLayers);
+    static void Init();
 };

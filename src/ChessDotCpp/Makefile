@@ -6,14 +6,20 @@ else
 endif
 BIN := $(NAME)$(SUFFIX)
 
+ifdef INCBIN
+	INCBIN_FLAG := -DENABLE_INCBIN
+else
+	INCBIN_FLAG :=
+endif
+
 ifndef CXX
 	CXX=g++
 endif
-CFLAGS=-std=c++20 -O3 -Wall -Wextra -Wpedantic -mavx2 $(EXTRACFLAGS)
+CFLAGS=-std=c++20 -O3 -Wall -Wextra -Wpedantic -mavx2 $(INCBIN_FLAG) $(EXTRACFLAGS)
 LFLAGS=-pthread $(EXTRALFLAGS)
 
-SRCS = ChessDotCpp.cpp attacks.cpp search.cpp board.cpp fen.cpp perft.cpp movegen.cpp magics.cpp move.cpp moveorder.cpp uci.cpp tablebases.cpp evaluationClassical2.cpp movepick.cpp searchhash.cpp #external/fathom/src/tbprobe.cpp
-OBJS = ChessDotCpp.o attacks.o search.o board.o fen.o perft.o movegen.o magics.o move.o moveorder.o uci.o tablebases.o evaluationClassical2.o movepick.o searchhash.o   #external/fathom/src/tbprobe.o
+SRCS = ChessDotCpp.cpp attacks.cpp search.cpp board.cpp fen.cpp perft.cpp movegen.cpp magics.cpp move.cpp moveorder.cpp uci.cpp tablebases.cpp evaluationClassical2.cpp movepick.cpp searchhash.cpp evaluationNnueBase.cpp #external/fathom/src/tbprobe.cpp
+OBJS = ChessDotCpp.o attacks.o search.o board.o fen.o perft.o movegen.o magics.o move.o moveorder.o uci.o tablebases.o evaluationClassical2.o movepick.o searchhash.o evaluationNnueBase.o  #external/fathom/src/tbprobe.o
 
 ifeq ($(OS),Windows_NT)
 	#RM = del /F
