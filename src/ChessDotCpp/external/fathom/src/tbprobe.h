@@ -21,13 +21,38 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#pragma once
+#ifndef TBPROBE_H
+#define TBPROBE_H
 
 #include "tbconfig.h"
-#include <cstdint>
 
-#define TB_NO_THREADS
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
+#ifndef TB_NO_STDINT
+#include <stdint.h>
+#else
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned uint32_t;
+typedef long long unsigned uint64_t;
+typedef char int8_t;
+typedef short int16_t;
+typedef int int32_t;
+typedef long long int64_t;
+#endif
+
+#ifndef TB_NO_STDBOOL
+#include <stdbool.h>
+#else
+#ifndef __cplusplus
+typedef uint8_t bool;
+#define true    1
+#define false   0
+#endif
+#endif
 
 /*
  * Internal definitions.  Do not call these functions directly.
@@ -199,7 +224,7 @@ static inline unsigned tb_probe_wdl(
         return TB_RESULT_FAILED;
     return tb_probe_wdl_impl(_white, _black, _kings, _queens, _rooks,
         _bishops, _knights, _pawns, _ep, _turn);
-    }
+}
 
 /*
  * Probe the Distance-To-Zero (DTZ) table.
@@ -364,5 +389,11 @@ extern uint64_t tb_rook_attacks(unsigned _square, uint64_t _occ);
 extern uint64_t tb_bishop_attacks(unsigned _square, uint64_t _occ);
 extern uint64_t tb_knight_attacks(unsigned _square);
 extern uint64_t tb_pawn_attacks(unsigned _square, bool _color);
+
+#endif
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -30,7 +30,9 @@ public:
 #if NNUE
 		static constexpr std::string_view NnuePath = "./networks/main.nnue";
 #endif
+#if ENABLE_TABLEBASES
 		static constexpr std::string_view SyzygyPath = "";
+#endif
 		static constexpr MoveCount MultiPv = 1;
 
 		static constexpr int32_t Tune1 = 0;
@@ -47,7 +49,9 @@ public:
 #if NNUE
 	static inline std::string NnuePath = std::string(Defaults::NnuePath);
 #endif
+#if ENABLE_TABLEBASES
 	static inline std::string SyzygyPath = std::string(Defaults::SyzygyPath);
+#endif
 
 	static inline int32_t Tune1 = Defaults::Tune1;
 	static inline int32_t Tune2 = Defaults::Tune2;

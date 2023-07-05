@@ -9,10 +9,10 @@
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,7 +22,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#pragma once
+#ifndef TBCONFIG_H
+#define TBCONFIG_H
+
 /****************************************************************************/
 /* BUILD CONFIG:                                                            */
 /****************************************************************************/
@@ -51,7 +53,7 @@
  * Define TB_NO_STDBOOL if you do not want to use <stdbool.h> or it is not
  * available or unnecessary (e.g. C++).
  */
-#define TB_NO_STDBOOL
+/* #define TB_NO_STDBOOL */
 
 /*
  * Define TB_NO_THREADS if your program is not multi-threaded.
@@ -144,3 +146,5 @@
  * NOTE: This definition must not include en passant captures.
  */
 /* #define TB_PAWN_ATTACKS(square, color)   <DEFINITION> */
+
+#endif

@@ -294,8 +294,12 @@ void Uci::PrintOptions()
 	Out("option name Hash type spin default " + std::to_string(Options::Defaults::Hash) + " min 1 max 1024");
 	Out("option name Threads type spin default " + std::to_string(Options::Defaults::Threads) + " min 1 max 64");
 	Out("option name MultiPV type spin default " + std::to_string(Options::Defaults::MultiPv) + " min 1 max 218");
+#if NNUE
 	Out("option name NnuePath type string default <empty>");
+#endif
+#if ENABLE_TABLEBASES
 	Out("option name SyzygyPath type string default <empty>");
+#endif
 	Out("option name TUNE1 type spin default 0 min -2147483647 max 2147483647");
 	Out("option name TUNE2 type spin default 0 min -2147483647 max 2147483647");
 	Out("option name TUNE3 type spin default 0 min -2147483647 max 2147483647");
@@ -349,11 +353,13 @@ void Uci::HandleSetoption(std::stringstream& reader)
 		EvaluationNnueBase::Init();
 	}
 #endif
+#if ENABLE_TABLEBASES
 	else if (name == "SyzygyPath")
 	{
 		Options::SyzygyPath = GetOptionStrValue(value);
 		Tablebases::Init(Options::SyzygyPath);
 	}
+#endif
 	else if (name == "TUNE1")
 	{
 		Options::Tune1 = static_cast<int32_t>(std::stoi(value));

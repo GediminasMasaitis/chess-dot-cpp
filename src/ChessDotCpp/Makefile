@@ -18,14 +18,24 @@ else
 	INCBIN_FLAG :=
 endif
 
+ifdef TABLEBASES
+	TABLEBASES_FLAG := -DENABLE_TABLEBASES=1
+	TABLEBASES_SRCS := external/fathom/src/tbprobe.cpp
+	TABLEBASES_OBJS := external/fathom/src/tbprobe.o
+else
+	TABLEBASES_FLAG :=
+	TABLEBASES_SRCS :=
+	TABLEBASES_OBJS :=
+endif
+
 ifndef CXX
 	CXX=g++
 endif
-CFLAGS=-std=c++20 -O3 -Wall -Wextra -Wpedantic -mavx2 $(NNUE_FLAG) $(INCBIN_FLAG) $(EXTRACFLAGS)
+CFLAGS=-std=c++20 -O3 -Wall -Wextra -Wpedantic -mavx2 $(NNUE_FLAG) $(INCBIN_FLAG) $(TABLEBASES_FLAG) $(EXTRACFLAGS)
 LFLAGS=-pthread $(EXTRALFLAGS)
 
-SRCS = ChessDotCpp.cpp attacks.cpp search.cpp board.cpp fen.cpp perft.cpp movegen.cpp magics.cpp move.cpp moveorder.cpp uci.cpp tablebases.cpp evaluationClassical2.cpp movepick.cpp searchhash.cpp evaluationNnueBase.cpp #external/fathom/src/tbprobe.cpp
-OBJS = ChessDotCpp.o attacks.o search.o board.o fen.o perft.o movegen.o magics.o move.o moveorder.o uci.o tablebases.o evaluationClassical2.o movepick.o searchhash.o evaluationNnueBase.o  #external/fathom/src/tbprobe.o
+SRCS = ChessDotCpp.cpp attacks.cpp search.cpp board.cpp fen.cpp perft.cpp movegen.cpp magics.cpp move.cpp moveorder.cpp uci.cpp tablebases.cpp evaluationClassical2.cpp movepick.cpp searchhash.cpp evaluationNnueBase.cpp $(TABLEBASES_SRCS)
+OBJS = ChessDotCpp.o attacks.o search.o board.o fen.o perft.o movegen.o magics.o move.o moveorder.o uci.o tablebases.o evaluationClassical2.o movepick.o searchhash.o evaluationNnueBase.o  $(TABLEBASES_OBJS)
 
 ifeq ($(OS),Windows_NT)
 	#RM = del /F
@@ -73,11 +83,15 @@ clean: clean-objs clean-bin clean-profile
 clean-objs:
 	$(RM) *.o
 	$(RM) *.o.tmp
+	$(RM) external/fathom/src/tbprobe.o
 
 clean-bin:
 	$(RM) $(BIN)
 
 clean-profile:
 	$(RM) *.gcda
+	$(RM) external/fathom/src/tbprobe.gcda
 	$(RM) *.profraw
+	$(RM) external/fathom/src/tbprobe.profraw
 	$(RM) all.profdata
+	

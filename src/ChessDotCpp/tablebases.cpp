@@ -2,11 +2,11 @@
 
 #include "movegen.h"
 
-#ifndef TABLEBASES
-#define TABLEBASES 0
+#ifndef ENABLE_TABLEBASES
+#define ENABLE_TABLEBASES 0
 #endif
 
-#if TABLEBASES
+#if ENABLE_TABLEBASES
 
 #include "external/fathom/src/tbprobe.h"
 #include <iostream>
@@ -165,7 +165,9 @@ bool Tablebases::ProbeRoot(const Board& board, Move& tbMove)
     assert(tbMove.Value != 0);
     return true;
 }
+
 #else
+
 void Tablebases::Init(const std::string& path)
 {
     (void)path;

@@ -21,10 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#pragma once
-
-#include <cstdint>
-
 #define TB_PAWN 1
 #define TB_KNIGHT 2
 #define TB_BISHOP 3
@@ -71,12 +67,21 @@ SOFTWARE.
 #define SCORE_ILLEGAL           0x7FFF
 
 // Note: WHITE, BLACK values are reverse of Stockfish
+#ifdef __cplusplus
+namespace {
+enum Color { BLACK, WHITE };
+enum PieceType { PAWN=1, KNIGHT, BISHOP, ROOK, QUEEN, KING };
+enum Piece {
+  W_PAWN = 1, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING,
+  B_PAWN = 9, B_KNIGHT, B_BISHOP, B_ROOK, B_QUEEN, B_KING };
+#else
 typedef enum Color { BLACK, WHITE } Color;
 typedef enum PieceType { PAWN=1, KNIGHT, BISHOP, ROOK, QUEEN, KING } PieceType;
 typedef enum Piece {
   W_PAWN = 1, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING,
   B_PAWN = 9, B_KNIGHT, B_BISHOP, B_ROOK, B_QUEEN, B_KING
 } Piece;
+#endif
 
 static inline Color ColorOfPiece(int piece) {
   return (Color)(!(piece >> 3));
@@ -1038,3 +1043,8 @@ static TbMove *gen_legal(const Pos *pos, TbMove *moves)
   }
   return results;
 }
+
+#ifdef __cplusplus
+};
+#endif
+
