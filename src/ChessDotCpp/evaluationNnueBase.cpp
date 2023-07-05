@@ -46,19 +46,19 @@ static T Read(std::istream& stream)
 
 void EvaluationNnueBase::Init()
 {
-    const auto& path = Options::NnuePath;
+#if NNUE
 #if ENABLE_INCBIN
     auto file = stringstream(ios::in | ios::out | ios::binary);
     file.write(reinterpret_cast<const char*>(gnetworkData), gnetworkSize);
 #else
+    const auto& path = Options::NnuePath;
     auto file = ifstream(path, ios::binary);
-#endif
-
     if (!file.good())
     {
         std::cout << "Error opening NNUE file \"" << path << "\"" << std::endl;
         return;
     }
+#endif
 
     for (size_t inputIndex = 0; inputIndex < InputCount; inputIndex++)
     {
@@ -91,4 +91,5 @@ void EvaluationNnueBase::Init()
     OutputBias = Read<int32_t>(file);
 
     assert(static_cast<size_t>(file.tellg()) == sizeof(NnueValue) * (InputCount * HiddenCount + HiddenCount + HiddenCount * 2) + sizeof(FinalValue));
+#endif
 }

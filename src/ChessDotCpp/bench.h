@@ -54,7 +54,7 @@ public:
 			std::stringstream builder = std::stringstream();
 
 			builder << "info";
-			builder << "phase " << (phase - 1);
+			//builder << " phase " << (phase - 1);
 			builder << " depth " << std::to_string(data.Depth);
 			builder << " seldepth " << std::to_string(data.State.Thread[0].SelectiveDepth);
 

@@ -17,7 +17,9 @@
 #include <iomanip>
 #include <optional>
 
+#ifndef NNUE
 #define NNUE 1
+#endif
 
 #define MAYBE_UNUSED(x) ((void)(x))
 
