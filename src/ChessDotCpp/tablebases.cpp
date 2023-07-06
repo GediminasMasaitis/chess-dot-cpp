@@ -16,6 +16,7 @@ void Tablebases::Init(const std::string& path)
         return;
     }
 
+    tb_free();
     const bool success = tb_init(path.c_str());
     if(!success)
     {
