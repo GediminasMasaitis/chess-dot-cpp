@@ -18,14 +18,14 @@ else
 	INCBIN_FLAG :=
 endif
 
-ifdef TABLEBASES
+ifdef NO_TABLEBASES
+	TABLEBASES_FLAG := -DENABLE_TABLEBASES=0
+	TABLEBASES_SRCS :=
+	TABLEBASES_OBJS :=
+else
 	TABLEBASES_FLAG := -DENABLE_TABLEBASES=1
 	TABLEBASES_SRCS := external/fathom/src/tbprobe.cpp
 	TABLEBASES_OBJS := external/fathom/src/tbprobe.o
-else
-	TABLEBASES_FLAG :=
-	TABLEBASES_SRCS :=
-	TABLEBASES_OBJS :=
 endif
 
 ifndef CXX

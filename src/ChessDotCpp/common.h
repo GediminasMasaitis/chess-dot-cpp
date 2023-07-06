@@ -21,6 +21,10 @@
 #define NNUE 1
 #endif
 
+#ifndef ENABLE_TABLEBASES
+#define ENABLE_TABLEBASES 1
+#endif
+
 #define MAYBE_UNUSED(x) ((void)(x))
 
 #ifdef __GNUC__

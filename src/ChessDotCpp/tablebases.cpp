@@ -2,10 +2,6 @@
 
 #include "movegen.h"
 
-#ifndef ENABLE_TABLEBASES
-#define ENABLE_TABLEBASES 0
-#endif
-
 #if ENABLE_TABLEBASES
 
 #include "external/fathom/src/tbprobe.h"

@@ -71,6 +71,11 @@ public:
 
     [[nodiscard]] bool ShouldStopDepthIncrease(const Stat nodes, const Stat bestMoveTotalNodes)
     {
+        if(nodes == 0 && bestMoveTotalNodes == 0)
+        {
+            return true;
+        }
+
         if(Parameters.MinNodes != 0 && nodes >= Parameters.MinNodes)
         {
             Stopped = true;
