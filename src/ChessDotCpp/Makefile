@@ -1,10 +1,16 @@
 NAME := chessdotcpp
+
+ifndef ARCH
+	ARCH := avx2
+endif
+
 ifeq ($(OS), Windows_NT)
 	SUFFIX := .exe
 else
 	SUFFIX :=
 endif
-BIN := $(NAME)$(SUFFIX)
+
+BIN := $(NAME)-$(ARCH)$(SUFFIX)
 
 ifdef CLASSICAL
 	NNUE_FLAG := -DNNUE=0
@@ -31,7 +37,8 @@ endif
 ifndef CXX
 	CXX=g++
 endif
-CFLAGS=-std=c++20 -O3 -Wall -Wextra -Wpedantic -mavx2 $(NNUE_FLAG) $(INCBIN_FLAG) $(TABLEBASES_FLAG) $(EXTRACFLAGS)
+
+CFLAGS=-std=c++20 -O3 -Wall -Wextra -Wpedantic -m$(ARCH) $(NNUE_FLAG) $(INCBIN_FLAG) $(TABLEBASES_FLAG) $(EXTRACFLAGS)
 LFLAGS=-pthread $(EXTRALFLAGS)
 
 SRCS = ChessDotCpp.cpp attacks.cpp search.cpp board.cpp fen.cpp perft.cpp movegen.cpp magics.cpp move.cpp moveorder.cpp uci.cpp tablebases.cpp evaluationClassical2.cpp movepick.cpp searchhash.cpp evaluationNnueBase.cpp $(TABLEBASES_SRCS)
