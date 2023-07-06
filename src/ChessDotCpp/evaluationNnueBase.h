@@ -2,7 +2,6 @@
 
 #include "common.h"
 #include "options.h"
-#include "simd.h"
 
 #include <fstream>
 
@@ -28,13 +27,15 @@ public:
     using hidden_layer_t = std::array<NnueValue, HiddenCount>;
     using hidden_layers_t = EachColor<hidden_layer_t>;
 
-    using SimdNV = Simd<NnueValue>;
-    using SimdFV = Simd<FinalValue>;
 
-    alignas(SimdNV::alignment) inline static input_weights_t InputWeights;
-    alignas(SimdNV::alignment) inline static hidden_biases_t HiddenBiases;
-    alignas(SimdNV::alignment) inline static hidden_weightses_t HiddenWeightses;
-    alignas(SimdNV::alignment) inline static output_bias_t OutputBias;
+
+    //using SimdNV = Simd<NnueValue>;
+    //using SimdFV = Simd<FinalValue>;
+
+    inline static input_weights_t InputWeights;
+    inline static hidden_biases_t HiddenBiases;
+    inline static hidden_weightses_t HiddenWeightses;
+    inline static output_bias_t OutputBias;
 
     using bucket_t = uint8_t;
     static constexpr EachPosition<bucket_t> BucketMap = {
@@ -88,17 +89,15 @@ public:
         //const auto posIndex = pos;
         const auto bucketIndex = bucket * 2 * 6 * 64;
         const auto inputIndex = bucketIndex + pieceIndex + posIndex;
-        const auto hiddenLayerPtr = SimdNV::reinterpret(hiddenLayer.data());
-        const auto inputWeightsPtr = SimdNV::reinterpret(InputWeights[inputIndex].data());
-        for (NnueCount hiddenIndex = 0; hiddenIndex < static_cast<NnueCount>(HiddenCount / SimdNV::stride); hiddenIndex++)
+        for (NnueCount hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
         {
             if constexpr (TSet)
             {
-                hiddenLayerPtr[hiddenIndex] = SimdNV::add(hiddenLayerPtr[hiddenIndex], inputWeightsPtr[hiddenIndex]);
+                hiddenLayer[hiddenIndex] += InputWeights[inputIndex][hiddenIndex];
             }
             else
             {
-                hiddenLayerPtr[hiddenIndex] = SimdNV::subtract(hiddenLayerPtr[hiddenIndex], inputWeightsPtr[hiddenIndex]);
+                hiddenLayer[hiddenIndex] -= InputWeights[inputIndex][hiddenIndex];
             }
         }
     }

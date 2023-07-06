@@ -39,7 +39,7 @@ public:
 
     struct accumulator_wrapper_t
     {
-		alignas(Simd<value_t>::alignment) accumulators_t accumulators {};
+		accumulators_t accumulators {};
     };
 
 	using accumulator_stack_t = std::vector<accumulator_wrapper_t>;
