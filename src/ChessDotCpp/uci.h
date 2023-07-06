@@ -45,6 +45,7 @@ public:
     void HandleUciNewGame();
     void HandleDisplaySearch(std::stringstream& reader);
     void HandleDisplayMoves(std::stringstream& reader);
+    void HandleHelp() const;
     void HandleSetoption(std::stringstream& reader);
     bool HandleInput(const std::string& line);
     void Init();

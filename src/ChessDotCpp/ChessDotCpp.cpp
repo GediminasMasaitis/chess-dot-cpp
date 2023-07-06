@@ -11,6 +11,7 @@
 void Run(int argc, char** argv)
 {
     std::cout << "Chess.cpp by Gediminas Masaitis" << std::endl;
+    std::cout << "Type \"help\" for more info" << std::endl;
     Evaluation::Init();
     if(argc > 1)
     {

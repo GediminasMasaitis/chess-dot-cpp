@@ -410,6 +410,22 @@ void Uci::HandleDisplayMoves(std::stringstream& reader)
 	board = boardBackup;
 }
 
+void Uci::HandleHelp() const
+{
+	Out("This chess engine implements most of the essential parts of the UCI protocol.");
+	Out("For more information see https://wbec-ridderkerk.nl/html/UCIProtocol.html");
+	Out("");
+	Out("Non-standard commands supported (<parameter> is mandatory, [parameter] is optional):");
+	Out("perft <depth>: Move generation speed test on the current loaded position.");
+	Out("bench: Run a search over a suite of positions.");
+	Out("datagen: Generate data for neural network training.");
+	Out("gi: Shorthand for \"go infinite\". Runs search on the current position for an unlimited amount of time.");
+	Out("d: \"Display\". Pretty-print the current position and display information about the static evaluation. Numbers below each piece show the perceived worth of the piece in the loaded position.");
+	Out("dm <moves>: \"Display moves\". Similar to \"d\", but takes a list of moves in the format \"e2e4 e7e5\" and displays the resulting board");
+	Out("ds [nodes=1000000]: \"Display search\". Similar to \"d\", but runs a search for each piece being removed, giving a representation of the search's perceived worth of each piece in the loaded position.");
+	Out("help: Shows this help section.");
+}
+
 bool Uci::HandleInput(const std::string& line)
 {
 	std::stringstream reader(line);
@@ -476,6 +492,10 @@ bool Uci::HandleInput(const std::string& line)
 		else if(word == "dm")
 		{
 			HandleDisplayMoves(reader);
+		}
+		else if(word == "help")
+		{
+			HandleHelp();
 		}
 		else if (word == "quit")
 		{
