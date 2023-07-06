@@ -4,9 +4,33 @@ Chess.cpp is a C++ chess engine made from scratch. It uses a lot of common chess
 
 * Version 1: Using an evaluation smilar to [CPW engine](https://github.com/nescitus/cpw-engine) but adapted for bitboards, incrementally building up search features. Final ELO ~2680
 * Version 2: Using a handcrafted evaluation optimised by [Texel tuning](https://github.com/AndyGrant/Ethereal/blob/master/Tuning.pdf). Enabled multithreaded search with lazy SMP. Final ELO ~2930 1CPU, ~3000 4CPU, ~3040 12CPU
-* Version 3: Using a NNUE evaluation trained on self-generated data.
+* Version 3: Using a NNUE evaluation trained on self-generated data. Final ELO not measured since it will be equivalent to version 4, which whill be properly tested on CCRL.
 
 For more details on each version see [changelog.md](changelog.md)
+
+## Building
+
+There are two ways of building the engine - Makefile and CMake.
+CMake build has been primarily used only for debugging, but is confirmed to work for MSVC compiler. Makefile build has been only tested on Linux, and Windows running MinGW. Further instructions will only focus on the Makefile build.
+
+For each of the builds, the binary will be generated in the `src/ChessDotCpp` directory.
+
+Requirements:
+* git
+* gcc compiler
+* In case of Windows: mingw with it's binaries available in PATH
+
+### Release (performance) build
+```
+cd src/ChessDotCpp
+make pgo INCBIN=1
+```
+
+### Release (performance) classical (non-NNUE) build
+```
+cd src/ChessDotCpp
+make pgo INCBIN=1 CLASSICAL=1
+```
 
 ## Special thanks
 * [**Chess Programing Wiki**](https://www.chessprogramming.org) for teaching the basics and later on some more complex topics.
