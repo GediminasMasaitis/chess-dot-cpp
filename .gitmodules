@@ -1,0 +1,4 @@
+[submodule "src/ChessDotCpp/networks"]
+	path = src/ChessDotCpp/networks
+	url = https://github.com/GediminasMasaitis/chess-dot-cpp-networks
+	shallow = true

@@ -28,7 +28,7 @@ public:
 		static constexpr ThreadId Threads = 1;
 
 #if NNUE
-		static constexpr std::string_view NnuePath = "./networks/main.nnue";
+		static constexpr std::string_view NnuePath = "./networks/default.nnue";
 #endif
 #if ENABLE_TABLEBASES
 		static constexpr std::string_view SyzygyPath = "";

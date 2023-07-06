@@ -4,7 +4,7 @@
 
 #if ENABLE_INCBIN
 #include "external/incbin/incbin.h"
-INCBIN(network, "networks/main.nnue");
+INCBIN(network, "networks/default.nnue");
 #endif
 
 using namespace std;
