@@ -1,7 +1,7 @@
 NAME := chessdotcpp
 
 ifndef ARCH
-	ARCH := avx2
+	ARCH := popcnt
 endif
 
 ifeq ($(OS), Windows_NT)

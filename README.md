@@ -13,12 +13,12 @@ For more details on each version see [changelog.md](changelog.md)
 There are two ways of building the engine - Makefile and CMake.
 CMake build has been primarily used only for debugging, but is confirmed to work for MSVC compiler. Makefile build has been only tested on Linux, and Windows running MinGW. Further instructions will only focus on the Makefile build.
 
-For each of the builds, the binary will be generated in the `src/ChessDotCpp` directory.
-
 Requirements:
 * git
 * gcc compiler
 * In case of Windows: mingw with it's binaries available in PATH
+
+For each of the builds, the binary will be generated in the `src/ChessDotCpp` directory.
 
 ### Release (performance) build
 ```
@@ -30,6 +30,15 @@ make pgo INCBIN=1
 ```
 cd src/ChessDotCpp
 make pgo INCBIN=1 CLASSICAL=1
+```
+
+### Selecting build archtecture
+You can specify a build architecture for your engine, otherwhise it will default to `popcnt`, which is very slow on bidern hardwares. For more information about CPU architectures: https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html, search "march".
+
+Foe example if you want to target AVX2:
+```
+cd src/ChessDotCpp
+make pgo INCBIN=1 ARCH=avx2
 ```
 
 ## Special thanks
