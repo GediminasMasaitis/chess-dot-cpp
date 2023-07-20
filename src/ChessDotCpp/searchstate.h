@@ -79,6 +79,9 @@ public:
 
     void NewSearch()
     {
+        Killers[0].Value = 0;
+        Killers[1].Value = 0;
+
         //PrincipalVariation.NewIteration();
         //SingularMove = Move(0);
     }
