@@ -2,6 +2,7 @@
 
 #include "attacks.h"
 #include "movegen.h"
+#include "evalbase.h"
 #include "evaluation.h"
 #include "moveorder.h"
 #include "movepick.h"
@@ -361,54 +362,6 @@ Score Search::Quiescence(ThreadState& threadState, Board& board, Ply depth, cons
 
     return alpha;
 }
-
-class SearchedPosition
-{
-private:
-    Breadcrumb* _breadcrumb;
-    bool _owned;
-
-public:
-    bool OtherThread;
-    
-    SearchedPosition(SearchState& state, const ThreadId threadId, const ZobristKey key, const Ply ply)
-    {
-        _owned = false;
-        OtherThread = false;
-        
-        if(ply >= 6)
-        {
-            _breadcrumb = nullptr;
-            return;
-        }
-        
-        const size_t index = key & GlobalData::BreadcrumbMask;
-        _breadcrumb = &state.Global.Breadcrumbs[index];
-        const ThreadId ownedId = _breadcrumb->TThreadId.load(std::memory_order::relaxed);
-        if(ownedId == -1)
-        {
-            _breadcrumb->TThreadId.store(threadId, std::memory_order::relaxed);
-            _breadcrumb->Key.store(key, std::memory_order::relaxed);
-            _owned = true;
-        }
-        else if(ownedId != threadId)
-        {
-            const ZobristKey ownedKey = _breadcrumb->Key.load(std::memory_order::relaxed);
-            if(ownedKey == key)
-            {
-                OtherThread = true;
-            }
-        }
-    }
-
-    ~SearchedPosition()
-    {
-        if(_owned)
-        {
-            _breadcrumb->TThreadId.store(-1, std::memory_order::relaxed);
-        }
-    }
-};
 
 void UpdateHistoryEntry(MoveScore& score, const MoveScore value)
 {
@@ -788,7 +741,6 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
 
     // MOVE LOOP
     assert(depth > 0);
-    SearchedPosition searchedPosition = SearchedPosition(State, threadState.Id, board.Key, ply);
     //MoveGenerator::GetAllPotentialMoves(board, checkers, pinned, moves, moveCount);
     
     

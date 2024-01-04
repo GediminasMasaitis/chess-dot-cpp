@@ -5,7 +5,7 @@
 
 class HyperbolaQuintessence
 {
-private:
+public:
 	constexpr static Bitboard MaskedSlide(const Bitboard allPieces, const Bitboard pieceBitboard, const Bitboard mask)
 	{
 		const auto left = ((allPieces & mask) - 2 * pieceBitboard);
@@ -15,7 +15,6 @@ private:
 		return slide;
 	}
 
-public:
 	constexpr static Bitboard HorizontalVerticalSlide(const Bitboard allPieces, const Position position)
 	{
 		const auto pieceBitboard = GetBitboard(position);

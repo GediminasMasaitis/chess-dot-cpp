@@ -7,6 +7,7 @@
 #include "tablebases.h"
 #include "datagen.h"
 #include "evaluationClassical2.h"
+#include "magics.h"
 
 void Run(int argc, char** argv)
 {
@@ -61,6 +62,9 @@ void Test()
 
 int main(int argc, char** argv)
 {
+    auto slide = HyperbolaQuintessence::MaskedSlide(18444210799188701175ULL, 1ULL << 20, 15663104);
+    auto a = 123;
+
     //std::cout << sizeof(BoardBase) << std::endl;
     //Test();
     //Train();
