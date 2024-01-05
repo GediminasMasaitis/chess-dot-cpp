@@ -976,11 +976,6 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
 
                 reduction = std::max(static_cast<Ply>(0), reduction);
             }
-
-            if (searchedPosition.OtherThread)
-            {
-                reduction++;
-            }
         }
 
         Score childScore;
