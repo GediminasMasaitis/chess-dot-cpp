@@ -35,7 +35,7 @@ bool Tablebases::CanProbe(const Board& board)
     }
 
     const auto pieceCount = PopCount(board.AllPieces);
-    return pieceCount <= 5;
+    return pieceCount <= TB_LARGEST;
 }
 
 GameOutcome Tablebases::Probe(const Board& board)
