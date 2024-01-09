@@ -12,6 +12,7 @@ public:
     //static constexpr bool Enable = true;
 
     Stat Nodes;
+    Stat TbHits;
     size_t Elapsed;
 
     Stat HashMiss;
@@ -21,6 +22,7 @@ public:
     void NewSearch()
     {
         Nodes = 0;
+        TbHits = 0;
         Elapsed = 0;
         HashMiss = 0;
         HashCollision = 0;

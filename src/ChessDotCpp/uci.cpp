@@ -55,9 +55,16 @@ void Uci::OnCallback(SearchCallbackData& data) const
 
 	if(data.Depth > 10)
 	{
-		const auto hits = data.State.Global.Table.GetHashFull();
-		builder << " hashfull " << hits;
+		const auto ttHits = data.State.Global.Table.GetHashFull();
+		builder << " hashfull " << ttHits;
 	}
+
+	Stat tbHits = 0;
+	for (auto i = 0; i < Options::Threads; i++)
+	{
+		tbHits += data.State.Thread[i].Stats.TbHits;
+	}
+	builder << " tbhits " << tbHits;
 
 	builder << " time " << elapsed;
 

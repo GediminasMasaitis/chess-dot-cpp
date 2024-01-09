@@ -61,13 +61,13 @@ GameOutcome Tablebases::Probe(const Board& board)
     switch (externalResult)
     {
     case TB_LOSS:
-    case TB_BLESSED_LOSS:
         result = GameOutcome::Loss;
         break;
+    case TB_BLESSED_LOSS:
+    case TB_CURSED_WIN:
     case TB_DRAW:
         result = GameOutcome::Draw;
         break;
-    case TB_CURSED_WIN:
     case TB_WIN:
         result = GameOutcome::Win;
         break;

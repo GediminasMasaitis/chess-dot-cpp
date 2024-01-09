@@ -481,6 +481,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
     // TABLEBASES PROBE
     if(Tablebases::CanProbe(board))
     {
+        threadState.Stats.TbHits++;
         if (rootNode)
         {
             Move tbMove;
