@@ -186,22 +186,10 @@ public:
 };
 using ThreadVector = std::vector<ThreadState>;
 
-class Breadcrumb
-{
-public:
-    std::atomic<ThreadId> TThreadId;
-    std::atomic<ZobristKey> Key;
-};
-
 class GlobalData
 {
 public:
-    constexpr static size_t BreadcrumbCount = 4096;
-    constexpr static size_t BreadcrumbMask = BreadcrumbCount - 1;
-    using BreadcrumbArray = std::array<Breadcrumb, BreadcrumbCount>;
-    
     TranspositionTable Table{};
-    BreadcrumbArray Breadcrumbs{};
     SearchParameters Parameters{};
 
     GlobalData()
@@ -224,14 +212,6 @@ public:
 
     void NewSearch()
     {
-    	if(!Parameters.SkipNewSearch)
-        {
-            for (auto& breadcrumb : Breadcrumbs)
-            {
-                breadcrumb.Key = 0;
-                breadcrumb.TThreadId = -1;
-            }
-    	}
     }
 };
 
