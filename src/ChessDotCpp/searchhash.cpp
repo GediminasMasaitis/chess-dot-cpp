@@ -160,7 +160,7 @@ bool TranspositionTable::IsRootMoveChanged(const Board& board, const std::vector
     return isChanged;
 }
 
-void TranspositionTable::PrintOccupancy()
+void TranspositionTable::PrintOccupancy() const
 {
     const auto samples = 65536;
     const auto gapSize = _size / samples;
@@ -183,6 +183,21 @@ void TranspositionTable::PrintOccupancy()
     ss << ", Exact: " << std::fixed << std::setprecision(3) << percentages[TranspositionTableFlags::Exact] << "%";
     ss << std::endl;
     std::cout << ss.str();
+}
+
+uint32_t TranspositionTable::GetHashFull() const
+{
+    const size_t samples = std::min(static_cast<size_t>(1000), _size);
+    uint32_t count = 0;
+    for(size_t index = 0; index < samples; index++)
+    {
+        if(_entries[index].Flag != TranspositionTableFlags::None)
+        {
+            count++;
+        }
+    }
+
+    return count;
 }
 
 void TranspositionTable::Print()

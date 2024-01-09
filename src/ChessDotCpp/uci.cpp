@@ -52,6 +52,13 @@ void Uci::OnCallback(SearchCallbackData& data) const
 	auto nps = (nodes * 1000) / elapsed;
 
 	builder << " nps " << nps;
+
+	if(data.Depth > 10)
+	{
+		const auto hits = data.State.Global.Table.GetHashFull();
+		builder << " hashfull " << hits;
+	}
+
 	builder << " time " << elapsed;
 
 	builder << " pv";

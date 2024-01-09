@@ -72,6 +72,7 @@ public:
     bool TryGetPvMove(const Board& board, Move& move);
     void GetPrincipalVariation(const Board& board, std::vector<Move>& principalVariation);
     bool IsRootMoveChanged(const Board& board, const std::vector<Move>& savedPrincipalVariation);
-    void PrintOccupancy();
+    void PrintOccupancy() const;
+    uint32_t GetHashFull() const;
     void Print();
 };
