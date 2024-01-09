@@ -321,7 +321,7 @@ void Uci::PrintOptions()
 
 void Uci::HandleUci()
 {
-	Out("id name ChessDotCpp");
+	Out("id name chess.cpp");
 	Out("id author Gediminas Masaitis");
 	Out("");
 	PrintOptions();
