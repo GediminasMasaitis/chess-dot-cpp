@@ -1,7 +1,8 @@
 NAME := chessdotcpp
+EVALFILE := networks/default.nnue
 
 ifndef ARCH
-	ARCH := popcnt
+	ARCH := avx2
 endif
 
 ifeq ($(OS), Windows_NT)
@@ -21,8 +22,9 @@ endif
 ifdef INCBIN
 	INCBIN_FLAG := -DENABLE_INCBIN=1
 else
-	INCBIN_FLAG :=
+	INCBIN_FLAG := -DENABLE_INCBIN=1 #always incbin
 endif
+EVALFILE_FLAG := -DEVALFILE=\"$(EVALFILE)\"
 
 ifdef NO_TABLEBASES
 	TABLEBASES_FLAG := -DENABLE_TABLEBASES=0
@@ -38,7 +40,7 @@ ifndef CXX
 	CXX=g++
 endif
 
-CFLAGS=-std=c++20 -O3 -Wall -Wextra -Wpedantic -m$(ARCH) $(NNUE_FLAG) $(INCBIN_FLAG) $(TABLEBASES_FLAG) $(EXTRACFLAGS)
+CFLAGS=-std=c++20 -O3 -Wall -Wextra -Wpedantic -m$(ARCH) $(NNUE_FLAG) $(INCBIN_FLAG) $(TABLEBASES_FLAG) $(EXTRACFLAGS) $(EVALFILE_FLAG)
 LFLAGS=-pthread --static $(EXTRALFLAGS)
 
 SRCS = ChessDotCpp.cpp attacks.cpp search.cpp board.cpp fen.cpp perft.cpp movegen.cpp magics.cpp move.cpp moveorder.cpp uci.cpp tablebases.cpp evaluationClassical2.cpp movepick.cpp searchhash.cpp evaluationNnueBase.cpp $(TABLEBASES_SRCS)
