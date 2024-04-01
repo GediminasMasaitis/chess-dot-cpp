@@ -11,7 +11,7 @@ else
 	SUFFIX :=
 endif
 
-BIN := $(NAME)-$(ARCH)$(SUFFIX)
+EXE := $(NAME)-$(ARCH)$(SUFFIX)
 
 ifdef CLASSICAL
 	NNUE_FLAG := -DNNUE=0
@@ -29,11 +29,9 @@ EVALFILE_FLAG := -DEVALFILE=\"$(EVALFILE)\"
 ifdef NO_TABLEBASES
 	TABLEBASES_FLAG := -DENABLE_TABLEBASES=0
 	TABLEBASES_SRCS :=
-	TABLEBASES_OBJS :=
 else
 	TABLEBASES_FLAG := -DENABLE_TABLEBASES=1
 	TABLEBASES_SRCS := external/fathom/src/tbprobe.cpp
-	TABLEBASES_OBJS := external/fathom/src/tbprobe.o
 endif
 
 ifndef CXX
@@ -44,11 +42,9 @@ CFLAGS=-std=c++20 -O3 -Wall -Wextra -Wpedantic -m$(ARCH) $(NNUE_FLAG) $(INCBIN_F
 LFLAGS=-pthread --static $(EXTRALFLAGS)
 
 SRCS = ChessDotCpp.cpp attacks.cpp search.cpp board.cpp fen.cpp perft.cpp movegen.cpp magics.cpp move.cpp moveorder.cpp uci.cpp tablebases.cpp evaluationClassical2.cpp movepick.cpp searchhash.cpp evaluationNnueBase.cpp $(TABLEBASES_SRCS)
-OBJS = ChessDotCpp.o attacks.o search.o board.o fen.o perft.o movegen.o magics.o move.o moveorder.o uci.o tablebases.o evaluationClassical2.o movepick.o searchhash.o evaluationNnueBase.o  $(TABLEBASES_OBJS)
 
 ifeq ($(OS),Windows_NT)
-	#RM = del /F
-	RM = rm -f
+	RM = del /F
 else
 	RM = rm -f
 endif
@@ -64,17 +60,14 @@ all: pull-net build
 pull-net:
 	git submodule update --init --depth 1
 
-build: $(OBJS)
-	$(CXX) -o $(BIN) $^ $(LFLAGS)
-	$(MAKE) clean-objs
+build: $(SRCS)
+	$(CXX) -o $(EXE) $^ $(CFLAGS) $(LFLAGS)
 
 pgo: pull-net
 ifeq ($(CXX),g++)
 	$(MAKE) EXTRACFLAGS='-fprofile-generate' EXTRALFLAGS='-lgcov' build
 	./$(BIN) bench
-	$(MAKE) clean-objs clean-bin
 	$(MAKE) EXTRACFLAGS='-fprofile-use -fno-peel-loops -fno-tracer' EXTRALFLAGS='-lgcov' build
-	$(MAKE) clean-objs clean-profile
 # TODO
 # else ifeq ($(CXX),clang++)
 # 	$(MAKE) EXTRACFLAGS='-fprofile-instr-generate' EXTRALFLAGS='-fprofile-instr-generate' build
@@ -87,15 +80,7 @@ else
 	$(error Unknown compiler for PGO build)
 endif
 
-%.o: %.cpp
-	$(CXX) $(CFLAGS) -c -o $@ $^
-
-clean: clean-objs clean-bin clean-profile
-
-clean-objs:
-	$(RM) *.o
-	$(RM) *.o.tmp
-	$(RM) external/fathom/src/tbprobe.o
+clean: clean-bin clean-profile
 
 clean-bin:
 	$(RM) $(BIN)
@@ -106,4 +91,3 @@ clean-profile:
 	$(RM) *.profraw
 	$(RM) external/fathom/src/tbprobe.profraw
 	$(RM) all.profdata
-	
