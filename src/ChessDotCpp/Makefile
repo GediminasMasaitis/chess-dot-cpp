@@ -55,15 +55,12 @@ $(info $(LFLAGS))
 $(info $(SRCS))
 $(info $(OBJS))
 
-all: pull-net build
-
-pull-net:
-	git submodule update --init --depth 1
+all: build
 
 build: $(SRCS)
 	$(CXX) -o $(EXE) $^ $(CFLAGS) $(LFLAGS)
 
-pgo: pull-net
+pgo:
 ifeq ($(CXX),g++)
 	$(MAKE) EXTRACFLAGS='-fprofile-generate' EXTRALFLAGS='-lgcov' build
 	./$(BIN) bench
