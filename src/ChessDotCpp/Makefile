@@ -63,7 +63,7 @@ build: $(SRCS)
 pgo:
 ifeq ($(CXX),g++)
 	$(MAKE) EXTRACFLAGS='-fprofile-generate' EXTRALFLAGS='-lgcov' build
-	./$(BIN) bench
+	./$(EXE) bench
 	$(MAKE) EXTRACFLAGS='-fprofile-use -fno-peel-loops -fno-tracer' EXTRALFLAGS='-lgcov' build
 # TODO
 # else ifeq ($(CXX),clang++)
