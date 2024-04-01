@@ -62,7 +62,7 @@ void Test()
 
 int main(int argc, char** argv)
 {
-    //std::cout << sizeof(BoardBase) << std::endl;
+    setbuf(stdout, 0);
     //Test();
     //Train();
     Run(argc, argv);

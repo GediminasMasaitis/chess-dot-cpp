@@ -57,8 +57,19 @@ class UciStd : public Uci
 public:
     InType StdIn = []()
     {
+        if (!std::cin)
+        {
+            exit(1);
+        }
+
         std::string command;
         std::getline(std::cin, command);
+
+        if (!std::cin)
+        {
+            exit(1);
+        }
+
         return command;
     };
 
