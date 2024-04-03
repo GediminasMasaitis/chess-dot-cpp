@@ -186,8 +186,7 @@ public:
 class Board : public BoardBase
 {
 public:
-	std::array<UndoData, Constants::MaxHistory> History;
-	HistoryPly HistoryDepth;
+	std::vector<UndoData> History;
 	HistoryPly FiftyMoveRuleIndex;
 	
 	void DoMove(const Move move);

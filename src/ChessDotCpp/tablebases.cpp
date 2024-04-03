@@ -107,7 +107,7 @@ bool Tablebases::ProbeRoot(const Board& board, Move& tbMove)
 {
     tbMove = Move(0);
 
-    const HistoryPly rule50 = board.HistoryDepth - board.FiftyMoveRuleIndex;
+    const HistoryPly rule50 = board.History.size() - board.FiftyMoveRuleIndex;
     auto extraResults = std::array<unsigned, TB_MAX_MOVES>{};
     const auto externalResult = tb_probe_root
     (

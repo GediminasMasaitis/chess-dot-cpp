@@ -9600,3 +9600,7 @@ Score of ChessDotCpp3.99 vs ChessDotCpp3.98: 772 - 646 - 1582  [0.521] 3000
 ...      White vs Black: 1266 - 152 - 1582  [0.686] 3000
 Elo difference: 14.6 +/- 8.5, LOS: 100.0 %, DrawRatio: 52.7 %
 ```
+
+### 4.1
+
+Fix issue with very long games

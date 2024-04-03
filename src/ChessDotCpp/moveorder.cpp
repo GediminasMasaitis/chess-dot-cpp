@@ -124,8 +124,8 @@ void MoveOrdering::CalculateStaticNonCaptureScores
     const Board& board
 )
 {
-    const Move previousMove1 = board.HistoryDepth > 0 ? board.History[board.HistoryDepth - 1].MMove : Move(0);
-    const Move previousMove2 = board.HistoryDepth > 1 ? board.History[board.HistoryDepth - 2].MMove : Move(0);
+    const Move previousMove1 = board.History.size() > 0 ? board.History[board.History.size() - 1].MMove : Move(0);
+    const Move previousMove2 = board.History.size() > 1 ? board.History[board.History.size() - 2].MMove : Move(0);
 
     const ContinuationEntry& continuation1 = threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()];
     const ContinuationEntry& continuation2 = threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()];

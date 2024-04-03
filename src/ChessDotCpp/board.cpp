@@ -32,15 +32,16 @@ void Board::DoMove(const Move move)
     assert(move.GetTakesPiece() != Pieces::WhiteKing);
     assert(move.GetTakesPiece() != Pieces::BlackKing);
 
-    History[HistoryDepth].MMove = move;
-    History[HistoryDepth].Key = Key;
-    History[HistoryDepth].PawnKey = PawnKey;
-    History[HistoryDepth].CCastlingPermission = CastlingPermissions;
-    History[HistoryDepth].EnPassantFileIndex = EnPassantFileIndex;
-    History[HistoryDepth].EnPassantRankIndex = EnPassantRankIndex;
-    History[HistoryDepth].FiftyMoveRule = FiftyMoveRuleIndex;
-    History[HistoryDepth].StaticEvaluation = StaticEvaluation;
-    HistoryDepth++;
+    auto undo_data = UndoData();
+    undo_data.MMove = move;
+    undo_data.Key = Key;
+    undo_data.PawnKey = PawnKey;
+    undo_data.CCastlingPermission = CastlingPermissions;
+    undo_data.EnPassantFileIndex = EnPassantFileIndex;
+    undo_data.EnPassantRankIndex = EnPassantRankIndex;
+    undo_data.FiftyMoveRule = FiftyMoveRuleIndex;
+    undo_data.StaticEvaluation = StaticEvaluation;
+    History.push_back(undo_data);
 
     const auto originalWhiteToMove = WhiteToMove;
     const auto originalColorToMove = ColorToMove;
@@ -111,7 +112,7 @@ void Board::DoMove(const Move move)
     const bool takesPawn = (takesPiece & ~Pieces::Color) == Pieces::Pawn;
     if (isPawn)
     {
-        FiftyMoveRuleIndex = static_cast<HistoryPly>(HistoryDepth - 1);
+        FiftyMoveRuleIndex = static_cast<HistoryPly>(History.size() - 1);
         PawnKey ^= ZobristKeys.ZPieces[from][piece];
     }
 
@@ -153,7 +154,7 @@ void Board::DoMove(const Move move)
                 PawnKey ^= ZobristKeys.ZPieces[to][takesPiece];
             }
         }
-        FiftyMoveRuleIndex = static_cast<HistoryPly>(HistoryDepth - 1);
+        FiftyMoveRuleIndex = static_cast<HistoryPly>(History.size() - 1);
         PieceCounts[takesPiece]--;
         if (!takesPawn)
         {
@@ -273,7 +274,7 @@ void Board::GetKeyAfterMove(const Move move, KeyAnd50Move& keyAnd50Move) const
     const bool isPawn = (piece & ~Pieces::Color) == Pieces::Pawn;
     if (isPawn)
     {
-        keyAnd50Move.FiftyMoveRuleIndex = HistoryDepth;
+        keyAnd50Move.FiftyMoveRuleIndex = History.size();
     }
 
     // PROMOTIONS
@@ -297,7 +298,7 @@ void Board::GetKeyAfterMove(const Move move, KeyAnd50Move& keyAnd50Move) const
         {
             keyAnd50Move.Key ^= ZobristKeys.ZPieces[to][takesPiece];
         }
-        keyAnd50Move.FiftyMoveRuleIndex = HistoryDepth;
+        keyAnd50Move.FiftyMoveRuleIndex = History.size();
     }
 
     // EN PASSANT
@@ -344,9 +345,9 @@ void Board::GetKeyAfterMove(const Move move, KeyAnd50Move& keyAnd50Move) const
 
 void Board::UndoMove()
 {
-    auto& history = History[HistoryDepth - 1];
+    const auto history = History[History.size() - 1];
     auto move = history.MMove;
-    HistoryDepth--;
+    History.pop_back();
 
     EnPassantFileIndex = history.EnPassantFileIndex;
     EnPassantRankIndex = history.EnPassantRankIndex;
@@ -480,7 +481,8 @@ void Board::UndoMove()
 
 Board::Board(): BoardBase(), History()
 {
-    HistoryDepth = 0;
+    History = std::vector<UndoData>();
+    History.reserve(512);
     FiftyMoveRuleIndex = 0;
 }
 

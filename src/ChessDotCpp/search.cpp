@@ -146,12 +146,12 @@ Score Search::Contempt(const Board& board) const
 
 bool Search::IsRepetitionOr50Move(const Board& board) const
 {
-    if (board.HistoryDepth - board.FiftyMoveRuleIndex > 100)
+    if (board.History.size() - board.FiftyMoveRuleIndex > 100)
     {
         return true;
     }
 
-    for (HistoryPly ply = board.FiftyMoveRuleIndex; ply < board.HistoryDepth; ply++)
+    for (HistoryPly ply = board.FiftyMoveRuleIndex; ply < board.History.size(); ply++)
     {
         const auto& previousEntry = board.History[ply];
         const ZobristKey previousKey = previousEntry.Key;
@@ -172,13 +172,13 @@ bool Search::IsRepetitionOr50MoveAfterMove(const Board& board, const Move move) 
 
     KeyAnd50Move keyAnd50Move;
     board.GetKeyAfterMove(move, keyAnd50Move);
-    if (board.HistoryDepth + 1 - keyAnd50Move.FiftyMoveRuleIndex > 100)
+    if (board.History.size() + 1 - keyAnd50Move.FiftyMoveRuleIndex > 100)
     {
         return true;
     }
 
     // < or <= ??? <= gains for some reason but it should be wrong
-    for (HistoryPly ply = keyAnd50Move.FiftyMoveRuleIndex; ply < board.HistoryDepth; ply++)
+    for (HistoryPly ply = keyAnd50Move.FiftyMoveRuleIndex; ply < board.History.size(); ply++)
     {
         const auto& previousEntry = board.History[ply];
         const ZobristKey previousKey = previousEntry.Key;
@@ -383,10 +383,10 @@ void Search::UpdateHistory(ThreadState& threadState, Board& board, Ply depth, Pl
 
     const bool isCapture = bestMove.GetTakesPiece() != Pieces::Empty;
 
-    const bool hasPreviousMove1 = board.HistoryDepth > 0;
-    const bool hasPreviousMove2 = board.HistoryDepth > 1;
-    const Move previousMove1 = hasPreviousMove1 ? board.History[board.HistoryDepth - 1].MMove : Move(0);
-    const Move previousMove2 = hasPreviousMove2 ? board.History[board.HistoryDepth - 2].MMove : Move(0);
+    const bool hasPreviousMove1 = board.History.size() > 0;
+    const bool hasPreviousMove2 = board.History.size() > 1;
+    const Move previousMove1 = hasPreviousMove1 ? board.History[board.History.size() - 1].MMove : Move(0);
+    const Move previousMove2 = hasPreviousMove2 ? board.History[board.History.size() - 2].MMove : Move(0);
 
     //const Score bonus = static_cast<Score>(depth * depth);
     const MoveScore bonus = depth * depth + depth - 1;
@@ -624,7 +624,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
 #endif
     staticScore = CallEval(board, pins);
     board.StaticEvaluation = staticScore;
-    const bool improving = !inCheck && (ply < 2 || staticScore >= board.History[board.HistoryDepth - 2].StaticEvaluation);
+    const bool improving = !inCheck && (ply < 2 || staticScore >= board.History[board.History.size() - 2].StaticEvaluation);
     if
     (
         hashEntryExists
@@ -724,8 +724,8 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
     MoveCount moveCount = 0;
     ScoreArray seeScores;
     MoveScoreArray staticMoveScores;*/
-    Move previousMove1 = !rootNode ? board.History[board.HistoryDepth - 1].MMove : Move(0);
-    Move previousMove2 = board.HistoryDepth > 1 ? board.History[board.HistoryDepth - 2].MMove : Move(0);
+    Move previousMove1 = !rootNode ? board.History[board.History.size() - 1].MMove : Move(0);
+    Move previousMove2 = board.History.size() > 1 ? board.History[board.History.size() - 2].MMove : Move(0);
     //const Move countermove = threadState.Countermoves[previousMove1.GetPiece()][previousMove1.GetTo()];
 
     //TablebaseResult parentResult = TablebaseResult::Unknown;
