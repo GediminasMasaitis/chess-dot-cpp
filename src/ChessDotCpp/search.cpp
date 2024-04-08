@@ -552,8 +552,8 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
     TranspositionTableEntry entry;
     bool hashEntryExists = true;
     Score probedScore;
-    //const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, plyState.SingularMove.Value);
-    const ZobristKey key = board.Key;
+    const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, plyState.SingularMove.Value);
+    //const ZobristKey key = board.Key;
     bool probeSuccess = TryProbeTranspositionTable(key, depth, ply, alpha, beta/*, plyState.SingularMove*/, entry, probedScore, hashEntryExists);
     //probeSuccess = false;
     //hashEntryExists = false;
@@ -794,10 +794,10 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
             }
         }
         
-        //if(move.Value == plyState.SingularMove.Value)
-        //{
-        //    continue;
-        //}
+        if(move.Value == plyState.SingularMove.Value)
+        {
+            continue;
+        }
 
         const Piece takesPiece = move.GetTakesPiece();
         const bool capture = takesPiece != Pieces::Empty;
@@ -874,48 +874,48 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
 
         // SINGULAR EXTENSION
         Ply extension = 0;
-        //if
-        //(
-        //    !rootNode
-        //    //&& !inCheck 
-        //    && depth > 7
-        //    //&& nullMoveAllowed
-        //    && plyState.SingularMove.Value == 0
-        //    && move.Value == principalVariationMove.Value
-        //    && entry.Flag != TranspositionTableFlags::Alpha
-        //    && entry.Depth >= depth - 3
-        //    && std::abs(probedScore) < Constants::MateThreshold
-        //)
-        //{
-        //    const Score singularBeta = static_cast<Score>(probedScore - depth * 2);
-        //    const Score singularAlpha = static_cast<Score>(singularBeta - 1);
-        //    const Ply singularDepth = static_cast<Ply>(depth / 2);
-        //    
-        //    plyState.SingularMove = move;
-        //    const MovePicker movePickerBackup = movePicker;
-        //    const Score singularScore = AlphaBeta(threadId, board, singularDepth, ply, singularAlpha, singularBeta, false, nullMoveAllowed);
-        //    plyState.SingularMove = Move(0);
+        if
+        (
+            !rootNode
+            //&& !inCheck 
+            && depth > 7
+            //&& nullMoveAllowed
+            && plyState.SingularMove.Value == 0
+            && move.Value == principalVariationMove.Value
+            && entry.Flag != TranspositionTableFlags::Alpha
+            && entry.Depth > depth - 3
+            && std::abs(probedScore) < Constants::MateThreshold
+        )
+        {
+            const Score singularBeta = static_cast<Score>(probedScore - depth * 2);
+            const Score singularAlpha = static_cast<Score>(singularBeta - 1);
+            const Ply singularDepth = static_cast<Ply>(depth / 2);
+            
+            plyState.SingularMove = move;
+            const MovePicker movePickerBackup = movePicker;
+            const Score singularScore = AlphaBeta(threadState, board, singularDepth, ply, singularAlpha, singularBeta, false, nullMoveAllowed);
+            plyState.SingularMove = Move(0);
+            movePicker = movePickerBackup;
 
-        //    if(singularScore < singularBeta)
-        //    {
-        //        extension++;
-        //    }
-        //    else if(singularBeta >= beta)
-        //    {
-        //        return singularBeta;
-        //    }
-        //    //else if(probedScore >= beta)
-        //    //{
-        //    //    plyState.SingularMove = move;
-        //    //    const Score zeroWindowScore = AlphaBeta(threadId, board, singularDepth, ply, beta - 1, beta, false, nullMoveAllowed);
-        //    //    plyState.SingularMove = Move(0);
-        //    //	if(zeroWindowScore >= beta)
-        //    //	{
-        //    //        return beta;
-        //    //	}
-        //    //}
-        //    movePicker = movePickerBackup;
-        //}
+            if(singularScore < singularBeta)
+            {
+                extension++;
+            }
+            else if(singularBeta >= beta)
+            {
+                return singularBeta;
+            }
+            //else if(probedScore >= beta)
+            //{
+            //    plyState.SingularMove = move;
+            //    const Score zeroWindowScore = AlphaBeta(threadId, board, singularDepth, ply, beta - 1, beta, false, nullMoveAllowed);
+            //    plyState.SingularMove = Move(0);
+            //	if(zeroWindowScore >= beta)
+            //	{
+            //        return beta;
+            //	}
+            //}
+        }
         board.DoMove(move);
 
         // LATE MOVE REDUCTION
