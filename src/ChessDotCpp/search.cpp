@@ -880,7 +880,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
         (
             !rootNode
             //&& !inCheck 
-            && depth > 7
+            && depth > 4
             //&& nullMoveAllowed
             && plyState.SingularMove.Value == 0
             && move.Value == principalVariationMove.Value
@@ -897,7 +897,6 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
             const MovePicker movePickerBackup = movePicker;
             const Score singularScore = AlphaBeta(threadState, board, singularDepth, ply, singularAlpha, singularBeta, false, nullMoveAllowed);
             plyState.SingularMove = Move(0);
-            movePicker = movePickerBackup;
 
             if(singularScore < singularBeta)
             {
@@ -917,6 +916,8 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
             //        return beta;
             //	}
             //}
+
+            movePicker = movePickerBackup;
         }
         board.DoMove(move);
 
