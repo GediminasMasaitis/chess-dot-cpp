@@ -897,26 +897,29 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
             const MovePicker movePickerBackup = movePicker;
             const Score singularScore = AlphaBeta(threadState, board, singularDepth, ply, singularAlpha, singularBeta, false, nullMoveAllowed);
             plyState.SingularMove = Move(0);
-            movePicker = movePickerBackup;
 
             if(singularScore < singularBeta)
             {
                 extension++;
             }
+
+            // MULTICUT
             else if(singularBeta >= beta)
             {
                 return singularBeta;
             }
-            //else if(probedScore >= beta)
-            //{
-            //    plyState.SingularMove = move;
-            //    const Score zeroWindowScore = AlphaBeta(threadId, board, singularDepth, ply, beta - 1, beta, false, nullMoveAllowed);
-            //    plyState.SingularMove = Move(0);
-            //	if(zeroWindowScore >= beta)
-            //	{
-            //        return beta;
-            //	}
-            //}
+
+            else if(probedScore >= beta)
+            {
+                plyState.SingularMove = move;
+                const Score zeroWindowScore = AlphaBeta(threadState, board, singularDepth, ply, beta - 1, beta, false, nullMoveAllowed);
+                plyState.SingularMove = Move(0);
+                if(zeroWindowScore >= beta)
+                {
+                    return probedScore;
+                }
+            }
+            movePicker = movePickerBackup;
         }
         board.DoMove(move);
 
