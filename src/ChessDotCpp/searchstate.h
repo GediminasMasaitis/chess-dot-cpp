@@ -75,7 +75,7 @@ class PlyData
 public:
     using KillerArray = std::array<Move, 2>;
     KillerArray Killers;
-    //Move SingularMove;
+    Move SingularMove;
     MovePicker MMovePicker;
     PrincipalVariationData PrincipalVariation;
 

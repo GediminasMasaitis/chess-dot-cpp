@@ -134,8 +134,8 @@ public:
 
     [[nodiscard]] constexpr ZobristKey GetSingularKey(const ZobristKey boardKey, const MoveValue singularValue) const
     {
-        const auto singularKey = GetMoveKey(singularValue);
-        return boardKey ^ singularKey;
+        //const auto singularKey = GetMoveKey(singularValue);
+        return boardKey ^ singularValue;
     }
 };
 

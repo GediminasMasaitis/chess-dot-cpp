@@ -22,7 +22,7 @@ static constexpr bool datagen = true;
 static constexpr bool datagen = false;
 #endif
 
-bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Ply ply, const Score alpha, const Score beta/*, const Move singularMove*/, TranspositionTableEntry& entry, Score& score, bool& entryExists)
+bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Ply ply, const Score alpha, const Score beta, const Move singularMove, TranspositionTableEntry& entry, Score& score, bool& entryExists)
 {
     score = 0;
     entryExists = false;
@@ -41,10 +41,10 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
         return false;
     }
 
-    //if(entry.MMove.Value == singularMove.Value)
-    //{
-    //    return false;
-    //}
+    if(entry.MMove.Value == singularMove.Value)
+    {
+        return false;
+    }
 
     entryExists = true;
     score = entry.SScore;
@@ -101,10 +101,11 @@ void Search::StoreTranspositionTable(const ThreadState& threadState, const Zobri
         return;
     }
 
-    //const PlyData& plyState = threadState.Plies[ply];
-    //if(plyState.SingularMove.Value != 0)
-    //    return;
-    //}
+    const PlyData& plyState = threadState.Plies[ply];
+    if(plyState.SingularMove.Value != 0)
+    {
+        return;
+    }
 
     Score adjustedScore = score;
     if(score > Constants::MateThreshold)
@@ -198,12 +199,14 @@ Score Search::Quiescence(ThreadState& threadState, Board& board, Ply depth, cons
         threadState.SelectiveDepth = ply;
     }
 
+    PlyData& plyState = threadState.Plies[ply];
+
     TranspositionTableEntry entry;
     bool hashEntryExists = true;
     Score probedScore;
     //const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, plyState.SingularMove.Value);
     const ZobristKey key = board.Key;
-    bool probeSuccess = TryProbeTranspositionTable(key, 0, ply, alpha, beta/*, plyState.SingularMove*/, entry, probedScore, hashEntryExists);
+    bool probeSuccess = TryProbeTranspositionTable(key, 0, ply, alpha, beta, plyState.SingularMove, entry, probedScore, hashEntryExists);
     //probeSuccess = false;
     //hashEntryExists = false;
     if (hashEntryExists && Options::Threads != 1)
@@ -270,7 +273,6 @@ Score Search::Quiescence(ThreadState& threadState, Board& board, Ply depth, cons
     const Bitboard pinned = PinDetector::GetPinnedToKingForColorToMove(board);
 #endif
 
-    PlyData& plyState = threadState.Plies[ply];
     auto& movePicker = plyState.MMovePicker;
     movePicker.Reset(threadState, ply, board, checkers, pinned, principalVariationMove);
 
@@ -554,7 +556,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
     Score probedScore;
     //const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, plyState.SingularMove.Value);
     const ZobristKey key = board.Key;
-    bool probeSuccess = TryProbeTranspositionTable(key, depth, ply, alpha, beta/*, plyState.SingularMove*/, entry, probedScore, hashEntryExists);
+    bool probeSuccess = TryProbeTranspositionTable(key, depth, ply, alpha, beta, plyState.SingularMove, entry, probedScore, hashEntryExists);
     //probeSuccess = false;
     //hashEntryExists = false;
 
@@ -794,10 +796,10 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
             }
         }
         
-        //if(move.Value == plyState.SingularMove.Value)
-        //{
-        //    continue;
-        //}
+        if(move.Value == plyState.SingularMove.Value)
+        {
+            continue;
+        }
 
         const Piece takesPiece = move.GetTakesPiece();
         const bool capture = takesPiece != Pieces::Empty;
@@ -874,48 +876,48 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
 
         // SINGULAR EXTENSION
         Ply extension = 0;
-        //if
-        //(
-        //    !rootNode
-        //    //&& !inCheck 
-        //    && depth > 7
-        //    //&& nullMoveAllowed
-        //    && plyState.SingularMove.Value == 0
-        //    && move.Value == principalVariationMove.Value
-        //    && entry.Flag != TranspositionTableFlags::Alpha
-        //    && entry.Depth >= depth - 3
-        //    && std::abs(probedScore) < Constants::MateThreshold
-        //)
-        //{
-        //    const Score singularBeta = static_cast<Score>(probedScore - depth * 2);
-        //    const Score singularAlpha = static_cast<Score>(singularBeta - 1);
-        //    const Ply singularDepth = static_cast<Ply>(depth / 2);
-        //    
-        //    plyState.SingularMove = move;
-        //    const MovePicker movePickerBackup = movePicker;
-        //    const Score singularScore = AlphaBeta(threadId, board, singularDepth, ply, singularAlpha, singularBeta, false, nullMoveAllowed);
-        //    plyState.SingularMove = Move(0);
+        if
+        (
+            !rootNode
+            //&& !inCheck 
+            && depth > 7
+            //&& nullMoveAllowed
+            && plyState.SingularMove.Value == 0
+            && move.Value == principalVariationMove.Value
+            && entry.Flag != TranspositionTableFlags::Alpha
+            && entry.Depth > depth - 3
+            && std::abs(probedScore) < Constants::MateThreshold
+        )
+        {
+            const Score singularBeta = static_cast<Score>(probedScore - depth * 2);
+            const Score singularAlpha = static_cast<Score>(singularBeta - 1);
+            const Ply singularDepth = static_cast<Ply>(depth / 2);
+            
+            plyState.SingularMove = move;
+            const MovePicker movePickerBackup = movePicker;
+            const Score singularScore = AlphaBeta(threadState, board, singularDepth, ply, singularAlpha, singularBeta, false, nullMoveAllowed);
+            plyState.SingularMove = Move(0);
+            movePicker = movePickerBackup;
 
-        //    if(singularScore < singularBeta)
-        //    {
-        //        extension++;
-        //    }
-        //    else if(singularBeta >= beta)
-        //    {
-        //        return singularBeta;
-        //    }
-        //    //else if(probedScore >= beta)
-        //    //{
-        //    //    plyState.SingularMove = move;
-        //    //    const Score zeroWindowScore = AlphaBeta(threadId, board, singularDepth, ply, beta - 1, beta, false, nullMoveAllowed);
-        //    //    plyState.SingularMove = Move(0);
-        //    //	if(zeroWindowScore >= beta)
-        //    //	{
-        //    //        return beta;
-        //    //	}
-        //    //}
-        //    movePicker = movePickerBackup;
-        //}
+            if(singularScore < singularBeta)
+            {
+                extension++;
+            }
+            else if(singularBeta >= beta)
+            {
+                return singularBeta;
+            }
+            //else if(probedScore >= beta)
+            //{
+            //    plyState.SingularMove = move;
+            //    const Score zeroWindowScore = AlphaBeta(threadId, board, singularDepth, ply, beta - 1, beta, false, nullMoveAllowed);
+            //    plyState.SingularMove = Move(0);
+            //	if(zeroWindowScore >= beta)
+            //	{
+            //        return beta;
+            //	}
+            //}
+        }
         board.DoMove(move);
 
         // LATE MOVE REDUCTION

@@ -49,7 +49,7 @@ private:
 public:
     SearchState State{};
 
-    bool TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Ply ply, const Score alpha, const Score beta/*, const Move singularMove*/, TranspositionTableEntry& entry, Score& score, bool& entryExists);
+    bool TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Ply ply, const Score alpha, const Score beta, const Move singularMove, TranspositionTableEntry& entry, Score& score, bool& entryExists);
     void StoreTranspositionTable(const ThreadState& threadState, const ZobristKey key, const Move move, const Ply depth, const Ply ply, const Score score, const TtFlag flag);
     Score Contempt(const Board& board) const;
     bool IsRepetitionOr50Move(const Board& board) const;
