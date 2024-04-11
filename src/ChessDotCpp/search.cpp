@@ -668,7 +668,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
 
             if (staticScore - margin >= beta)
             {
-                return beta;
+                return staticScore;
             }
         }
 
@@ -710,7 +710,12 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
             board.UndoMove();
             if (nullMoveScore >= beta)
             {
-                return beta;
+                if(nullMoveScore >= Constants::TablebaseMateThreshold)
+                {
+                    return beta;
+                }
+
+                return nullMoveScore;
             }
         }
     }
@@ -886,7 +891,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
             && move.Value == principalVariationMove.Value
             && entry.Flag != TranspositionTableFlags::Alpha
             && entry.Depth > depth - 3
-            && std::abs(probedScore) < Constants::MateThreshold
+            && std::abs(probedScore) < Constants::TablebaseMateThreshold
         )
         {
             const Score singularBeta = static_cast<Score>(probedScore - depth * 2);

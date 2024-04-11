@@ -19,8 +19,9 @@ public:
 
     static constexpr Score Inf = 32000;
     static constexpr Score Mate = 31000;
-    static constexpr Score TablebaseMate = 20000;
     static constexpr Score MateThreshold = 30000;
+    static constexpr Score TablebaseMate = 29000;
+    static constexpr Score TablebaseMateThreshold = 28000;
     static constexpr Score EndgameMaterial = 1300;
 
 private:
