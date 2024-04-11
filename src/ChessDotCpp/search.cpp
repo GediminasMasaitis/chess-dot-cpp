@@ -673,7 +673,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
         }
 
         // RAZORING
-        constexpr Score razorMargin = 200;
+        constexpr Score razorMargin = 128;
         if
         (
             depth < 4
