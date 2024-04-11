@@ -911,13 +911,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
 
             else if(probedScore >= beta)
             {
-                plyState.SingularMove = move;
-                const Score zeroWindowScore = AlphaBeta(threadState, board, singularDepth, ply, beta - 1, beta, false, nullMoveAllowed);
-                plyState.SingularMove = Move(0);
-                if(zeroWindowScore >= beta)
-                {
-                    return probedScore;
-                }
+                return probedScore;
             }
             movePicker = movePickerBackup;
         }
