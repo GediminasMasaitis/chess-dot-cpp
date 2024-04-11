@@ -19,7 +19,6 @@ void MovePicker::Reset(ThreadState& state, Ply ply, Board& board, Bitboard check
     _nonCaptureCount = 0;
     _nonCaptureIndex = -1;
     _hasBadCaptures = false;
-    _killerIndex = -1;
 }
 
 void MovePicker::InitCaptures()
@@ -94,7 +93,7 @@ bool MovePicker::GetNextMove(MovePickerEntry& entry)
             {
                 if constexpr (allowNonCaptures)
                 {
-                    _stage = MovePickerStage::Killers;
+                    _stage = MovePickerStage::Killer;
                     break;
                 }
                 else
@@ -112,7 +111,7 @@ bool MovePicker::GetNextMove(MovePickerEntry& entry)
                 if (score < badCapture)
                 {
                     _hasBadCaptures = true;
-                    _stage = MovePickerStage::Killers;
+                    _stage = MovePickerStage::Killer;
                     break;
                 }
             }
@@ -136,41 +135,25 @@ bool MovePicker::GetNextMove(MovePickerEntry& entry)
             return true;
         }
         [[fallthrough]];
-    case MovePickerStage::Killers:
-        while (true)
+    case MovePickerStage::Killer:
+    {
+        const auto& killer = _state->Plies[_ply].Killer;
+        _stage = MovePickerStage::NonCaptureGen;
+
+        if
+        (
+            killer.Value != _ttMove.Value
+            && MoveValidator::IsPseudoLegal(*_board, killer)
+            && MoveValidator::IsKingSafeAfterMove(*_board, killer)
+        )
         {
-            _killerIndex++;
-            const auto& killers = _state->Plies[_ply].Killers;
-            if (_killerIndex >= static_cast<int16_t>(killers.size()))
-            {
-                _stage = MovePickerStage::NonCaptureGen;
-                break;
-            }
+            assert(_board->ColorToMove == killer.GetColorToMove());
 
-            const auto& move = killers[_killerIndex];
-            if (move.Value == _ttMove.Value)
-            {
-                continue;
-            }
-
-            const bool isPseudoLegal = MoveValidator::IsPseudoLegal(*_board, move);
-            if (!isPseudoLegal)
-            {
-                continue;
-            }
-
-            if (!MoveValidator::IsKingSafeAfterMove(*_board, move))
-            {
-                continue;
-            }
-
-            assert(_board->ColorToMove == move.GetColorToMove());
-
-            entry.move = move;
+            entry.move = killer;
             entry.see = 0;
-
             return true;
         }
+    }
         [[fallthrough]];
     case MovePickerStage::NonCaptureGen:
         InitNonCaptures();
@@ -209,17 +192,9 @@ bool MovePicker::GetNextMove(MovePickerEntry& entry)
                 continue;
             }
 
-            bool isKiller = false;
-            const auto& killers = _state->Plies[_ply].Killers;
-            for (int16_t killerIndex = 0; killerIndex < static_cast<int16_t>(killers.size()); killerIndex++)
-            {
-                if (move.Value == killers[killerIndex].Value)
-                {
-                    isKiller = true;
-                    break;
-                }
-            }
-            if (isKiller)
+            
+            const bool is_killer = move.Value == _state->Plies[_ply].Killer.Value;
+            if (is_killer)
             {
                 continue;
             }

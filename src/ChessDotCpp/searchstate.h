@@ -73,16 +73,14 @@ public:
 class PlyData
 {
 public:
-    using KillerArray = std::array<Move, 2>;
-    KillerArray Killers;
+    Move Killer;
     Move SingularMove;
     MovePicker MMovePicker;
     PrincipalVariationData PrincipalVariation;
 
     void NewSearch()
     {
-        Killers[0].Value = 0;
-        Killers[1].Value = 0;
+        Killer.Value = 0;
 
         //PrincipalVariation.NewIteration();
         //SingularMove = Move(0);
@@ -90,8 +88,7 @@ public:
 
     void NewGame()
     {
-        Killers[0].Value = 0;
-        Killers[1].Value = 0;
+        Killer.Value = 0;
     }
 };
 

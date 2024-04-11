@@ -17,7 +17,7 @@ enum class MovePickerStage
     TranspositionTableMove,
     CaptureGen,
     Captures,
-    Killers,
+    Killer,
     NonCaptureGen,
     NonCaptures,
     FirstBadCapture,
@@ -40,8 +40,6 @@ private:
     MoveCount _nonCaptureCount;
     int16_t _nonCaptureIndex;
     MoveScoreArray _nonCaptureScores;
-
-    int16_t _killerIndex;
 
     ThreadState* _state;
     Ply _ply;
