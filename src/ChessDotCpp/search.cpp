@@ -672,27 +672,6 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
             }
         }
 
-        // RAZORING
-        constexpr Score razorMargin = 200;
-        if
-        (
-            depth < 4
-            && !isPrincipalVariation
-            && staticScore + (razorMargin * depth) < beta
-        )
-        {
-            const auto razorScore = Quiescence(threadState, board, 0, ply, alpha, beta, false);
-            if (razorScore < beta)
-            {
-                return razorScore;
-            }
-
-            if (depth == 1)
-            {
-                return beta;
-            }
-        }
-
         // NULL MOVE PRUNING
         if
         (
