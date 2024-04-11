@@ -355,3 +355,4 @@ MigrationBackup/
 *.gcda
 *.o
 *.exe
+chessdotcpp-*
