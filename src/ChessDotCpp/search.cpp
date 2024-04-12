@@ -656,20 +656,10 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
         //&& plyState.SingularMove.Value == 0
     )
     {
-        // STATIC EVALUATION PRUNING
-        if
-        (
-            depth < 6
-            && !isPrincipalVariation
-        )
+        // REVERSE FUTILITY PRUNING
+        if (!isPrincipalVariation && depth < 8 && staticScore - 71 * (depth - improving) >= beta)
         {
-            constexpr std::array<Score, 6> margins = { 64, 64, 128, 256, 512, 768 };
-            const Score margin = margins[depth - improving];
-
-            if (staticScore - margin >= beta)
-            {
-                return beta;
-            }
+            return staticScore;
         }
 
         // RAZORING
