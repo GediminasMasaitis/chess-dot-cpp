@@ -663,7 +663,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
             && !isPrincipalVariation
         )
         {
-            constexpr std::array<Score, 6> margins = { 64, 64, 128, 256, 512, 768 };
+            constexpr std::array<Score, 6> margins = { 0, 64, 128, 256, 512, 768 };
             const Score margin = margins[depth - improving];
 
             if (staticScore - margin >= beta)
