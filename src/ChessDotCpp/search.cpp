@@ -653,13 +653,14 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
     (
         !rootNode
         && !inCheck
+        && !isPrincipalVariation
         //&& plyState.SingularMove.Value == 0
     )
     {
         // REVERSE FUTILITY PRUNING
-        if (!isPrincipalVariation && depth < 8 && staticScore - 71 * (depth - improving) >= beta)
+        if (depth < 8 && staticScore - 71 * (depth - improving) >= beta)
         {
-            return beta;
+            return staticScore;
         }
 
         // RAZORING
@@ -687,13 +688,13 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
         if
         (
             nullMoveAllowed
-            && depth > 1
+            && depth > 2
             && staticScore >= beta
             && board.BitBoard[board.ColorToMove] != (board.BitBoard[Pieces::Pawn | board.ColorToMove] | board.BitBoard[Pieces::King | board.ColorToMove])
             //&& board.PieceMaterial[board.ColorToMove] > Constants::EndgameMaterial
         )
         {
-            const Ply nullDepthReduction = 4 + depth / 4 + static_cast<Ply>(std::min(3, (staticScore - beta) / 256));
+            const Ply nullDepthReduction = 4 + depth / 5 + static_cast<Ply>(std::min(3, (staticScore - beta) / 196));
             const Move nullMove = Move(0, 0, Pieces::Empty);
             board.DoMove(nullMove);
             const Score nullMoveScore = -AlphaBeta(threadState, board, depth - nullDepthReduction, ply + 1, -beta, -beta + 1, false, false);
