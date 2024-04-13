@@ -653,14 +653,14 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
     (
         !rootNode
         && !inCheck
-        //&& plyState.SingularMove.Value == 0
+        && !isPrincipalVariation
+        && plyState.SingularMove.Value == 0
     )
     {
         // STATIC EVALUATION PRUNING
         if
         (
             depth < 6
-            && !isPrincipalVariation
         )
         {
             constexpr std::array<Score, 6> margins = { 64, 64, 128, 256, 512, 768 };
@@ -677,7 +677,6 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
         if
         (
             depth < 4
-            && !isPrincipalVariation
             && staticScore + (razorMargin * depth) < beta
         )
         {
