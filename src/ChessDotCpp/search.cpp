@@ -586,14 +586,6 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
     if (probeSuccess)
     {
         bool returnTtValue = !isPrincipalVariation /*|| (!datagen && probedScore >= alpha && probedScore <= beta)*/;
-        if(returnTtValue)
-        {
-            const bool isDraw = IsRepetitionOr50MoveAfterMove(board, principalVariationMove);
-            if(isDraw)
-            {
-                returnTtValue = false;
-            }
-        }
         if (returnTtValue)
         {
             if (principalVariationMove.GetTakesPiece() == Pieces::Empty)
