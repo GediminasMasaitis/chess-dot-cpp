@@ -88,8 +88,8 @@ void EvaluationNnueBase::Init()
     }
 
     assert(!file.eof());
-    OutputBias = Read<int32_t>(file);
+    OutputBias = Read<int16_t>(file);
 
-    assert(static_cast<size_t>(file.tellg()) == sizeof(NnueValue) * (InputCount * HiddenCount + HiddenCount + HiddenCount * 2) + sizeof(FinalValue));
+    assert(static_cast<size_t>(file.tellg()) == sizeof(NnueValue) * (InputCount * HiddenCount + HiddenCount + HiddenCount * 2) + sizeof(OutputBias));
 #endif
 }
