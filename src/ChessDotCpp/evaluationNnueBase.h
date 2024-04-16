@@ -10,9 +10,9 @@ class EvaluationNnueBase
 public:
     using NnueCount = int16_t;
 
-    static constexpr uint8_t BucketCount = 8;
+    static constexpr uint8_t BucketCount = 9;
     static constexpr NnueCount InputCount = BucketCount * 2 * 6 * 64;
-    static constexpr NnueCount HiddenCount = 512;
+    static constexpr NnueCount HiddenCount = 1536;
 
     using NnueValue = int16_t;
     using FinalValue = int32_t;
@@ -42,11 +42,11 @@ public:
         0,  1,  2,  3,  3,  2,  1,  0,
         4,  4,  5,  5,  5,  5,  4,  4,
         6,  6,  6,  6,  6,  6,  6,  6,
-        6,  6,  6,  6,  6,  6,  6,  6,
         7,  7,  7,  7,  7,  7,  7,  7,
-        7,  7,  7,  7,  7,  7,  7,  7,
-        7,  7,  7,  7,  7,  7,  7,  7,
-        7,  7,  7,  7,  7,  7,  7,  7,
+        8,  8,  8,  8,  8,  8,  8,  8,
+        8,  8,  8,  8,  8,  8,  8,  8,
+        8,  8,  8,  8,  8,  8,  8,  8,
+        8,  8,  8,  8,  8,  8,  8,  8,
     };
 
     static constexpr bucket_t GetBucket(Position position, const Color color)
@@ -85,7 +85,7 @@ public:
         const auto pieceIndex = pieceIndices[piece];
         assert(pieceIndex >= 0);
 
-        const auto posIndex = kingQueenSide ? pos ^ 7 : pos;
+        const auto posIndex = kingQueenSide ? pos : pos ^ 7;
         //const auto posIndex = pos;
         const auto bucketIndex = bucket * 2 * 6 * 64;
         const auto inputIndex = bucketIndex + pieceIndex + posIndex;
