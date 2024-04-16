@@ -21,7 +21,7 @@ public:
     using hidden_biases_t = std::array<NnueValue, HiddenCount>;
     using hidden_weights_t = std::array<NnueValue, HiddenCount>;
     using hidden_weightses_t = EachColor<hidden_weights_t>;
-    using output_bias_t = NnueValue;
+    using output_bias_t = FinalValue;
 
     using input_layer_t = std::array<NnueValue, InputCount>;
     using hidden_layer_t = std::array<NnueValue, HiddenCount>;
@@ -85,7 +85,7 @@ public:
         const auto pieceIndex = pieceIndices[piece];
         assert(pieceIndex >= 0);
 
-        const auto posIndex = kingQueenSide ? pos ^ 7 : pos;
+        const auto posIndex = kingQueenSide ? pos : pos ^ 7;
         //const auto posIndex = pos;
         const auto bucketIndex = bucket * 2 * 6 * 64;
         const auto inputIndex = bucketIndex + pieceIndex + posIndex;
