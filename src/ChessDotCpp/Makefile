@@ -38,7 +38,7 @@ ifndef CXX
 	CXX=g++
 endif
 
-CFLAGS=-std=c++20 -O3 -Wall -Wextra -Wpedantic -m$(ARCH) $(NNUE_FLAG) $(INCBIN_FLAG) $(TABLEBASES_FLAG) $(EXTRACFLAGS) $(EVALFILE_FLAG)
+CFLAGS=-std=c++20 -O3 -Wall -Wextra -Wpedantic -DNDEBUG -m$(ARCH) $(NNUE_FLAG) $(INCBIN_FLAG) $(TABLEBASES_FLAG) $(EXTRACFLAGS) $(EVALFILE_FLAG)
 LFLAGS=-pthread --static $(EXTRALFLAGS)
 
 SRCS = ChessDotCpp.cpp attacks.cpp search.cpp board.cpp fen.cpp perft.cpp movegen.cpp magics.cpp move.cpp moveorder.cpp uci.cpp tablebases.cpp evaluationClassical2.cpp movepick.cpp searchhash.cpp evaluationNnueBase.cpp $(TABLEBASES_SRCS)
