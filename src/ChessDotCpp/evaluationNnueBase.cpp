@@ -33,15 +33,16 @@ void EvaluationNnueBase::Reset(hidden_layers_t& hiddenLayers)
     }
 }
 
-template<class T>
-static T Read(std::istream& stream)
+static EvaluationNnueBase::NnueValue Read(std::istream& stream)
 {
-    constexpr size_t size = sizeof(T);
-    char buffer[size];
-    stream.read(buffer, size);
-    const T* resultPtr = reinterpret_cast<T*>(buffer);
+    constexpr auto scale = 128;
+    constexpr size_t read_size = sizeof(float);
+    char buffer[read_size];
+    stream.read(buffer, read_size);
+    const float* resultPtr = reinterpret_cast<float*>(buffer);
     const auto result = *resultPtr;
-    return result;
+    const auto result_scaled = static_cast<EvaluationNnueBase::NnueValue>(std::round(result * scale));
+    return result_scaled;
 }
 
 void EvaluationNnueBase::Init()
@@ -65,7 +66,7 @@ void EvaluationNnueBase::Init()
         for (auto hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
         {
             assert(!file.eof());
-            const NnueValue weight = Read<int16_t>(file);
+            const NnueValue weight = Read(file);
             InputWeights[inputIndex][hiddenIndex] = weight;
         }
     }
@@ -73,7 +74,7 @@ void EvaluationNnueBase::Init()
     for (size_t hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
     {
         assert(!file.eof());
-        const NnueValue bias = Read<int16_t>(file);
+        const NnueValue bias = Read(file);
         HiddenBiases[hiddenIndex] = bias;
     }
 
@@ -82,14 +83,14 @@ void EvaluationNnueBase::Init()
         for (auto hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
         {
             assert(!file.eof());
-            const NnueValue weight = Read<int16_t>(file);
+            const NnueValue weight = Read(file);
             HiddenWeightses[hiddenNum][hiddenIndex] = weight;
         }
     }
 
     assert(!file.eof());
-    OutputBias = Read<int32_t>(file);
+    OutputBias = Read(file);
 
-    assert(static_cast<size_t>(file.tellg()) == sizeof(NnueValue) * (InputCount * HiddenCount + HiddenCount + HiddenCount * 2) + sizeof(FinalValue));
+    assert(static_cast<size_t>(file.tellg()) == sizeof(float) * (InputCount * HiddenCount + HiddenCount + HiddenCount * 2 + 1));
 #endif
 }
