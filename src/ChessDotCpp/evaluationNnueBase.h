@@ -21,7 +21,7 @@ public:
     using hidden_biases_t = std::array<NnueValue, HiddenCount>;
     using hidden_weights_t = std::array<NnueValue, HiddenCount>;
     using hidden_weightses_t = EachColor<hidden_weights_t>;
-    using output_bias_t = FinalValue;
+    using output_bias_t = NnueValue;
 
     using input_layer_t = std::array<NnueValue, InputCount>;
     using hidden_layer_t = std::array<NnueValue, HiddenCount>;
