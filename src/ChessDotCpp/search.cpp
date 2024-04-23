@@ -826,6 +826,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
             (!datagen || !isPrincipalVariation)
             && !rootNode
             && !promotion
+            && !inCheck
             && !givesCheck
             && movesEvaluated > 0
         )
@@ -837,7 +838,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
             }
 
             // LATE QUIET MOVE PRUNING
-            if (quiet && !inCheck && quietMovesEvaluated > 2 + depth * depth >> !improving)
+            if (quiet && quietMovesEvaluated > 2 + depth * depth >> !improving)
             {
                 continue;
             }
