@@ -830,17 +830,6 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
             && movesEvaluated > 0
         )
         {
-            // LATE MOVE PRUNING
-            constexpr auto lateMovePruning = std::array<Score, 5> { 0, 8, 15, 25, 40 };
-            if
-            (
-                depth < 5
-                && movesEvaluated > lateMovePruning[depth]
-            )
-            {
-                break;
-            }
-
             // HISTORY PRUNING
             if (moveScore < (depth + improving) * -8192)
             {
