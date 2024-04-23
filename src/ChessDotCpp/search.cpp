@@ -837,13 +837,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
             }
 
             // LATE QUIET MOVE PRUNING
-            constexpr auto lateQuietMovePruning = std::array<Score, 8> { 0, 3, 6, 10, 15, 20, 25, 30 };
-            if
-            (
-                !capture
-                && depth < 8
-                && quietMovesEvaluated > lateQuietMovePruning[depth]
-            )
+            if (quiet && !inCheck && quietMovesEvaluated > 2 + depth * depth >> !improving)
             {
                 continue;
             }
