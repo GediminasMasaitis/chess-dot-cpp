@@ -41,6 +41,7 @@ private:
     int16_t _nonCaptureIndex;
     MoveScoreArray _nonCaptureScores;
 
+    std::array<Move, 2> _killers;
     int16_t _killerIndex;
 
     ThreadState* _state;
