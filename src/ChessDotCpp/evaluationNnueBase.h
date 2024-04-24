@@ -12,7 +12,7 @@ public:
 
     static constexpr uint8_t BucketCount = 8;
     static constexpr NnueCount InputCount = BucketCount * 2 * 6 * 64;
-    static constexpr NnueCount HiddenCount = 512;
+    static constexpr NnueCount HiddenCount = 768;
 
     using NnueValue = int16_t;
     using FinalValue = int32_t;
