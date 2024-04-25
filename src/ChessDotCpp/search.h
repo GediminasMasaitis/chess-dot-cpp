@@ -56,7 +56,7 @@ public:
     bool IsRepetitionOr50MoveAfterMove(const Board& board, const Move move) const;
     Score Quiescence(ThreadState& threadState, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, const bool isPrincipalVariation);
     bool TablebaseRootSearch(Board& board);
-    void UpdateHistory(ThreadState& threadState, Board& board, Ply depth, Ply ply, MoveArray& attemptedMoves, MoveCount attemptedMoveCount, Move bestMove, bool betaCutoff);
+    void UpdateHistory(ThreadState& threadState, Board& board, Ply depth, Ply ply, MoveArray& attemptedMoves, MoveCount attemptedMoveCount, Move bestMove);
     Score AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const Ply ply, Score alpha, Score beta, bool isPrincipalVariation, bool nullMoveAllowed);
     Score Aspiration(ThreadState& threadState, Board& board, const Ply depth, const Score previous);
     Score MultiPv(ThreadState& threadState, Board& board, const Ply depth, const Score previous);

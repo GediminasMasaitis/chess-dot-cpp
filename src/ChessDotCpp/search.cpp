@@ -372,7 +372,7 @@ void UpdateHistoryEntry(MoveScore& score, const MoveScore value)
     score += value * 32;
 }
 
-void Search::UpdateHistory(ThreadState& threadState, Board& board, Ply depth, Ply ply, MoveArray& attemptedMoves, MoveCount attemptedMoveCount, Move bestMove, bool betaCutoff)
+void Search::UpdateHistory(ThreadState& threadState, Board& board, Ply depth, Ply ply, MoveArray& attemptedMoves, MoveCount attemptedMoveCount, Move bestMove)
 {
     if(bestMove.Value == 0)
     {
@@ -408,16 +408,13 @@ void Search::UpdateHistory(ThreadState& threadState, Board& board, Ply depth, Pl
         {
             UpdateHistoryEntry(threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[bestMove.GetPiece()][bestMove.GetTo()], bonus);
         }
-        if(betaCutoff)
+        if (bestMove.Value != plyState.Killers[0].Value)
         {
-            if (bestMove.Value != plyState.Killers[0].Value)
-            {
-                plyState.Killers[1] = plyState.Killers[0];
-                plyState.Killers[0] = bestMove;
-            }
-            assert(plyState.Killers[0].Value != plyState.Killers[1].Value);
-            threadState.Countermoves[previousMove1.GetPiece()][previousMove1.GetTo()] = bestMove;
+            plyState.Killers[1] = plyState.Killers[0];
+            plyState.Killers[0] = bestMove;
         }
+        assert(plyState.Killers[0].Value != plyState.Killers[1].Value);
+        threadState.Countermoves[previousMove1.GetPiece()][previousMove1.GetTo()] = bestMove;
     }
     
 
@@ -1069,9 +1066,9 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
 
     if (raisedAlpha)
     {
-        UpdateHistory(threadState, board, depth, ply, failedMoves, failedMoveCount, bestMove, betaCutoff);
         if (betaCutoff)
         {
+            UpdateHistory(threadState, board, depth, ply, failedMoves, failedMoveCount, bestMove);
             StoreTranspositionTable(threadState, key, bestMove, depth, ply, bestScore, TranspositionTableFlags::Beta);
             return beta;
         }
