@@ -1070,7 +1070,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
         {
             UpdateHistory(threadState, board, depth, ply, failedMoves, failedMoveCount, bestMove);
             StoreTranspositionTable(threadState, key, bestMove, depth, ply, bestScore, TranspositionTableFlags::Beta);
-            return beta;
+            return bestScore;
         }
         StoreTranspositionTable(threadState, key, bestMove, depth, ply, bestScore, TranspositionTableFlags::Exact);
     }
