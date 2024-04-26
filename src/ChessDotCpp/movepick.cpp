@@ -20,7 +20,7 @@ void MovePicker::Reset(ThreadState& state, Ply ply, Board& board, Bitboard check
     _nonCaptureIndex = -1;
     _hasBadCaptures = false;
 
-    _killers = {};
+    _killers = state.Plies[ply].Killers;
     _killerIndex = -1;
 }
 
@@ -142,14 +142,13 @@ bool MovePicker::GetNextMove(MovePickerEntry& entry)
         while (true)
         {
             _killerIndex++;
-            const auto& killers = _state->Plies[_ply].Killers;
-            if (_killerIndex >= static_cast<int16_t>(killers.size()))
+            if (_killerIndex >= static_cast<int16_t>(_killers.size()))
             {
                 _stage = MovePickerStage::NonCaptureGen;
                 break;
             }
 
-            const auto& move = killers[_killerIndex];
+            const auto& move = _killers[_killerIndex];
             if (move.Value == _ttMove.Value)
             {
                 continue;
@@ -168,7 +167,6 @@ bool MovePicker::GetNextMove(MovePickerEntry& entry)
 
             assert(_board->ColorToMove == move.GetColorToMove());
 
-            _killers[_killerIndex] = move;
             entry.move = move;
             entry.see = 0;
 
