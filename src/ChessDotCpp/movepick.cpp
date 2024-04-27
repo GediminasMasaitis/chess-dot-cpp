@@ -209,21 +209,6 @@ bool MovePicker::GetNextMove(MovePickerEntry& entry)
                 continue;
             }
 
-            bool isKiller = false;
-            const auto& killers = _state->Plies[_ply].Killers;
-            for (int16_t killerIndex = 0; killerIndex < static_cast<int16_t>(killers.size()); killerIndex++)
-            {
-                if (move.Value == killers[killerIndex].Value)
-                {
-                    isKiller = true;
-                    break;
-                }
-            }
-            if (isKiller)
-            {
-                continue;
-            }
-
             const bool valid = MoveValidator::IsKingSafeAfterMove2(*_board, move, _pinned);
             if (!valid)
             {
