@@ -387,8 +387,12 @@ void Search::UpdateHistory(ThreadState& threadState, Board& board, Ply depth, Pl
 
     const bool hasPreviousMove1 = board.History.size() > 0;
     const bool hasPreviousMove2 = board.History.size() > 1;
+    const bool hasPreviousMove3 = board.History.size() > 2;
+    const bool hasPreviousMove4 = board.History.size() > 3;
     const Move previousMove1 = hasPreviousMove1 ? board.History[board.History.size() - 1].MMove : Move(0);
     const Move previousMove2 = hasPreviousMove2 ? board.History[board.History.size() - 2].MMove : Move(0);
+    const Move previousMove3 = hasPreviousMove3 ? board.History[board.History.size() - 3].MMove : Move(0);
+    const Move previousMove4 = hasPreviousMove4 ? board.History[board.History.size() - 4].MMove : Move(0);
 
     //const Score bonus = static_cast<Score>(depth * depth);
     const MoveScore bonus = depth * depth + depth - 1;
@@ -407,6 +411,14 @@ void Search::UpdateHistory(ThreadState& threadState, Board& board, Ply depth, Pl
         if (hasPreviousMove2)
         {
             UpdateHistoryEntry(threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[bestMove.GetPiece()][bestMove.GetTo()], bonus);
+        }
+        if (hasPreviousMove3)
+        {
+            UpdateHistoryEntry(threadState.AllContinuations[previousMove3.GetPiece()][previousMove3.GetTo()].Scores[bestMove.GetPiece()][bestMove.GetTo()], bonus);
+        }
+        if (hasPreviousMove4)
+        {
+            UpdateHistoryEntry(threadState.AllContinuations[previousMove4.GetPiece()][previousMove4.GetTo()].Scores[bestMove.GetPiece()][bestMove.GetTo()], bonus);
         }
         if (bestMove.Value != plyState.Killers[0].Value)
         {
@@ -441,6 +453,14 @@ void Search::UpdateHistory(ThreadState& threadState, Board& board, Ply depth, Pl
             if (hasPreviousMove2)
             {
                 UpdateHistoryEntry(threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[attemptedMove.GetPiece()][attemptedMove.GetTo()], -bonus);
+            }
+            if (hasPreviousMove3)
+            {
+                UpdateHistoryEntry(threadState.AllContinuations[previousMove3.GetPiece()][previousMove3.GetTo()].Scores[attemptedMove.GetPiece()][attemptedMove.GetTo()], -bonus);
+            }
+            if (hasPreviousMove4)
+            {
+                UpdateHistoryEntry(threadState.AllContinuations[previousMove4.GetPiece()][previousMove4.GetTo()].Scores[attemptedMove.GetPiece()][attemptedMove.GetTo()], -bonus);
             }
         }
     }
@@ -720,6 +740,8 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
     MoveScoreArray staticMoveScores;*/
     Move previousMove1 = !rootNode ? board.History[board.History.size() - 1].MMove : Move(0);
     Move previousMove2 = board.History.size() > 1 ? board.History[board.History.size() - 2].MMove : Move(0);
+    Move previousMove3 = board.History.size() > 2 ? board.History[board.History.size() - 3].MMove : Move(0);
+    Move previousMove4 = board.History.size() > 3 ? board.History[board.History.size() - 4].MMove : Move(0);
     //const Move countermove = threadState.Countermoves[previousMove1.GetPiece()][previousMove1.GetTo()];
 
     //TablebaseResult parentResult = TablebaseResult::Unknown;
@@ -803,8 +825,11 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
         MoveScore moveScore = capture
             ? threadState.CaptureHistory[move.GetPiece()][move.GetTo()][takesPiece]
             : threadState.History[move.GetColorToMove()][move.GetFrom()][move.GetTo()]
-            + threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[move.GetPiece()][move.GetTo()]
-            + threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[move.GetPiece()][move.GetTo()];
+            + 2 * threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[move.GetPiece()][move.GetTo()]
+            + 2 * threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[move.GetPiece()][move.GetTo()]
+            + threadState.AllContinuations[previousMove3.GetPiece()][previousMove3.GetTo()].Scores[move.GetPiece()][move.GetTo()]
+            + threadState.AllContinuations[previousMove4.GetPiece()][previousMove4.GetTo()].Scores[move.GetPiece()][move.GetTo()]
+        ;
 
         //{
         //    auto file = std::ofstream("C:/temp/history.txt", std::ios::app);

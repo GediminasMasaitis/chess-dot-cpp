@@ -95,7 +95,9 @@ MoveScore CalculateStaticNonCaptureScore
     const Move move,
     const Move countermove,
     const ContinuationEntry& continuation1,
-    const ContinuationEntry& continuation2
+    const ContinuationEntry& continuation2,
+    const ContinuationEntry& continuation3,
+    const ContinuationEntry& continuation4
 )
 {
     const Piece piece = move.GetPiece();
@@ -109,7 +111,9 @@ MoveScore CalculateStaticNonCaptureScore
     const MoveScore history = threadState.History[move.GetColorToMove()][move.GetFrom()][to];
     const MoveScore continuationScore1 = continuation1.Scores[piece][to];
     const MoveScore continuationScore2 = continuation2.Scores[piece][to];
-    const MoveScore score = history + continuationScore1 + continuationScore2;
+    const MoveScore continuationScore3 = continuation3.Scores[piece][to];
+    const MoveScore continuationScore4 = continuation4.Scores[piece][to];
+    const MoveScore score = history + 2 * continuationScore1 + 2 * continuationScore2 + continuationScore3 + continuationScore4;
 
     return score;
 }
@@ -126,13 +130,17 @@ void MoveOrdering::CalculateStaticNonCaptureScores
 {
     const Move previousMove1 = board.History.size() > 0 ? board.History[board.History.size() - 1].MMove : Move(0);
     const Move previousMove2 = board.History.size() > 1 ? board.History[board.History.size() - 2].MMove : Move(0);
+    const Move previousMove3 = board.History.size() > 2 ? board.History[board.History.size() - 3].MMove : Move(0);
+    const Move previousMove4 = board.History.size() > 3 ? board.History[board.History.size() - 4].MMove : Move(0);
 
     const ContinuationEntry& continuation1 = threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()];
     const ContinuationEntry& continuation2 = threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()];
+    const ContinuationEntry& continuation3 = threadState.AllContinuations[previousMove3.GetPiece()][previousMove3.GetTo()];
+    const ContinuationEntry& continuation4 = threadState.AllContinuations[previousMove4.GetPiece()][previousMove4.GetTo()];
 
     for (MoveCount i = 0; i < moveCount; i++)
     {
-        const MoveScore score = CalculateStaticNonCaptureScore(threadState, moves[i], countermove, continuation1, continuation2);
+        const MoveScore score = CalculateStaticNonCaptureScore(threadState, moves[i], countermove, continuation1, continuation2, continuation3, continuation4);
         staticScores[i] = score;
     }
 }
