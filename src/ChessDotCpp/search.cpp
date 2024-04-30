@@ -365,11 +365,14 @@ Score Search::Quiescence(ThreadState& threadState, Board& board, Ply depth, cons
     return alpha;
 }
 
-void UpdateHistoryEntry(MoveScore& score, const MoveScore value)
+void ApplyBonus(MoveScore& score, const MoveScore bonus)
 {
-    const MoveScore absValue = std::abs(value);
-    score -= (score * absValue) / 256;
-    score += value * 32;
+    score += bonus - bonus * score / 512;
+}
+
+void ApplyPenalty(MoveScore& score, const MoveScore bonus)
+{
+    score -= bonus + bonus * score / 512;
 }
 
 void Search::UpdateHistory(ThreadState& threadState, Board& board, Ply depth, Ply ply, MoveArray& attemptedMoves, MoveCount attemptedMoveCount, Move bestMove)
@@ -391,22 +394,22 @@ void Search::UpdateHistory(ThreadState& threadState, Board& board, Ply depth, Pl
     const Move previousMove2 = hasPreviousMove2 ? board.History[board.History.size() - 2].MMove : Move(0);
 
     //const Score bonus = static_cast<Score>(depth * depth);
-    const MoveScore bonus = depth * depth + depth - 1;
+    const MoveScore bonus = depth * depth;
 
     if(isCapture)
     {
-        UpdateHistoryEntry(threadState.CaptureHistory[bestMove.GetPiece()][bestMove.GetTo()][bestMove.GetTakesPiece()], bonus);
+        ApplyBonus(threadState.CaptureHistory[bestMove.GetPiece()][bestMove.GetTo()][bestMove.GetTakesPiece()], bonus);
     }
     else
     {
-        UpdateHistoryEntry(threadState.History[bestMove.GetColorToMove()][bestMove.GetFrom()][bestMove.GetTo()], bonus);
+        ApplyBonus(threadState.History[bestMove.GetColorToMove()][bestMove.GetFrom()][bestMove.GetTo()], bonus);
         if (hasPreviousMove1)
         {
-            UpdateHistoryEntry(threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[bestMove.GetPiece()][bestMove.GetTo()], bonus);
+            ApplyBonus(threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[bestMove.GetPiece()][bestMove.GetTo()], bonus);
         }
         if (hasPreviousMove2)
         {
-            UpdateHistoryEntry(threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[bestMove.GetPiece()][bestMove.GetTo()], bonus);
+            ApplyBonus(threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[bestMove.GetPiece()][bestMove.GetTo()], bonus);
         }
         if (bestMove.Value != plyState.Killers[0].Value)
         {
@@ -429,18 +432,18 @@ void Search::UpdateHistory(ThreadState& threadState, Board& board, Ply depth, Pl
         const bool attemptedCapture = attemptedMove.GetTakesPiece() != Pieces::Empty;
         if (attemptedCapture)
         {
-            UpdateHistoryEntry(threadState.CaptureHistory[attemptedMove.GetPiece()][attemptedMove.GetTo()][attemptedMove.GetTakesPiece()], -bonus);
+            ApplyPenalty(threadState.CaptureHistory[attemptedMove.GetPiece()][attemptedMove.GetTo()][attemptedMove.GetTakesPiece()], bonus);
         }
         else
         {
-            UpdateHistoryEntry(threadState.History[attemptedMove.GetColorToMove()][attemptedMove.GetFrom()][attemptedMove.GetTo()], -bonus);
+            ApplyPenalty(threadState.History[attemptedMove.GetColorToMove()][attemptedMove.GetFrom()][attemptedMove.GetTo()], bonus);
             if (hasPreviousMove1)
             {
-                UpdateHistoryEntry(threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[attemptedMove.GetPiece()][attemptedMove.GetTo()], -bonus);
+                ApplyPenalty(threadState.AllContinuations[previousMove1.GetPiece()][previousMove1.GetTo()].Scores[attemptedMove.GetPiece()][attemptedMove.GetTo()], bonus);
             }
             if (hasPreviousMove2)
             {
-                UpdateHistoryEntry(threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[attemptedMove.GetPiece()][attemptedMove.GetTo()], -bonus);
+                ApplyPenalty(threadState.AllContinuations[previousMove2.GetPiece()][previousMove2.GetTo()].Scores[attemptedMove.GetPiece()][attemptedMove.GetTo()], bonus);
             }
         }
     }
@@ -595,11 +598,11 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
         {
             if (principalVariationMove.GetTakesPiece() == Pieces::Empty)
             {
-                UpdateHistoryEntry(threadState.History[principalVariationMove.GetColorToMove()][principalVariationMove.GetFrom()][principalVariationMove.GetTo()], bonus);
+                ApplyBonus(threadState.History[principalVariationMove.GetColorToMove()][principalVariationMove.GetFrom()][principalVariationMove.GetTo()], bonus);
             }
             else
             {
-                UpdateHistoryEntry(threadState.CaptureHistory[principalVariationMove.GetPiece()][principalVariationMove.GetTo()][principalVariationMove.GetTakesPiece()], bonus);
+                ApplyBonus(threadState.CaptureHistory[principalVariationMove.GetPiece()][principalVariationMove.GetTo()][principalVariationMove.GetTakesPiece()], bonus);
             }
             
             return probedScore;
@@ -823,7 +826,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
         )
         {
             // HISTORY PRUNING
-            if (moveScore < (depth + improving) * -8192)
+            if (moveScore < (depth + improving) * -256)
             {
                 continue;
             }
@@ -937,6 +940,8 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
                 //{
                 //    reduction--;
                 //}
+
+                reduction -= std::min(std::max(moveScore / 128, -2), 2);
 
                 if (moveScore > 0)
                 {
