@@ -938,7 +938,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
                 //    reduction--;
                 //}
 
-                reduction -= moveScore / 4096;
+                reduction -= std::min(std::max(moveScore / 2048, 2), -2);
 
                 reduction = std::max(static_cast<Ply>(0), reduction);
             }
