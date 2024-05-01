@@ -414,7 +414,6 @@ void Search::UpdateHistory(ThreadState& threadState, Board& board, Ply depth, Pl
             plyState.Killers[0] = bestMove;
         }
         assert(plyState.Killers[0].Value != plyState.Killers[1].Value);
-        threadState.Countermoves[previousMove1.GetPiece()][previousMove1.GetTo()] = bestMove;
     }
     
 

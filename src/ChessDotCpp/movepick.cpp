@@ -34,8 +34,7 @@ void MovePicker::InitNonCaptures()
 {
     MoveGenerator::GetAllPotentialNonCaptures(*_board, _checkers, _pinned, _nonCaptures, _nonCaptureCount);
     const Move previousMove = _ply != 0 ? _board->History[_board->History.size() - 1].MMove : Move(0);
-    const Move countermove = _state->Countermoves[previousMove.GetPiece()][previousMove.GetTo()];
-    MoveOrdering::CalculateStaticNonCaptureScores(*_state, _nonCaptures, _nonCaptureCount, countermove, _nonCaptureScores, *_board);
+    MoveOrdering::CalculateStaticNonCaptureScores(*_state, _nonCaptures, _nonCaptureCount, _nonCaptureScores, *_board);
 }
 
 template <bool VAllowNonCaptures>

@@ -109,7 +109,6 @@ public:
     EachColor<EachPosition<EachPosition<MoveScore>>> History;
     EachPiece<EachPosition<EachPiece<MoveScore>>> CaptureHistory;
     EachPiece<EachPosition<ContinuationEntry>> AllContinuations;
-    EachPiece<EachPosition<Move>> Countermoves;
 
     EachPosition<EachPosition<Stat>> NodesPerMove;
 
@@ -180,7 +179,6 @@ public:
         {
             for (Position to = 0; to < Positions::Count; to++)
             {
-                Countermoves[piece][to].Value = 0;
                 AllContinuations[piece][to].NewGame();
             }
         }

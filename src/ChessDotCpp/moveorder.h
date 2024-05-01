@@ -29,7 +29,6 @@ public:
         const ThreadState& threadState,
         const MoveArray& moves,
         const MoveCount moveCount,
-        const Move countermove,
         MoveScoreArray& staticScores,
         const Board& board
     );

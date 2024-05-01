@@ -93,18 +93,12 @@ MoveScore CalculateStaticNonCaptureScore
 (
     const ThreadState& threadState,
     const Move move,
-    const Move countermove,
     const ContinuationEntry& continuation1,
     const ContinuationEntry& continuation2
 )
 {
     const Piece piece = move.GetPiece();
     const Position to = move.GetTo();
-
-    if (move.Value == countermove.Value)
-    {
-        return 70'000'000;
-    }
 
     const MoveScore history = threadState.History[move.GetColorToMove()][move.GetFrom()][to];
     const MoveScore continuationScore1 = continuation1.Scores[piece][to];
@@ -119,7 +113,6 @@ void MoveOrdering::CalculateStaticNonCaptureScores
     const ThreadState& threadState,
     const MoveArray& moves,
     const MoveCount moveCount,
-    const Move countermove,
     MoveScoreArray& staticScores,
     const Board& board
 )
@@ -132,7 +125,7 @@ void MoveOrdering::CalculateStaticNonCaptureScores
 
     for (MoveCount i = 0; i < moveCount; i++)
     {
-        const MoveScore score = CalculateStaticNonCaptureScore(threadState, moves[i], countermove, continuation1, continuation2);
+        const MoveScore score = CalculateStaticNonCaptureScore(threadState, moves[i], continuation1, continuation2);
         staticScores[i] = score;
     }
 }
