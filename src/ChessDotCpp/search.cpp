@@ -929,14 +929,14 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
                     reduction++;
                 }
 
-                //if
-                //(
-                //    move.Value == plyState.Killers[0].Value
-                //    || move.Value == plyState.Killers[1].Value
-                //)
-                //{
-                //    reduction--;
-                //}
+                if
+                (
+                    move.Value == plyState.Killers[0].Value
+                    || move.Value == plyState.Killers[1].Value
+                )
+                {
+                    reduction--;
+                }
 
                 if (moveScore > 0)
                 {
