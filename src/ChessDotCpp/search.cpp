@@ -22,7 +22,7 @@ static constexpr bool datagen = true;
 static constexpr bool datagen = false;
 #endif
 
-bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Ply ply, const Score alpha, const Score beta, const Move singularMove, TranspositionTableEntry& entry, Score& score, bool& entryExists)
+bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, const Ply ply, const Score alpha, const Score beta, TranspositionTableEntry& entry, Score& score, bool& entryExists)
 {
     score = 0;
     entryExists = false;
@@ -38,11 +38,6 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
     if (entryKey != key)
     {
         //State.Stats.HashCollision++;
-        return false;
-    }
-
-    if(entry.MMove.Value == singularMove.Value)
-    {
         return false;
     }
 
@@ -97,12 +92,6 @@ void Search::StoreTranspositionTable(const ThreadState& threadState, const Zobri
     //assert((std::abs(score) > Constants::MateThreshold) || move.Value != 0);
 
     if (threadState.Stopper.Stopped)
-    {
-        return;
-    }
-
-    const PlyData& plyState = threadState.Plies[ply];
-    if(plyState.SingularMove.Value != 0)
     {
         return;
     }
@@ -204,9 +193,9 @@ Score Search::Quiescence(ThreadState& threadState, Board& board, Ply depth, cons
     TranspositionTableEntry entry;
     bool hashEntryExists = true;
     Score probedScore;
-    //const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, plyState.SingularMove.Value);
-    const ZobristKey key = board.Key;
-    bool probeSuccess = TryProbeTranspositionTable(key, 0, ply, alpha, beta, plyState.SingularMove, entry, probedScore, hashEntryExists);
+    const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, plyState.SingularMove.Value);
+    //const ZobristKey key = board.Key;
+    bool probeSuccess = TryProbeTranspositionTable(key, 0, ply, alpha, beta, entry, probedScore, hashEntryExists);
     //probeSuccess = false;
     //hashEntryExists = false;
     if (hashEntryExists && Options::Threads != 1)
@@ -551,9 +540,9 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
     TranspositionTableEntry entry;
     bool hashEntryExists = true;
     Score probedScore;
-    //const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, plyState.SingularMove.Value);
-    const ZobristKey key = board.Key;
-    bool probeSuccess = TryProbeTranspositionTable(key, depth, ply, alpha, beta, plyState.SingularMove, entry, probedScore, hashEntryExists);
+    const ZobristKey key = ZobristKeys.GetSingularKey(board.Key, plyState.SingularMove.Value);
+    //const ZobristKey key = board.Key;
+    bool probeSuccess = TryProbeTranspositionTable(key, depth, ply, alpha, beta, entry, probedScore, hashEntryExists);
     //probeSuccess = false;
     //hashEntryExists = false;
 
