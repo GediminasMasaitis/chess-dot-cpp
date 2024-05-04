@@ -10272,3 +10272,78 @@ LLR   | 2.97 (-2.94, 2.94) [-3.00, 1.00]
 Games | N: 39494 W: 8881 L: 8803 D: 21810
 Penta | [264, 4715, 9700, 4815, 253]
 ```
+
+### 4.10
+
+Remove MVVLVA and use SEE directly
+
+```
+info depth 1 seldepth 1 multipv 1 score cp 25 nodes 24 nps 24000 tbhits 0 time 1 pv d2d4
+info depth 2 seldepth 2 multipv 1 score cp 18 nodes 66 nps 66000 tbhits 0 time 1 pv g1f3 g8f6
+info depth 3 seldepth 3 multipv 1 score cp 22 nodes 171 nps 171000 tbhits 0 time 1 pv c2c4 g8f6 b1c3
+info depth 4 seldepth 5 multipv 1 score cp 25 nodes 359 nps 359000 tbhits 0 time 1 pv c2c4 c7c6 b1c3 g8f6
+info depth 5 seldepth 6 multipv 1 score cp 24 nodes 714 nps 714000 tbhits 0 time 1 pv c2c4 g7g6 b1c3 g8f6 g1f3
+info depth 6 seldepth 12 multipv 1 score cp 18 nodes 1915 nps 1915000 tbhits 0 time 1 pv e2e4 g8f6 b1c3 d7d5 e4d5 f6d5
+info depth 7 seldepth 11 multipv 1 score cp 22 nodes 2828 nps 1414000 tbhits 0 time 2 pv e2e4 g8f6 b1c3 g7g6 g1f3 c7c5 f1e2
+info depth 8 seldepth 13 multipv 1 score cp 24 nodes 7017 nps 1403400 tbhits 0 time 5 pv g1f3 b8c6 d2d4 d7d5 e2e3 g8f6 f1e2 c8f5
+info depth 9 seldepth 15 multipv 1 score cp 33 nodes 14136 nps 1413600 tbhits 0 time 10 pv g1f3 c7c5 e2e3 g7g6 f1e2 f8g7 d2d4 c5d4 e3d4
+info depth 10 seldepth 18 multipv 1 score cp 18 nodes 37416 nps 1439076 tbhits 0 time 26 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 f8c5 d4c6 b7c6
+info depth 11 seldepth 18 multipv 1 score cp 30 nodes 51168 nps 1421333 hashfull 11 tbhits 0 time 36 pv e2e4 e7e5 g1f3 b8c6 f1b5 g8f6 b1c3 f8b4 b5c6 d7c6 f3e5
+info depth 12 seldepth 21 multipv 1 score cp 29 nodes 67315 nps 1432234 hashfull 14 tbhits 0 time 47 pv e2e4 e7e5 g1f3 b8c6 f1b5 g7g6 b5c6 d7c6 d2d3 f8g7 e1g1 g8e7 f1e1
+info depth 13 seldepth 25 multipv 1 score cp 35 nodes 117816 nps 1419469 hashfull 28 tbhits 0 time 83 pv e2e4 e7e5 g1f3 b8c6 f1b5 g8f6 e1g1 f8d6 f1e1 e8g8 c2c3 f8e8 d2d4 e5d4
+info depth 14 seldepth 22 multipv 1 score cp 27 nodes 180768 nps 1423370 hashfull 41 tbhits 0 time 127 pv e2e4 c7c5 g1f3 e7e6 f1e2 b8c6 c2c3 g8f6 e4e5 f6d5 e1g1 f8e7 d2d4 c5d4
+info depth 15 seldepth 24 multipv 1 score cp 26 nodes 285657 nps 1421179 hashfull 59 tbhits 0 time 201 pv e2e4 c7c5 g1f3 e7e6 f1e2 b8c6 c2c3 g8f6 e4e5 f6d5 e1g1 d5f4 d2d4 f4e2 d1e2 b7b6 d4c5 f8c5
+info depth 16 seldepth 27 multipv 1 score cp 24 nodes 474196 nps 1424012 hashfull 97 tbhits 0 time 333 pv e2e4 c7c5 g1f3 b8c6 f1b5 e7e6 e1g1 g8e7 c2c3 a7a6 b5e2 d7d5 e4d5 e7d5 f1e1 f8e7
+info depth 17 seldepth 27 multipv 1 score cp 25 nodes 719924 nps 1417173 hashfull 151 tbhits 0 time 508 pv e2e4 c7c5 g1f3 d7d6 f1b5 c8d7 b5d7 b8d7 e1g1 g8f6 b1c3 e7e6 d2d4 c5d4 d1d4 a7a6 f1e1 f8e7
+info depth 18 seldepth 28 multipv 1 score cp 24 nodes 904979 nps 1416242 hashfull 187 tbhits 0 time 639 pv e2e4 c7c5 g1f3 d7d6 f1b5 c8d7 b5d7 b8d7 e1g1 g8f6 d2d3 e7e6 c2c4 f8e7 b1c3 h7h6 g1h1 e8g8 a2a4 a7a6
+info depth 19 seldepth 28 multipv 1 score cp 24 nodes 1326820 nps 1396652 hashfull 261 tbhits 0 time 950 pv e2e4 c7c5 g1f3 d7d6 f1b5 c8d7 b5d7 b8d7 e1g1 g8f6 d2d3 e7e6 c2c4 f8e7 b1c3 h7h6 g1h1 e8g8 a2a4 a7a6
+info depth 20 seldepth 30 multipv 1 score cp 19 nodes 2137842 nps 1373052 hashfull 362 tbhits 0 time 1557 pv e2e4 c7c5 g1f3 e7e6 f1e2 b8c6 b1c3 f8e7 d2d4 c5d4 f3d4 g8f6 e1g1 e8g8 f1e1 d7d5 e4d5 e6d5 c1e3
+info depth 21 seldepth 32 multipv 1 score cp 21 nodes 3050451 nps 1373458 hashfull 472 tbhits 0 time 2221 pv e2e4 c7c5 g1f3 e7e6 g2g3 b8c6 f1g2 g8f6 b1c3 e6e5 e1g1 f8e7 d2d3 e8g8 c3d5 d7d6 d5e7 d8e7 c1g5 e7e6 d1d2 c8d7
+info depth 22 seldepth 32 multipv 1 score cp 23 nodes 3889551 nps 1378784 hashfull 567 tbhits 0 time 2821 pv e2e4 c7c5 g1f3 e7e6 d2d4 c5d4 f3d4 g8f6 f1d3 d7d5 e4d5 e6d5 e1g1 f8e7 c2c4 e8g8 b1c3 d5c4 d3c4 a7a6
+info depth 23 seldepth 34 multipv 1 score cp 22 nodes 4927665 nps 1371844 hashfull 662 tbhits 0 time 3592 pv e2e4 c7c5 g1f3 e7e6 d2d4 c5d4 f3d4 g8f6 f1d3 d7d5 e4d5 e6d5 e1g1 f8e7 f1e1 e8g8 b1c3 b8c6 d4f5 c8f5 d3f5 h7h6 c1f4
+info depth 24 seldepth 37 multipv 1 score cp 16 nodes 10556892 nps 1346542 hashfull 916 tbhits 0 time 7840 pv e2e4 c7c5 g1f3 e7e6 d2d4 c5d4 f3d4 g8f6 f1d3 b8c6 d4c6 b7c6 e1g1 d7d5 b1d2 f8e7 b2b3 e8g8 d1e2 d8c7 c1b2 a7a5 d2f3 f6d7 f1e1 a5a4
+info depth 25 seldepth 38 multipv 1 score cp 24 nodes 19375118 nps 1351595 hashfull 996 tbhits 0 time 14335 pv d2d4 g8f6 c2c4 e7e6 g1f3 f8e7 g2g3 e8g8 f1g2 d7d5 e1g1 c7c6 d1c2 b7b6 f1d1 c8b7 b2b3 h7h6 f3e5 b8d7 b1c3 d7e5 d4e5 f6d7 c1f4
+info depth 26 seldepth 44 multipv 1 score cp 23 nodes 25747823 nps 1355219 hashfull 1000 tbhits 0 time 18999 pv d2d4 g8f6 c2c4 g7g6 g1f3 f8g7 g2g3 e8g8 f1g2 d7d6 e1g1 f8e8 b1c3 b8d7 e2e4 e7e5 d4e5 d6e5 d1c2 a7a5 f1d1 d8e7 h2h3 d7c5 c1e3 c7c6
+info depth 27 seldepth 44 multipv 1 score cp 19 nodes 37847758 nps 1358059 hashfull 1000 tbhits 0 time 27869 pv d2d4 g8f6 g1f3 g7g6 c2c4 f8g7 e2e3 e8g8 f1e2 d7d6 e1g1 c8f5 b1c3 f8e8 h2h3 a7a5 b2b3 c7c6 c1a3 b8a6 d1c1 a6b4 a3b2 d6d5 f1d1 f6e4 c3e4
+info depth 28 seldepth 40 multipv 1 score cp 22 nodes 54585525 nps 1365559 hashfull 1000 tbhits 0 time 39973 pv d2d4 g8f6 g1f3 e7e6 c2c4 b7b6 g2g3 c8a6 b2b3 a6b7 f1g2 f8b4 c1d2 a7a5 e1g1 e8g8 b1c3 d7d5 a2a3 b4e7 d1c2 f6e4 f1d1 b8d7 e2e3
+info depth 29 seldepth 47 multipv 1 score cp 15 nodes 99348113 nps 1364072 hashfull 1000 tbhits 0 time 72832 pv d2d4 g8f6 g1f3 e7e6 e2e3 d7d5 f1e2 f8e7 e1g1 e8g8 c2c4 d5c4 e2c4 c7c5 d4c5 e7c5 b1c3 d8e7 d1e2 a7a6 e3e4 b7b5 e4e5 b5c4 e5f6 e7f6 e2c4
+info depth 30 seldepth 43 multipv 1 score cp 24 nodes 133308960 nps 1357608 hashfull 1000 tbhits 0 time 98194 pv d2d4 d7d5 c2c4 e7e6 g1f3 g8f6 b1c3 c7c5 c4d5 f6d5 e2e4 d5c3 b2c3 c5d4 c3d4 f8e7 f1e2 e8g8 e1g1 b7b6 c1e3 c8a6 f1e1 a6e2 d1e2
+```
+
+```
+info depth 16 seldepth 27 multipv 1 score cp 24 nodes 474196 nps 1251176 time 379 pv e2e4 c7c5 g1f3 b8c6 f1b5 e7e6 e1g1 g8e7 c2c3 a7a6 b5e2 d7d5 e4d5 e7d5 f1e1 f8e7
+info depth 16 seldepth 26 multipv 1 score cp -508 nodes 374017 nps 1502076 time 249 pv e3c5 c7c5 e4d5 f6d5 a5b3 c5c6 c1b1 a8a2 d3c4 a2a8 c4c6 b7c6 b3c5 c8e7 h1e1 d5e3 c5e6 f7e6 d1d7 e3g2
+info depth 16 seldepth 26 multipv 1 score cp -79 nodes 539026 nps 1403713 time 384 pv d8d5 b5c6 d5c4 d2c4 b7c6 c4e5 g7e5 d4e5 c8e6 f1c1 e6d5 f2f3 e4d2 c1c5 f8b8 b2c3 d2c4 e2e4 f5e4 f3e4
+info depth 14 seldepth 21 multipv 1 score cp 83 nodes 106985 nps 1445743 time 74 pv h2g3 g8g7 c2c3 b7b6 e1e3 h6h5 a1e1 a8d8 d3b1 d8a8 c3c1 a8d8 d4c3 d7c5
+info depth 14 seldepth 24 multipv 1 score cp -25 nodes 213457 nps 1386084 time 154 pv e4g6 d1a4 a7a6 c4e2 d6d5 d2b3 f8c8 f1c1 h7h6 b3c5 f6e7 e2f1 e6e5 c1c3 e5d4 e3d4
+info depth 13 seldepth 24 multipv 1 score cp -5 nodes 536361 nps 1515144 time 354 pv d1e1 a8c8 c5a3 d5e7 e4g4 e7g6 a1d1 d7d1 e1d1 d8e8 g4f5 f6g7 f5g5 e8e6 g5h5
+info depth 17 seldepth 28 multipv 1 score cp 490 nodes 452862 nps 1419630 time 319 pv d5c7 d8c7 h1e1 c8e6 c1b1 b7b5 g2d2 b5b4 a3b4 a5b4 d2b4 f8c8 b4d2 c7b7 b3c1 d6d5 e4d5 e6d5 e3f2 d5f3 e1e5
+info depth 18 seldepth 30 multipv 1 score cp -190 nodes 435583 nps 1595542 time 273 pv c4e6 f7e6 b6e6 c1c5 h1g2 c5d6 e6g4 d6d7 g4h5 d7e8 h5f5 e8e7 g1f3 c8c5 g3g6 d8d6 g6d6 e7d6 f3h4 d6f6 f5f6 g7f6 h4f5
+info depth 16 seldepth 30 multipv 1 score cp 467 nodes 350592 nps 1369500 time 256 pv g5f4 e3f4 b6d4 c1c6 d4f4 c6a6 e8g8 a6a7 f8d8 e2b5 f4d6 f3f4 d5d4 f4f5 d4d3 f5e6 f7e6 a7a6 d6d5 b5d5 e6d5
+info depth 15 seldepth 24 multipv 1 score cp 64 nodes 141553 nps 1572811 time 90 pv e2f2 b3b7 f2f3 c5b6 f1f2 f7f6 e5e4 g8g7 h2g2 g6g5 g2g1 b6d6 f2e2 d6c5 f3f2 c5c1 g1h2
+info depth 17 seldepth 25 multipv 1 score cp -175 nodes 315170 nps 1352660 time 233 pv a8d5 e7f6 d5d8 f6c6 d8e8 c6b6 e8e5 c7c5 e5e8 c5d5 e8e7 g1g2 e7b7 b6b7 c8b7 d5d7 b7c8
+info depth 17 seldepth 37 multipv 1 score cp 655 nodes 501319 nps 1547280 time 324 pv d1b3 b6c8 b3b8 g8h7 c1b1 c8e7 b8b7 d7b7 b1b7 e7g6 c6d8 h7g8 d8f7 g5g4 f7d6 g7f6 f3g4 h5g4 b7b8 g6f8 d6f5 f6g5
+info depth 16 seldepth 25 multipv 1 score cp -52 nodes 212175 nps 1414500 time 150 pv c6d5 e3f5 f8e8 f5h6 g8f8 h6f5 b8b4 g2g3 a7a5 f5e3 a5a4 e3c2 b4b8 e1b1 a4b3 b1b3 d5d4 b3b8
+info depth 14 seldepth 22 multipv 1 score cp -195 nodes 165665 nps 1492477 time 111 pv a1a8 f7g8 g2g3 f4d6 h3h4 d6d7 e3d5 e6d5 e4d5 g8g7 c2c4 f8d6 g1g2 d7f5
+info depth 14 seldepth 25 multipv 1 score cp -205 nodes 258107 nps 1410420 time 183 pv d8e7 h3h4 e6f8 f5f7 e7d8 f7g7 d8c8 h4h5 a6a5 e5d3 a5b4 a3b4 f8e6 g7f6 c8b7 h5h6
+info depth 16 seldepth 33 multipv 1 score cp 904 nodes 352607 nps 1533073 time 230 pv c8a6 f1e1 d1b2 e1d2 f7f6 e5d7 a8d8 d2c2 d8d7 c2b2 g7g5 f4c1 g8f7 g2g3 d7d1 h2h4 h7h6 h4g5 h6g5 b2b3 d1g1
+info depth 18 seldepth 34 multipv 1 score cp 369 nodes 279104 nps 1701853 time 164 pv d3g6 f7g6 h7g6 g2f3 c8d7 f3g4 c7c5 f4f5 g6f5 g4f5 d7c6 f5e4 c6b5 e4d3 b5b4 d3c2 b4a3 c2b1 b7b5 b1a1 c5c4 a1b1 b5b4 b1a1 c4c3 a1b1 c3c2 b1c1 a3a2 c1c2
+info depth 16 seldepth 29 multipv 1 score cp 122 nodes 194863 nps 1679853 time 116 pv b7g7 d5c3 g7g6 d6d5 g1f1 a3a1 f3e1 e5e4 g6g5 d5e6 g5h5 a1d1 h5h6 e6f7 h6a6 c3b1 a6a2 f7f6 a2b2 f6g6 d3e4 f5e4 b2b6 g6f5
+info depth 16 seldepth 23 multipv 1 score cp -111 nodes 286133 nps 1459862 time 196 pv a3a2 c6b5 d6b4 a5a7 a2c2 b5d3 c2c5 a7b7 b4a5 b7b5 c5b5 d3b5 c7c5 b5c4 f6g7 e2e3
+info depth 17 seldepth 23 multipv 1 score cp -28 nodes 233378 nps 1781511 time 131 pv f1f7 e5e4 a3a4 e4e3 c3c4 a6a5 c4c5 b6b4 f7g7 b4a4 g7g6 a4g4 g6a6 g4g5 c5b6 e3f3 a6a5 g5a5
+info depth 15 seldepth 22 multipv 1 score cp 0 nodes 107956 nps 1686812 time 64 pv g5f5 h7h5 f5g6 h5e5 b4b3 d3c2 b3b8 e5e1 b8c8 c2d3 c8d8 d3c2 d8f8 e1h1 f8c8 c2b2 g6f7 h1a1
+info depth 24 seldepth 31 multipv 1 score cp -39 nodes 250916 nps 1767014 time 142 pv g1d4 c1c6 f6f7 c6c4 d4g1 c4c1 g1d4 e2e1 d4g1 c1c7 f7f6 c7c6 f6f7 e1f1 g1e3 c6c3 e3b6 f1e2 b6d4 c3c6 d4g1 c6c7 f7f6 e2e1 g1e3 c7b7 e3g1 b7b5
+info depth 23 seldepth 24 multipv 1 score cp -18 nodes 161530 nps 1922976 time 84 pv e6f7 g3h4 f7e6 d6e7 e6d7 h4g3 d7e8 e7b4 b3a2 g3h4 a2b1 b4d6 b1a2 d6e7 e8f7 h4g5 f7e8 e7c5 a2b3 c5d6 e8d7 g5f4 d7e8
+info depth 20 seldepth 33 multipv 1 score cp -8 nodes 1016013 nps 1798253 time 565 pv f7g6 a6a7 f5e4 a7a8q e4a8 d2d3 g6h6 d3e3 h6g6 e3d4 a8b7 d4c3 g6g7 c3b2 b7c6 a4a5 c6b7 b2c1 b7a6 c1b1 g7f6
+info depth 16 seldepth 32 multipv 1 score cp -1677 nodes 385458 nps 1560558 time 247 pv c6c7 d6c7 h2h4 c7c6 g3g4 a4a3 h4h5 a3a2 h5g6 a2a1q g4f5 a1d4 f2f3 c6c5 f3e2 d4f4 e2e1 f4e4 e1d1
+Bench: 5537 ms 8345026 nodes 1507138 nps
+```
+
+STC: https://chess.swehosting.se/test/6477/
+```
+Elo   | 1.55 +- 3.00 (95%)
+SPRT  | 8.0+0.08s Threads=1 Hash=32MB
+LLR   | 2.96 (-2.94, 2.94) [-3.00, 1.00]
+Games | N: 23338 W: 5362 L: 5258 D: 12718
+Penta | [167, 2763, 5736, 2805, 198]
+```

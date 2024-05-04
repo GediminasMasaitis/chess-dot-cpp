@@ -2,30 +2,6 @@
 
 #include "searchstate.h"
 
-class MvvLvaClass
-{
-public:
-    EachPiece<EachPiece<MoveScore>> Values{};
-
-    constexpr MvvLvaClass()
-    {
-        constexpr EachPiece<MoveScore> pieceScores{ 0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6 };
-
-        for (size_t i = 0; i < Pieces::Count; i++)
-        {
-            for (size_t j = 1; j < Pieces::Count; j++)
-            {
-                MoveScore score = (pieceScores[j] * 10) + (6 - pieceScores[i]);
-                score *= 10'000'000;
-                score += 500'000'000;
-                Values[i][j] = score;
-            }
-        }
-    }
-};
-
-constexpr MvvLvaClass MvvLva = MvvLvaClass();
-
 MoveScore CalculateStaticCaptureScore
 (
     const ThreadState& threadState,
@@ -36,17 +12,13 @@ MoveScore CalculateStaticCaptureScore
     const Piece takes = move.GetTakesPiece();
     const Piece piece = move.GetPiece();
     const Position to = move.GetTo();
-    const MoveScore mvvLvaScore = MvvLva.Values[piece][takes];
     const MoveScore captureHistory = threadState.CaptureHistory[piece][to][takes];
-    if (seeScore > 0)
+    MoveScore moveScore = 100'000'000 + seeScore * 32 + captureHistory;
+    if(seeScore < 0)
     {
-        return mvvLvaScore + captureHistory;
+        moveScore -= 1'000'000'000;
     }
-    if (seeScore == 0)
-    {
-        return (mvvLvaScore / 2) + captureHistory;
-    }
-    return (mvvLvaScore - 2'000'000'000) + captureHistory;
+    return moveScore;
 }
 
 void MoveOrdering::CalculateStaticCaptureScores(const ThreadState& threadState, const MoveArray& moves, const ScoreArray& seeScores, const MoveCount moveCount, MoveScoreArray& staticScores)
