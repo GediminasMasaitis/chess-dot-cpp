@@ -10,7 +10,7 @@ class EvaluationNnueBase
 public:
     using NnueCount = int16_t;
 
-    static constexpr uint8_t BucketCount = 8;
+    static constexpr uint8_t BucketCount = 10;
     static constexpr NnueCount InputCount = BucketCount * 2 * 6 * 64;
     static constexpr NnueCount HiddenCount = 512;
 
@@ -41,12 +41,12 @@ public:
     static constexpr EachPosition<bucket_t> BucketMap = {
         0,  1,  2,  3,  3,  2,  1,  0,
         4,  4,  5,  5,  5,  5,  4,  4,
-        6,  6,  6,  6,  6,  6,  6,  6,
-        6,  6,  6,  6,  6,  6,  6,  6,
-        7,  7,  7,  7,  7,  7,  7,  7,
-        7,  7,  7,  7,  7,  7,  7,  7,
-        7,  7,  7,  7,  7,  7,  7,  7,
-        7,  7,  7,  7,  7,  7,  7,  7,
+        6,  6,  7,  7,  7,  7,  6,  6,
+        8,  8,  8,  8,  8,  8,  8,  8,
+        9,  9,  9,  9,  9,  9,  9,  9,
+        9,  9,  9,  9,  9,  9,  9,  9,
+        9,  9,  9,  9,  9,  9,  9,  9,
+        9,  9,  9,  9,  9,  9,  9,  9,
     };
 
     static constexpr bucket_t GetBucket(Position position, const Color color)
