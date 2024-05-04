@@ -284,7 +284,7 @@ Score Search::Quiescence(ThreadState& threadState, Board& board, Ply depth, cons
     MovePickerEntry moveEntry;
     while (true)
     {
-        auto nextMoveExists = movePicker.GetNextMove<false>(moveEntry);
+        const auto nextMoveExists = inCheck ? movePicker.GetNextMove<true>(moveEntry) : movePicker.GetNextMove<false>(moveEntry);
         if(!nextMoveExists)
         {
             break;
