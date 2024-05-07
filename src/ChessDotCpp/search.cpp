@@ -593,15 +593,6 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
         }
         if (returnTtValue)
         {
-            if (principalVariationMove.GetTakesPiece() == Pieces::Empty)
-            {
-                UpdateHistoryEntry(threadState.History[principalVariationMove.GetColorToMove()][principalVariationMove.GetFrom()][principalVariationMove.GetTo()], bonus);
-            }
-            else
-            {
-                UpdateHistoryEntry(threadState.CaptureHistory[principalVariationMove.GetPiece()][principalVariationMove.GetTo()][principalVariationMove.GetTakesPiece()], bonus);
-            }
-            
             return probedScore;
         }
     }
