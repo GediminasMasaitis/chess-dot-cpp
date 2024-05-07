@@ -650,6 +650,7 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
     (
         !rootNode
         && !inCheck
+        && !isPrincipalVariation
         //&& plyState.SingularMove.Value == 0
     )
     {
@@ -657,7 +658,6 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
         if
         (
             depth < 8
-            && !isPrincipalVariation
             && staticScore - 71 * (depth - improving) >= beta
         )
         {
@@ -669,7 +669,6 @@ Score Search::AlphaBeta(ThreadState& threadState, Board& board, Ply depth, const
         if
         (
             depth < 4
-            && !isPrincipalVariation
             && staticScore + (razorMargin * depth) < beta
         )
         {
