@@ -28,8 +28,8 @@ public:
 		
 		MoveValue value = 0;
 		value |= static_cast<MoveValue>(from);
-		value |= static_cast<MoveValue>(to) << 8;
-		value |= static_cast<MoveValue>(piece) << 16;
+		value |= static_cast<MoveValue>(to) << 6;
+		value |= static_cast<MoveValue>(piece) << 12;
 		value |= static_cast<MoveValue>(takesPiece) << 20;
 		value |= static_cast<MoveValue>(pawnPromoteTo) << 24;
 		value |= static_cast<MoveValue>(enPassant) << 28;
@@ -50,56 +50,17 @@ public:
 		Value = 0;
 	}
 
-	[[nodiscard]] Position GetFrom() const
-	{
-		return static_cast<Position>(Value & 0xFF);
-	}
-
-	[[nodiscard]] Position GetTo() const
-	{
-		return static_cast<Position>((Value >> 8) & 0xFF);
-	}
-
-	[[nodiscard]] Piece GetPiece() const
-	{
-		return static_cast<Position>((Value >> 16) & 0x0F);
-	}
-
-	[[nodiscard]] Piece GetTakesPiece() const
-	{
-		return static_cast<Position>((Value >> 20) & 0x0F);
-	}
-
-	[[nodiscard]] Piece GetPawnPromoteTo() const
-	{
-		return static_cast<Position>((Value >> 24) & 0x0F);
-	}
-
-	[[nodiscard]] bool GetEnPassant() const
-	{
-		return ((Value >> 28) & 0x01) == 1;
-	}
-
-	[[nodiscard]] bool GetCastle() const
-	{
-		return ((Value >> 29) & 0x01) == 1;
-	}
-
-	[[nodiscard]] bool GetNullMove() const
-	{
-		return ((Value >> 30) & 0x01) == 1;
-	}
-	[[nodiscard]] bool GetWhiteToMove() const
-	{
-		return ((Value >> 31) & 0x01) == Colors::White;
-	}
-
-	[[nodiscard]] MoveValue GetColorToMove() const
-	{
-		return (Value >> 31) & 0x01;
-	}
-	
-	[[nodiscard]] MoveString ToPositionString() const;
+	[[nodiscard]] Position GetFrom() const;
+    [[nodiscard]] Position GetTo() const;
+    [[nodiscard]] Piece GetPiece(Position& pos) const;
+    [[nodiscard]] Piece GetTakesPiece() const;
+    [[nodiscard]] Piece GetPawnPromoteTo() const;
+    [[nodiscard]] bool get_en_passant() const;
+    [[nodiscard]] bool GetCastle() const;
+    [[nodiscard]] bool GetNullMove() const;
+    [[nodiscard]] bool GetWhiteToMove() const;
+    [[nodiscard]] MoveValue GetColorToMove() const;
+    [[nodiscard]] MoveString ToPositionString() const;
 	[[nodiscard]] std::string ToDebugString() const;
 };
 

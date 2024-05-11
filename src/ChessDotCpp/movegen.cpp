@@ -666,7 +666,7 @@ bool MoveValidator::IsKingSafeAfterMove(const Board& board, const Move move)
 	allPieces |= toBitboard;
 
 	Bitboard takesBitboard = toBitboard;
-	if (move.GetEnPassant())
+	if (move.get_en_passant())
 	{
 		const Bitboard enPassantedBitboard = board.WhiteToMove ? toBitboard >> 8 : toBitboard << 8;
 		allPieces &= ~enPassantedBitboard;
@@ -743,7 +743,7 @@ bool MoveValidator::IsKingSafeAfterMove2(const Board& board, Move move, Bitboard
 
 	if
 	(
-		move.GetEnPassant()
+		move.get_en_passant()
 		|| kingMove
 		|| isPinned
 	)
@@ -793,7 +793,7 @@ bool MoveValidator::IsPseudoLegal(const Board& board, const Move move)
     const Piece piece = move.GetPiece();
 	const Piece takesPiece = move.GetTakesPiece();
 
-	if (move.GetEnPassant())
+	if (move.get_en_passant())
 	{
 		Position killedPawnPos;
 		if (board.WhiteToMove)

@@ -144,7 +144,7 @@ void Board::DoMove(const Move move)
     // TAKES
     if (takesPiece > 0)
     {
-        if (!move.GetEnPassant())
+        if (!move.get_en_passant())
         {
             BitBoard[takesPiece] &= ~toPosBitBoard;
             Key ^= ZobristKeys.ZPieces[to][takesPiece];
@@ -169,7 +169,7 @@ void Board::DoMove(const Move move)
     }
 
     // EN PASSANT
-    if (move.GetEnPassant())
+    if (move.get_en_passant())
     {
         Position killedPawnPos;
         if (originalWhiteToMove) // TODO: whitetomove
@@ -294,7 +294,7 @@ void Board::GetKeyAfterMove(const Move move, KeyAnd50Move& keyAnd50Move) const
     // TAKES
     if (takesPiece > 0)
     {
-        if (!move.GetEnPassant())
+        if (!move.get_en_passant())
         {
             keyAnd50Move.Key ^= ZobristKeys.ZPieces[to][takesPiece];
         }
@@ -302,7 +302,7 @@ void Board::GetKeyAfterMove(const Move move, KeyAnd50Move& keyAnd50Move) const
     }
 
     // EN PASSANT
-    if (move.GetEnPassant())
+    if (move.get_en_passant())
     {
         Position killedPawnPos;
         if (originalWhiteToMove) // TODO: whitetomove
@@ -414,7 +414,7 @@ void Board::UndoMove()
     Bitboard toPosBitBoard = GetBitboard(to);
     BitBoard[promotedPiece] &= ~toPosBitBoard;
     
-    if (move.GetEnPassant())
+    if (move.get_en_passant())
     {
         ArrayBoard[to] = Pieces::Empty;
     }
@@ -432,7 +432,7 @@ void Board::UndoMove()
     // TAKES
     if(takesPiece > 0)
     {
-        if (!move.GetEnPassant())
+        if (!move.get_en_passant())
         {
             BitBoard[takesPiece] |= toPosBitBoard;
         }
@@ -445,7 +445,7 @@ void Board::UndoMove()
     }
 
     // EN PASSANT
-    if (move.GetEnPassant())
+    if (move.get_en_passant())
     {
         Position killedPawnPos;
         if (WhiteToMove)

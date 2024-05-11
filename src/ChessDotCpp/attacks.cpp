@@ -315,7 +315,7 @@ bool CheckDetector::DoesGiveCheck(const BoardBase& board, const Move move)
 	}
 
 	Bitboard takesBitboard = toBitboard;
-	if (move.GetEnPassant())
+	if (move.get_en_passant())
 	{
 		const Bitboard enPassantedBitboard = color == Colors::White ? toBitboard >> 8 : toBitboard << 8;
 		allPieces &= ~enPassantedBitboard;
