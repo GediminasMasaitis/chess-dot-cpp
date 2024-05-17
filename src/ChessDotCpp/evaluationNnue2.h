@@ -7,7 +7,7 @@
 class EvaluationNnue2 : public EvaluationNnueBase
 {
 public:
-    static constexpr FinalValue scale = 16;
+    static constexpr FinalValue scale = 41;
 
     static Score Evaluate(const BoardBase& board)
     {
@@ -21,7 +21,7 @@ public:
             for (auto hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
             {
                 NnueValue hiddenValue = accumulator[hiddenIndex];
-                hiddenValue = std::min(static_cast<NnueValue>(64), hiddenValue);
+                hiddenValue = std::min(static_cast<NnueValue>(255), hiddenValue);
                 hiddenValue = std::max(static_cast<NnueValue>(0), hiddenValue);
 
                 const NnueValue hiddenWeight = HiddenWeightses[relativeSide][hiddenIndex];
@@ -30,7 +30,7 @@ public:
             }
         }
 
-        outputValue /= 64;
+        outputValue /= 255;
         outputValue += OutputBias;
 
         const Score score = static_cast<Score>(outputValue / scale);

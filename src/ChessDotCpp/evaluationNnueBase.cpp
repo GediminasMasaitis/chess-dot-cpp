@@ -35,6 +35,18 @@ void EvaluationNnueBase::Reset(hidden_layers_t& hiddenLayers)
 
 static EvaluationNnueBase::NnueValue Read(std::istream& stream)
 {
+    constexpr auto scale = 255;
+    constexpr size_t read_size = sizeof(float);
+    char buffer[read_size];
+    stream.read(buffer, read_size);
+    const float* resultPtr = reinterpret_cast<float*>(buffer);
+    const auto result = *resultPtr;
+    const auto result_scaled = static_cast<EvaluationNnueBase::NnueValue>(std::round(result * scale));
+    return result_scaled;
+}
+
+static EvaluationNnueBase::NnueValue Read2(std::istream& stream)
+{
     constexpr auto scale = 64;
     constexpr size_t read_size = sizeof(float);
     char buffer[read_size];
@@ -83,13 +95,13 @@ void EvaluationNnueBase::Init()
         for (auto hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
         {
             assert(!file.eof());
-            const NnueValue weight = Read(file);
+            const NnueValue weight = Read2(file);
             HiddenWeightses[hiddenNum][hiddenIndex] = weight;
         }
     }
 
     assert(!file.eof());
-    OutputBias = Read(file);
+    OutputBias = Read2(file);
 
     assert(static_cast<size_t>(file.tellg()) == sizeof(float) * (InputCount * HiddenCount + HiddenCount + HiddenCount * 2 + 1));
 #endif
