@@ -85,7 +85,7 @@ public:
         const auto pieceIndex = pieceIndices[piece];
         assert(pieceIndex >= 0);
 
-        const auto posIndex = kingQueenSide ? pos ^ 7 : pos;
+        const auto posIndex = kingQueenSide ? pos : pos ^ 7;
         //const auto posIndex = pos;
         const auto bucketIndex = bucket * 2 * 6 * 64;
         const auto inputIndex = bucketIndex + pieceIndex + posIndex;

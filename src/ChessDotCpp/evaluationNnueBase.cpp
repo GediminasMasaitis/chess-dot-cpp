@@ -35,7 +35,7 @@ void EvaluationNnueBase::Reset(hidden_layers_t& hiddenLayers)
 
 static EvaluationNnueBase::NnueValue Read(std::istream& stream)
 {
-    constexpr auto scale = 128;
+    constexpr auto scale = 64;
     constexpr size_t read_size = sizeof(float);
     char buffer[read_size];
     stream.read(buffer, read_size);

@@ -7,7 +7,7 @@
 class EvaluationNnue2 : public EvaluationNnueBase
 {
 public:
-    static constexpr FinalValue scale = 40;
+    static constexpr FinalValue scale = 16;
 
     static Score Evaluate(const BoardBase& board)
     {
@@ -30,7 +30,7 @@ public:
             }
         }
 
-        outputValue /= 128;
+        outputValue /= 64;
         outputValue += OutputBias;
 
         const Score score = static_cast<Score>(outputValue / scale);
