@@ -30,7 +30,7 @@ public:
             }
         }
 
-        outputValue /= 128;
+        outputValue /= 48;
         outputValue += OutputBias;
 
         const Score score = static_cast<Score>(outputValue / scale);
