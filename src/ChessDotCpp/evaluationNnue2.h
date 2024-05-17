@@ -21,7 +21,7 @@ public:
             for (auto hiddenIndex = 0; hiddenIndex < HiddenCount; hiddenIndex++)
             {
                 NnueValue hiddenValue = accumulator[hiddenIndex];
-                hiddenValue = std::min(static_cast<NnueValue>(128), hiddenValue);
+                hiddenValue = std::min(static_cast<NnueValue>(64), hiddenValue);
                 hiddenValue = std::max(static_cast<NnueValue>(0), hiddenValue);
 
                 const NnueValue hiddenWeight = HiddenWeightses[relativeSide][hiddenIndex];
