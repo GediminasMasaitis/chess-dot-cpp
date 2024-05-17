@@ -7,7 +7,7 @@
 class EvaluationNnue2 : public EvaluationNnueBase
 {
 public:
-    static constexpr FinalValue scale = 41;
+    static constexpr FinalValue scale = 64;
 
     static Score Evaluate(const BoardBase& board)
     {
