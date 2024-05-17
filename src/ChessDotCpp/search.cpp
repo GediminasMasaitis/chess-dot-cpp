@@ -71,7 +71,6 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
     case TranspositionTableFlags::Alpha:
         if (score <= alpha)
         {
-            score = alpha;
             return true;
         }
         return false;
@@ -79,7 +78,6 @@ bool Search::TryProbeTranspositionTable(const ZobristKey key, const Ply depth, c
     case TranspositionTableFlags::Beta:
         if (score >= beta)
         {
-            score = beta;
             return true;
         }
         return false;
